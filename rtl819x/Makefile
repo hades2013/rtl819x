@@ -141,7 +141,14 @@ romfs:
 	cp -R $(DIR_RSDK)/lib/*.so.* $(DIR_ROMFS)/lib
 	chmod 755 $(DIR_ROMFS)/lib/*.so
 	$(MAKE) -C $(DIR_USERS) TOOLCHAIN=$(TOOLCHAIN) romfs || exit $$?
-	$(LSTRIP) $(DIR_ROMFS)
+	rm -f $(DIR_ROMFS)/lib/libstdc++.so* 
+	rm -f $(DIR_ROMFS)/lib/libiconv*
+
+# marked by Bright, replaced with simply remove unneeded libs 
+#	$(LSTRIP) $(DIR_ROMFS)
+
+
+
 
 #
 # 4.0 kernel modules (if any)
