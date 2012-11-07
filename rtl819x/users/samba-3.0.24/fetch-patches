@@ -1,0 +1,64 @@
+#!/bin/sh
+
+# Copyright (c) 2005 Lars Mueller <lmuelle at samba.org>
+#
+# If called without any argument the default series filename 'series' is used.
+# It's possible to pass a non default series filename, e.g. series-3.0.20, as
+# first argument.
+#
+# If PATCH_DIR is defined, we don't use our default at Samba.org.  That's
+# at least handy for testing changes to the script.
+#
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place, Suite 330, Boston, MA 02111-1307 USA
+
+SERIES_FILE="series"
+
+# Path to the series file and patches
+test "${PATCH_DIR}" || \
+	PATCH_DIR="http://www.samba.org/samba/patches/patches"
+
+if test "$1" ; then 
+    PATCH_DIR="http://www.samba.org/samba/patches/patches-$1"
+fi
+
+if test ! -f  "`which wget 2> /dev/null`"; then
+	echo "Error: You have to install wget."
+	exit 1
+fi
+
+test -d patches || mkdir patches
+cd patches || exit $?
+
+wget -N "${PATCH_DIR}/${SERIES_FILE}"
+if test $? != 0; then
+	echo "Error: Can not download ${PATCH_DIR}/${SERIES_FILE}"
+	exit 1
+fi
+
+test "${SERIES_FILE}" = "series" || \
+	ln -fs "$1" series
+
+while read patch rest; do
+	case "${patch}" in
+		\#*|"") continue 
+			;;
+		*)
+			wget -N "${PATCH_DIR}/${patch}"
+			;;
+	esac
+done < series
+
+cd .. >/dev/null
