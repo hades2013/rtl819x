@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.30.9
-# Wed Nov 23 10:53:24 2011
+# Thu Nov  8 23:11:16 2012
 #
 CONFIG_RTL_819X=y
 CONFIG_RTL_8198=y
@@ -50,7 +50,7 @@ CONFIG_RTL_FLASH_MAPPING_ENABLE=y
 #
 # Flash size 2M or 4M, default 2M
 #
-CONFIG_RTL_FLASH_SIZE=0x400000
+CONFIG_RTL_FLASH_SIZE=0x800000
 
 #
 # Hardware setting offset,should be 4K alignment
@@ -494,13 +494,7 @@ CONFIG_NET_SCH_FIFO=y
 # CONFIG_IRDA is not set
 # CONFIG_BT is not set
 # CONFIG_AF_RXRPC is not set
-CONFIG_WIRELESS=y
-# CONFIG_CFG80211 is not set
-# CONFIG_WIRELESS_OLD_REGULATORY is not set
-CONFIG_WIRELESS_EXT=y
-# CONFIG_WIRELESS_EXT_SYSFS is not set
-# CONFIG_LIB80211 is not set
-# CONFIG_MAC80211 is not set
+# CONFIG_WIRELESS is not set
 # CONFIG_WIMAX is not set
 # CONFIG_RFKILL is not set
 # CONFIG_NET_9P is not set
@@ -853,7 +847,7 @@ CONFIG_SSB_POSSIBLE=y
 # CONFIG_XFS_FS is not set
 # CONFIG_OCFS2_FS is not set
 # CONFIG_BTRFS_FS is not set
-# CONFIG_FILE_LOCKING is not set
+CONFIG_FILE_LOCKING=y
 # CONFIG_DNOTIFY is not set
 # CONFIG_INOTIFY is not set
 # CONFIG_QUOTA is not set

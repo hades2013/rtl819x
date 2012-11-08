@@ -1,1 +1,1 @@
-#define CONFIG_GREP 1
+#undef CONFIG_GREP

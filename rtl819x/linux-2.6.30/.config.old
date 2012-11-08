@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.30.9
-# Wed Nov 23 10:05:11 2011
+# Wed Nov 23 10:53:24 2011
 #
 CONFIG_RTL_819X=y
 CONFIG_RTL_8198=y
@@ -31,7 +31,7 @@ CONFIG_RTL_8198_GW=y
 CONFIG_RTL_PCIE_SIMPLE_INIT=y
 CONFIG_RTL_WTDOG=y
 # CONFIG_8198_PORT5_GMII is not set
-# CONFIG_8198_PORT5_RGMII is not set
+CONFIG_8198_PORT5_RGMII=y
 # CONFIG_RTL_TIMER_ADJUSTMENT is not set
 # CONFIG_RTL_WEBPAGES_IN_ROOTFS is not set
 CONFIG_RTL819X_SPI_FLASH=y
@@ -853,7 +853,7 @@ CONFIG_SSB_POSSIBLE=y
 # CONFIG_XFS_FS is not set
 # CONFIG_OCFS2_FS is not set
 # CONFIG_BTRFS_FS is not set
-# CONFIG_FILE_LOCKING is not set
+CONFIG_FILE_LOCKING=y
 # CONFIG_DNOTIFY is not set
 # CONFIG_INOTIFY is not set
 # CONFIG_QUOTA is not set
