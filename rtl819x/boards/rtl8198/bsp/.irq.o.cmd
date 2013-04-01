@@ -1,4 +1,4 @@
-cmd_arch/rlx/bsp/irq.o := rsdk-linux-gcc -Wp,-MD,arch/rlx/bsp/.irq.o.d  -nostdinc -isystem /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/toolchain/rsdk-1.3.6-5281-EB-2.6.30-0.9.30/bin/../lib/gcc/mips-linux/3.4.6-1.3.6/include -Iinclude  -I/home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -fno-delete-null-pointer-checks -Os -ffunction-sections -mno-check-zero-division -mabi=32 -G 0 -mno-abicalls -fno-pic -pipe -msoft-float -ffreestanding -EB -UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -DMIPSEB -D_MIPSEB -D__MIPSEB -D__MIPSEB__ -Iinclude/asm-rlx -Iarch/rlx/bsp/ -I/home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic -D"VMLINUX_LOAD_ADDRESS=0x80000000" -fomit-frame-pointer -Wdeclaration-after-statement -I/home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/drivers/net/rtl819x/AsicDriver -I/home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/drivers/net/rtl819x/common -DCONFIG_RTL_819X_SWCORE   -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(irq)"  -D"KBUILD_MODNAME=KBUILD_STR(irq)"  -c -o arch/rlx/bsp/irq.o arch/rlx/bsp/irq.c
+cmd_arch/rlx/bsp/irq.o := rsdk-linux-gcc -Wp,-MD,arch/rlx/bsp/.irq.o.d  -nostdinc -isystem /opt/einsn/interest/rtl8198-dev/rtl819x/toolchain/rsdk-1.3.6-5281-EB-2.6.30-0.9.30/bin/../lib/gcc/mips-linux/3.4.6-1.3.6/include -Iinclude  -I/opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -fno-delete-null-pointer-checks -Os -ffunction-sections -mno-check-zero-division -mabi=32 -G 0 -mno-abicalls -fno-pic -pipe -msoft-float -ffreestanding -EB -UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -DMIPSEB -D_MIPSEB -D__MIPSEB -D__MIPSEB__ -Iinclude/asm-rlx -Iarch/rlx/bsp/ -I/opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic -D"VMLINUX_LOAD_ADDRESS=0x80000000" -fomit-frame-pointer -Wdeclaration-after-statement -I/opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/drivers/net/rtl819x/AsicDriver -I/opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/drivers/net/rtl819x/common -DCONFIG_RTL_819X_SWCORE   -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(irq)"  -D"KBUILD_MODNAME=KBUILD_STR(irq)"  -c -o arch/rlx/bsp/irq.o arch/rlx/bsp/irq.c
 
 deps_arch/rlx/bsp/irq.o := \
   arch/rlx/bsp/irq.c \
@@ -6,7 +6,7 @@ deps_arch/rlx/bsp/irq.o := \
     $(wildcard include/config/rtl/819x.h) \
     $(wildcard include/config/rtl/8198/nfbi/board.h) \
   include/linux/errno.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/errno.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/errno.h \
   include/asm-generic/errno-base.h \
   include/linux/init.h \
     $(wildcard include/config/modules.h) \
@@ -33,18 +33,18 @@ deps_arch/rlx/bsp/irq.o := \
     $(wildcard include/config/lbd.h) \
     $(wildcard include/config/phys/addr/t/64bit.h) \
     $(wildcard include/config/64bit.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/types.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/types.h \
   include/asm-generic/int-ll64.h \
   include/asm-generic/bitsperlong.h \
   include/linux/posix_types.h \
   include/linux/stddef.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/posix_types.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/sgidefs.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/posix_types.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/sgidefs.h \
   include/linux/list.h \
     $(wildcard include/config/debug/list.h) \
   include/linux/poison.h \
   include/linux/prefetch.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/processor.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/processor.h \
     $(wildcard include/config/cpu/has/sleep.h) \
     $(wildcard include/config/arch/suspend/possible.h) \
     $(wildcard include/config/rtl8197b/pana.h) \
@@ -67,14 +67,14 @@ deps_arch/rlx/bsp/irq.o := \
     $(wildcard include/config/tracing.h) \
     $(wildcard include/config/numa.h) \
     $(wildcard include/config/ftrace/mcount/record.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/toolchain/rsdk-1.3.6-5281-EB-2.6.30-0.9.30/bin/../lib/gcc/mips-linux/3.4.6-1.3.6/include/stdarg.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/toolchain/rsdk-1.3.6-5281-EB-2.6.30-0.9.30/bin/../lib/gcc/mips-linux/3.4.6-1.3.6/include/stdarg.h \
   include/linux/linkage.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/linkage.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/linkage.h \
   include/linux/bitops.h \
     $(wildcard include/config/generic/find/first/bit.h) \
     $(wildcard include/config/generic/find/last/bit.h) \
     $(wildcard include/config/generic/find/next/bit.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/bitops.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/bitops.h \
     $(wildcard include/config/cpu/has/llsc.h) \
     $(wildcard include/config/cpu/rlx4181.h) \
     $(wildcard include/config/cpu/rlx5181.h) \
@@ -86,30 +86,30 @@ deps_arch/rlx/bsp/irq.o := \
     $(wildcard include/config/preempt/tracer.h) \
     $(wildcard include/config/trace/irqflags/support.h) \
   include/linux/typecheck.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/irqflags.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/hazards.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/cpu-features.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/irqflags.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/hazards.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/cpu-features.h \
     $(wildcard include/config/cpu/has/ejtag.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/cpu.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/cpu-info.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/cache.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic/kmalloc.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/cpu.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/cpu-info.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/cache.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic/kmalloc.h \
     $(wildcard include/config/dma/coherent.h) \
   arch/rlx/bsp/bspcpu.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/barrier.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/barrier.h \
     $(wildcard include/config/cpu/has/sync.h) \
     $(wildcard include/config/cpu/has/wb.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/bug.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/bug.h \
     $(wildcard include/config/bug.h) \
   include/asm-generic/bug.h \
     $(wildcard include/config/generic/bug.h) \
     $(wildcard include/config/generic/bug/relative/pointers.h) \
     $(wildcard include/config/debug/bugverbose.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/byteorder.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/byteorder.h \
     $(wildcard include/config/cpu/big/endian.h) \
   include/linux/byteorder/big_endian.h \
   include/linux/swab.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/swab.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/swab.h \
   include/linux/byteorder/generic.h \
   include/asm-generic/bitops/non-atomic.h \
   include/asm-generic/bitops/fls64.h \
@@ -126,7 +126,7 @@ deps_arch/rlx/bsp/irq.o := \
     $(wildcard include/config/arch/has/ilog2/u64.h) \
   include/linux/ratelimit.h \
   include/linux/param.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/param.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/param.h \
     $(wildcard include/config/hz.h) \
   include/linux/dynamic_debug.h \
   include/linux/threads.h \
@@ -135,18 +135,18 @@ deps_arch/rlx/bsp/irq.o := \
   include/linux/bitmap.h \
   include/linux/string.h \
     $(wildcard include/config/binary/printf.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/string.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/string.h \
     $(wildcard include/config/cpu/rlx4180.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/cachectl.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/rlxregs.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/cachectl.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/rlxregs.h \
     $(wildcard include/config/cpu/rlx4281.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/system.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/addrspace.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic/spaces.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/system.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/addrspace.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic/spaces.h \
     $(wildcard include/config/32bit.h) \
     $(wildcard include/config/dma/noncoherent.h) \
   include/linux/const.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/cmpxchg.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/cmpxchg.h \
   include/linux/percpu.h \
     $(wildcard include/config/have/dynamic/per/cpu/area.h) \
   include/linux/preempt.h \
@@ -154,7 +154,7 @@ deps_arch/rlx/bsp/irq.o := \
     $(wildcard include/config/preempt/notifiers.h) \
   include/linux/thread_info.h \
     $(wildcard include/config/compat.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/thread_info.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/thread_info.h \
     $(wildcard include/config/kernel/stack/size/order.h) \
     $(wildcard include/config/debug/stack/usage.h) \
   include/linux/slab.h \
@@ -196,10 +196,10 @@ deps_arch/rlx/bsp/irq.o := \
     $(wildcard include/config/lock/stat.h) \
   include/linux/spinlock_up.h \
   include/linux/spinlock_api_up.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/atomic.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/atomic.h \
   include/asm-generic/atomic-long.h \
   include/linux/wait.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/current.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/current.h \
   include/linux/cache.h \
     $(wildcard include/config/arch/has/cache/line/size.h) \
   include/linux/numa.h \
@@ -210,13 +210,13 @@ deps_arch/rlx/bsp/irq.o := \
     $(wildcard include/config/hugetlb/page.h) \
     $(wildcard include/config/hugetlb/page/size/variable.h) \
   include/linux/bounds.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/page.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/page.h \
   include/linux/pfn.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/io.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/io.h \
   include/asm-generic/iomap.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/pgtable-bits.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic/ioremap.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic/mangle-port.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/pgtable-bits.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic/ioremap.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic/mangle-port.h \
     $(wildcard include/config/swap/io/space.h) \
   include/asm-generic/memory_model.h \
     $(wildcard include/config/sparsemem/vmemmap.h) \
@@ -234,8 +234,8 @@ deps_arch/rlx/bsp/irq.o := \
   include/linux/topology.h \
     $(wildcard include/config/sched/smt.h) \
     $(wildcard include/config/sched/mc.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/topology.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic/topology.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/topology.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic/topology.h \
   include/asm-generic/topology.h \
   include/linux/mmdebug.h \
     $(wildcard include/config/debug/vm.h) \
@@ -253,26 +253,26 @@ deps_arch/rlx/bsp/irq.o := \
   include/linux/rcuclassic.h \
     $(wildcard include/config/rcu/cpu/stall/detector.h) \
   include/linux/kmalloc_sizes.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/percpu.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/percpu.h \
   include/asm-generic/percpu.h \
     $(wildcard include/config/have/setup/per/cpu/area.h) \
   include/linux/percpu-defs.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/irq.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic/irq.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/irq.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/mach-generic/irq.h \
     $(wildcard include/config/i8259.h) \
     $(wildcard include/config/irq/cpu.h) \
     $(wildcard include/config/irq/cpu/rm7k.h) \
     $(wildcard include/config/irq/cpu/rm9k.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/cputime.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/cputime.h \
   include/asm-generic/cputime.h \
   include/linux/time.h \
   include/linux/math64.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/div64.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/div64.h \
   include/asm-generic/div64.h \
   include/linux/jiffies.h \
   include/linux/timex.h \
     $(wildcard include/config/no/hz.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/timex.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/timex.h \
   include/linux/irq.h \
     $(wildcard include/config/s390.h) \
     $(wildcard include/config/irq/per/cpu.h) \
@@ -286,16 +286,16 @@ deps_arch/rlx/bsp/irq.o := \
     $(wildcard include/config/cpumasks/offstack.h) \
   include/linux/irqreturn.h \
   include/linux/irqnr.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/ptrace.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/isadep.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/irq_regs.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/hw_irq.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/ptrace.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/isadep.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/irq_regs.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/hw_irq.h \
   include/linux/signal.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/signal.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/signal.h \
     $(wildcard include/config/trad/signals.h) \
   include/asm-generic/signal-defs.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/sigcontext.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/siginfo.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/sigcontext.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/siginfo.h \
   include/asm-generic/siginfo.h \
   include/linux/sched.h \
     $(wildcard include/config/sched/debug.h) \
@@ -340,17 +340,17 @@ deps_arch/rlx/bsp/irq.o := \
     $(wildcard include/config/mmu.h) \
     $(wildcard include/config/mmu/notifier.h) \
   include/linux/auxvec.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/auxvec.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/auxvec.h \
   include/linux/prio_tree.h \
   include/linux/page-debug-flags.h \
     $(wildcard include/config/page/poisoning.h) \
     $(wildcard include/config/page/debug/something/else.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/mmu.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/mmu.h \
   include/linux/sem.h \
   include/linux/ipc.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/ipcbuf.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/ipcbuf.h \
   include/linux/kref.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/sembuf.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/sembuf.h \
   include/linux/path.h \
   include/linux/pid.h \
   include/linux/proportions.h \
@@ -362,7 +362,7 @@ deps_arch/rlx/bsp/irq.o := \
   include/linux/plist.h \
     $(wildcard include/config/debug/pi/list.h) \
   include/linux/resource.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/resource.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/resource.h \
   include/asm-generic/resource.h \
   include/linux/timer.h \
     $(wildcard include/config/timer/stats.h) \
@@ -397,18 +397,18 @@ deps_arch/rlx/bsp/irq.o := \
     $(wildcard include/config/virt/cpu/accounting.h) \
   include/linux/ftrace_irq.h \
     $(wildcard include/config/ftrace/nmi/enter.h) \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/hardirq.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/hardirq.h \
   include/linux/irq_cpustat.h \
   include/linux/ioport.h \
   include/linux/random.h \
   include/linux/ioctl.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/ioctl.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/ioctl.h \
   include/asm-generic/ioctl.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/bootinfo.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/setup.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/irq_cpu.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/irq_vec.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/rlxbsp.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/bootinfo.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/setup.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/irq_cpu.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/irq_vec.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/rlxbsp.h \
   include/net/rtl/rtl_types.h \
     $(wildcard include/config/rtl865x/nicdrv2.h) \
     $(wildcard include/config/rtl/dynamic/iram/mapping/for/wapi.h) \
@@ -428,19 +428,19 @@ deps_arch/rlx/bsp/irq.o := \
     $(wildcard include/config/markers.h) \
     $(wildcard include/config/module/unload.h) \
   include/linux/stat.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/stat.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/stat.h \
   include/linux/kmod.h \
   include/linux/elf.h \
   include/linux/elf-em.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/elf.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/elf.h \
   include/linux/moduleparam.h \
     $(wildcard include/config/alpha.h) \
     $(wildcard include/config/ia64.h) \
     $(wildcard include/config/ppc64.h) \
   include/linux/marker.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/local.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/module.h \
-  /home/zhanghaiyang/rtl819x-sdk-v2.5/rtl819x/linux-2.6.30/arch/rlx/include/asm/uaccess.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/local.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/module.h \
+  /opt/einsn/interest/rtl8198-dev/rtl819x/linux-2.6.30/arch/rlx/include/asm/uaccess.h \
   arch/rlx/bsp/bspchip.h \
     $(wildcard include/config/fpga/platform.h) \
     $(wildcard include/config/rtl/92d/support.h) \

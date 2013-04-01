@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # RLX Linux builder
-# Wed Oct 10 21:39:03 2012
+# Thu Nov  8 23:34:41 2012
 #
 
 #
@@ -78,7 +78,7 @@ CONFIG_APP_SQUASHFS40=y
 # Libraries
 #
 # CONFIG_LIB_PNG is not set
-# CONFIG_LIB_Z is not set
+CONFIG_LIB_Z=y
 # CONFIG_APP_FLEX is not set
 
 #
