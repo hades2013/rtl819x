@@ -2,6 +2,7 @@
 
 SQUASHFS_PF_LIST=squashfs-pf-list.txt
 
+SUDO=sudo
 
 if [ -f squashfs-pf-list.txt ] 
 then
@@ -23,8 +24,8 @@ do  a=$(($a+1));
 	minor=`echo $line |cut -d" " -f7 `
     echo $name $type $major $minor
     #echo $a;
-	mknod -m666 $RAMFSDIR/$name $type $major $minor
-	chmod 777 $RAMFSDIR/$name
+	$SUDO mknod -m666 $RAMFSDIR/$name $type $major $minor
+	$SUDO chmod 777 $RAMFSDIR/$name
 done < $SQUASHFS_PF_LIST
 
 echo "Total dev count is: $a";

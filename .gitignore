@@ -2,3 +2,5 @@
 *.o.cmd
 *.a
 *.a.cmd
+*.order
+*.cmd

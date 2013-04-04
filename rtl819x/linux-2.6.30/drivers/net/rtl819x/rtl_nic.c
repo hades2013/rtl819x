@@ -6717,10 +6717,14 @@ int32 rtl865x_changeOpMode(int mode)
 	rtl_config_operation_layer(mode);
 
 	//always init the default route...
+/* Modified by Einsn - 2013-0401 */	
+#ifdef CONFIG_RTL_LAYERED_DRIVER_L3	
 	if(rtl8651_getAsicOperationLayer() >2)
 	{
 		rtl865x_addRoute(0,0,0,RTL_DRV_WAN0_NETIF_NAME,0);
 	}
+#endif 
+/* End */
 
 	//checksum control register
 	switch(mode)
@@ -6980,11 +6984,14 @@ static int32 rtk_vlan_support_write( struct file *filp, const char *buff,unsigne
 	#endif
 
 		//always init the default route...
+/* Modified by Einsn - 2013-0401 */	
+#ifdef CONFIG_RTL_LAYERED_DRIVER_L3			
 		if(rtl8651_getAsicOperationLayer() >2)
 		{
 			rtl865x_addRoute(0,0,0,RTL_DRV_WAN0_NETIF_NAME,0);
 		}
-
+#endif 
+/* End */
 	}
 	return len;
 }

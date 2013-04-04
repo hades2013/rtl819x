@@ -75,8 +75,10 @@ else
 MP_NFJROM = nfjrom
 endif
 
+SUDO=sudo
+
 romfs:
-	rm -rf $(DIR_ROMFS)
+	$(SUDO) rm -rf $(DIR_ROMFS)
 	[ -d $(DIR_ROMFS)/$$i ] || mkdir -p $(DIR_ROMFS)
 	for i in $(DIRS); do \
 		[ -d $(DIR_ROMFS)/$$i ] || mkdir -p $(DIR_ROMFS)/$$i; \

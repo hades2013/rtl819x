@@ -4222,6 +4222,9 @@ static int32 proc_phyReg_write( struct file *filp, const char *buff,unsigned lon
 				printk("error input!\n");
 			}
 		}
+
+/* Modified by Einsn -- 2013-0401 */
+#if 0        
 #ifdef CONFIG_8198_PORT5_RGMII
 		else if (!memcmp(cmd_addr, "8370read", 8))
 		{
@@ -4270,6 +4273,8 @@ static int32 proc_phyReg_write( struct file *filp, const char *buff,unsigned lon
 			}
 		}
 #endif
+#endif 
+/* End */
 		else if (!memcmp(cmd_addr, "extRead", 7))
 		{
 			tokptr = strsep(&strptr," ");
