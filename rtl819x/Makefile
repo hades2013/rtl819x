@@ -169,7 +169,7 @@ linux:
         touch $$CONFIG_INITRAMFS_SOURCE | awk '{print $2}' || exit 1; \
         cd $(DIR_ROOT); \
 	fi
-	$(MAKE) -C $(DIR_LINUX) || exit $$?
+	$(MAKE) -C $(DIR_LINUX) V=0 || exit $$?
 	if [ -f $(DIR_LINUX)/vmlinux ]; then \
         ln -f $(DIR_LINUX)/vmlinux $(DIR_LINUX)/linux ; \
 	fi

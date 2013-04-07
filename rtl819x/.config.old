@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # RLX Linux builder
-# Mon Apr  1 21:22:27 2013
+# Sat Apr  6 17:40:01 2013
 #
 
 #
@@ -26,7 +26,6 @@ CONFIG_MODEL_RTL8198_SPI_SQUASHFS=y
 #
 # CONFIG_MCONF_LINUX is not set
 # CONFIG_MCONF_USERS is not set
-# CONFIG_MCONF_BZBOX is not set
 # CONFIG_MCONF_LOAD is not set
 # CONFIG_MCONF_SAVE is not set
 CONFIG_LINUXDIR=linux-2.6.30
