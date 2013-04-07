@@ -2,7 +2,7 @@
  * Automatically generated C config: don't edit
  * Busybox version: 1.13.4
  */
-#define AUTOCONF_TIMESTAMP "2013-04-01 21:34:42 CST"
+#define AUTOCONF_TIMESTAMP "2013-04-06 17:46:41 CST"
 
 #define CONFIG_HAVE_DOT_CONFIG 1
 #define ENABLE_HAVE_DOT_CONFIG 1
@@ -320,10 +320,10 @@
 #define ENABLE_FEATURE_AR_LONG_FILENAMES 0
 #define USE_FEATURE_AR_LONG_FILENAMES(...)
 #define SKIP_FEATURE_AR_LONG_FILENAMES(...) __VA_ARGS__
-#define CONFIG_BUNZIP2 1
-#define ENABLE_BUNZIP2 1
-#define USE_BUNZIP2(...) __VA_ARGS__
-#define SKIP_BUNZIP2(...)
+#undef CONFIG_BUNZIP2
+#define ENABLE_BUNZIP2 0
+#define USE_BUNZIP2(...)
+#define SKIP_BUNZIP2(...) __VA_ARGS__
 #undef CONFIG_BZIP2
 #define ENABLE_BZIP2 0
 #define USE_BZIP2(...)
@@ -348,14 +348,14 @@
 #define ENABLE_FEATURE_DPKG_DEB_EXTRACT_ONLY 0
 #define USE_FEATURE_DPKG_DEB_EXTRACT_ONLY(...)
 #define SKIP_FEATURE_DPKG_DEB_EXTRACT_ONLY(...) __VA_ARGS__
-#define CONFIG_GUNZIP 1
-#define ENABLE_GUNZIP 1
-#define USE_GUNZIP(...) __VA_ARGS__
-#define SKIP_GUNZIP(...)
-#define CONFIG_GZIP 1
-#define ENABLE_GZIP 1
-#define USE_GZIP(...) __VA_ARGS__
-#define SKIP_GZIP(...)
+#undef CONFIG_GUNZIP
+#define ENABLE_GUNZIP 0
+#define USE_GUNZIP(...)
+#define SKIP_GUNZIP(...) __VA_ARGS__
+#undef CONFIG_GZIP
+#define ENABLE_GZIP 0
+#define USE_GZIP(...)
+#define SKIP_GZIP(...) __VA_ARGS__
 #undef CONFIG_RPM2CPIO
 #define ENABLE_RPM2CPIO 0
 #define USE_RPM2CPIO(...)
@@ -372,10 +372,10 @@
 #define ENABLE_FEATURE_TAR_CREATE 1
 #define USE_FEATURE_TAR_CREATE(...) __VA_ARGS__
 #define SKIP_FEATURE_TAR_CREATE(...)
-#undef CONFIG_FEATURE_TAR_AUTODETECT
-#define ENABLE_FEATURE_TAR_AUTODETECT 0
-#define USE_FEATURE_TAR_AUTODETECT(...)
-#define SKIP_FEATURE_TAR_AUTODETECT(...) __VA_ARGS__
+#define CONFIG_FEATURE_TAR_AUTODETECT 1
+#define ENABLE_FEATURE_TAR_AUTODETECT 1
+#define USE_FEATURE_TAR_AUTODETECT(...) __VA_ARGS__
+#define SKIP_FEATURE_TAR_AUTODETECT(...)
 #define CONFIG_FEATURE_TAR_FROM 1
 #define ENABLE_FEATURE_TAR_FROM 1
 #define USE_FEATURE_TAR_FROM(...) __VA_ARGS__
@@ -440,18 +440,18 @@
 #define ENABLE_CHGRP 0
 #define USE_CHGRP(...)
 #define SKIP_CHGRP(...) __VA_ARGS__
-#define CONFIG_CHMOD 1
-#define ENABLE_CHMOD 1
-#define USE_CHMOD(...) __VA_ARGS__
-#define SKIP_CHMOD(...)
-#define CONFIG_CHOWN 1
-#define ENABLE_CHOWN 1
-#define USE_CHOWN(...) __VA_ARGS__
-#define SKIP_CHOWN(...)
-#define CONFIG_CHROOT 1
-#define ENABLE_CHROOT 1
-#define USE_CHROOT(...) __VA_ARGS__
-#define SKIP_CHROOT(...)
+#undef CONFIG_CHMOD
+#define ENABLE_CHMOD 0
+#define USE_CHMOD(...)
+#define SKIP_CHMOD(...) __VA_ARGS__
+#undef CONFIG_CHOWN
+#define ENABLE_CHOWN 0
+#define USE_CHOWN(...)
+#define SKIP_CHOWN(...) __VA_ARGS__
+#undef CONFIG_CHROOT
+#define ENABLE_CHROOT 0
+#define USE_CHROOT(...)
+#define SKIP_CHROOT(...) __VA_ARGS__
 #undef CONFIG_CKSUM
 #define ENABLE_CKSUM 0
 #define USE_CKSUM(...)
@@ -464,10 +464,10 @@
 #define ENABLE_CP 1
 #define USE_CP(...) __VA_ARGS__
 #define SKIP_CP(...)
-#define CONFIG_CUT 1
-#define ENABLE_CUT 1
-#define USE_CUT(...) __VA_ARGS__
-#define SKIP_CUT(...)
+#undef CONFIG_CUT
+#define ENABLE_CUT 0
+#define USE_CUT(...)
+#define SKIP_CUT(...) __VA_ARGS__
 #define CONFIG_DATE 1
 #define ENABLE_DATE 1
 #define USE_DATE(...) __VA_ARGS__
@@ -548,18 +548,18 @@
 #define ENABLE_EXPR_MATH_SUPPORT_64 0
 #define USE_EXPR_MATH_SUPPORT_64(...)
 #define SKIP_EXPR_MATH_SUPPORT_64(...) __VA_ARGS__
-#define CONFIG_FALSE 1
-#define ENABLE_FALSE 1
-#define USE_FALSE(...) __VA_ARGS__
-#define SKIP_FALSE(...)
+#undef CONFIG_FALSE
+#define ENABLE_FALSE 0
+#define USE_FALSE(...)
+#define SKIP_FALSE(...) __VA_ARGS__
 #undef CONFIG_FOLD
 #define ENABLE_FOLD 0
 #define USE_FOLD(...)
 #define SKIP_FOLD(...) __VA_ARGS__
-#define CONFIG_HEAD 1
-#define ENABLE_HEAD 1
-#define USE_HEAD(...) __VA_ARGS__
-#define SKIP_HEAD(...)
+#undef CONFIG_HEAD
+#define ENABLE_HEAD 0
+#define USE_HEAD(...)
+#define SKIP_HEAD(...) __VA_ARGS__
 #undef CONFIG_FEATURE_FANCY_HEAD
 #define ENABLE_FEATURE_FANCY_HEAD 0
 #define USE_FEATURE_FANCY_HEAD(...)
@@ -764,22 +764,22 @@
 #define ENABLE_TAC 0
 #define USE_TAC(...)
 #define SKIP_TAC(...) __VA_ARGS__
-#define CONFIG_TAIL 1
-#define ENABLE_TAIL 1
-#define USE_TAIL(...) __VA_ARGS__
-#define SKIP_TAIL(...)
-#define CONFIG_FEATURE_FANCY_TAIL 1
-#define ENABLE_FEATURE_FANCY_TAIL 1
-#define USE_FEATURE_FANCY_TAIL(...) __VA_ARGS__
-#define SKIP_FEATURE_FANCY_TAIL(...)
-#define CONFIG_TEE 1
-#define ENABLE_TEE 1
-#define USE_TEE(...) __VA_ARGS__
-#define SKIP_TEE(...)
-#define CONFIG_FEATURE_TEE_USE_BLOCK_IO 1
-#define ENABLE_FEATURE_TEE_USE_BLOCK_IO 1
-#define USE_FEATURE_TEE_USE_BLOCK_IO(...) __VA_ARGS__
-#define SKIP_FEATURE_TEE_USE_BLOCK_IO(...)
+#undef CONFIG_TAIL
+#define ENABLE_TAIL 0
+#define USE_TAIL(...)
+#define SKIP_TAIL(...) __VA_ARGS__
+#undef CONFIG_FEATURE_FANCY_TAIL
+#define ENABLE_FEATURE_FANCY_TAIL 0
+#define USE_FEATURE_FANCY_TAIL(...)
+#define SKIP_FEATURE_FANCY_TAIL(...) __VA_ARGS__
+#undef CONFIG_TEE
+#define ENABLE_TEE 0
+#define USE_TEE(...)
+#define SKIP_TEE(...) __VA_ARGS__
+#undef CONFIG_FEATURE_TEE_USE_BLOCK_IO
+#define ENABLE_FEATURE_TEE_USE_BLOCK_IO 0
+#define USE_FEATURE_TEE_USE_BLOCK_IO(...)
+#define SKIP_FEATURE_TEE_USE_BLOCK_IO(...) __VA_ARGS__
 #undef CONFIG_TEST
 #define ENABLE_TEST 0
 #define USE_TEST(...)
@@ -804,10 +804,10 @@
 #define ENABLE_FEATURE_TR_EQUIV 0
 #define USE_FEATURE_TR_EQUIV(...)
 #define SKIP_FEATURE_TR_EQUIV(...) __VA_ARGS__
-#define CONFIG_TRUE 1
-#define ENABLE_TRUE 1
-#define USE_TRUE(...) __VA_ARGS__
-#define SKIP_TRUE(...)
+#undef CONFIG_TRUE
+#define ENABLE_TRUE 0
+#define USE_TRUE(...)
+#define SKIP_TRUE(...) __VA_ARGS__
 #undef CONFIG_TTY
 #define ENABLE_TTY 0
 #define USE_TTY(...)
@@ -828,10 +828,10 @@
 #define ENABLE_UNIQ 0
 #define USE_UNIQ(...)
 #define SKIP_UNIQ(...) __VA_ARGS__
-#undef CONFIG_USLEEP
-#define ENABLE_USLEEP 0
-#define USE_USLEEP(...)
-#define SKIP_USLEEP(...) __VA_ARGS__
+#define CONFIG_USLEEP 1
+#define ENABLE_USLEEP 1
+#define USE_USLEEP(...) __VA_ARGS__
+#define SKIP_USLEEP(...)
 #undef CONFIG_UUDECODE
 #define ENABLE_UUDECODE 0
 #define USE_UUDECODE(...)
@@ -840,10 +840,10 @@
 #define ENABLE_UUENCODE 0
 #define USE_UUENCODE(...)
 #define SKIP_UUENCODE(...) __VA_ARGS__
-#define CONFIG_WC 1
-#define ENABLE_WC 1
-#define USE_WC(...) __VA_ARGS__
-#define SKIP_WC(...)
+#undef CONFIG_WC
+#define ENABLE_WC 0
+#define USE_WC(...)
+#define SKIP_WC(...) __VA_ARGS__
 #undef CONFIG_FEATURE_WC_LARGE
 #define ENABLE_FEATURE_WC_LARGE 0
 #define USE_FEATURE_WC_LARGE(...)
@@ -2520,14 +2520,14 @@
 #define ENABLE_DHCPD_LEASES_FILE 1
 #define USE_DHCPD_LEASES_FILE(...) __VA_ARGS__
 #define SKIP_DHCPD_LEASES_FILE(...)
-#undef CONFIG_APP_UDHCPC
-#define ENABLE_APP_UDHCPC 0
-#define USE_APP_UDHCPC(...)
-#define SKIP_APP_UDHCPC(...) __VA_ARGS__
-#undef CONFIG_FEATURE_UDHCPC_ARPING
-#define ENABLE_FEATURE_UDHCPC_ARPING 0
-#define USE_FEATURE_UDHCPC_ARPING(...)
-#define SKIP_FEATURE_UDHCPC_ARPING(...) __VA_ARGS__
+#define CONFIG_APP_UDHCPC 1
+#define ENABLE_APP_UDHCPC 1
+#define USE_APP_UDHCPC(...) __VA_ARGS__
+#define SKIP_APP_UDHCPC(...)
+#define CONFIG_FEATURE_UDHCPC_ARPING 1
+#define ENABLE_FEATURE_UDHCPC_ARPING 1
+#define USE_FEATURE_UDHCPC_ARPING(...) __VA_ARGS__
+#define SKIP_FEATURE_UDHCPC_ARPING(...)
 #undef CONFIG_FEATURE_UDHCP_PORT
 #define ENABLE_FEATURE_UDHCP_PORT 0
 #define USE_FEATURE_UDHCP_PORT(...)
@@ -2540,18 +2540,18 @@
 #define ENABLE_FEATURE_UDHCP_RFC3397 0
 #define USE_FEATURE_UDHCP_RFC3397(...)
 #define SKIP_FEATURE_UDHCP_RFC3397(...) __VA_ARGS__
-#define CONFIG_UDHCPC_DEFAULT_SCRIPT ""
+#define CONFIG_UDHCPC_DEFAULT_SCRIPT "/usr/share/udhcpc/default.script"
 #define ENABLE_UDHCPC_DEFAULT_SCRIPT 1
 #define USE_UDHCPC_DEFAULT_SCRIPT(...) __VA_ARGS__
 #define SKIP_UDHCPC_DEFAULT_SCRIPT(...)
-#define CONFIG_UDHCPC_SLACK_FOR_BUGGY_SERVERS 
+#define CONFIG_UDHCPC_SLACK_FOR_BUGGY_SERVERS 80
 #define ENABLE_UDHCPC_SLACK_FOR_BUGGY_SERVERS 1
 #define USE_UDHCPC_SLACK_FOR_BUGGY_SERVERS(...) __VA_ARGS__
 #define SKIP_UDHCPC_SLACK_FOR_BUGGY_SERVERS(...)
-#undef CONFIG_VCONFIG
-#define ENABLE_VCONFIG 0
-#define USE_VCONFIG(...)
-#define SKIP_VCONFIG(...) __VA_ARGS__
+#define CONFIG_VCONFIG 1
+#define ENABLE_VCONFIG 1
+#define USE_VCONFIG(...) __VA_ARGS__
+#define SKIP_VCONFIG(...)
 #define CONFIG_WGET 1
 #define ENABLE_WGET 1
 #define USE_WGET(...) __VA_ARGS__
@@ -2640,10 +2640,10 @@
 /*
  * Process Utilities
  */
-#define CONFIG_FREE 1
-#define ENABLE_FREE 1
-#define USE_FREE(...) __VA_ARGS__
-#define SKIP_FREE(...)
+#undef CONFIG_FREE
+#define ENABLE_FREE 0
+#define USE_FREE(...)
+#define SKIP_FREE(...) __VA_ARGS__
 #undef CONFIG_FUSER
 #define ENABLE_FUSER 0
 #define USE_FUSER(...)
@@ -2700,10 +2700,10 @@
 #define ENABLE_FEATURE_PS_UNUSUAL_SYSTEMS 0
 #define USE_FEATURE_PS_UNUSUAL_SYSTEMS(...)
 #define SKIP_FEATURE_PS_UNUSUAL_SYSTEMS(...) __VA_ARGS__
-#define CONFIG_RENICE 1
-#define ENABLE_RENICE 1
-#define USE_RENICE(...) __VA_ARGS__
-#define SKIP_RENICE(...)
+#undef CONFIG_RENICE
+#define ENABLE_RENICE 0
+#define USE_RENICE(...)
+#define SKIP_RENICE(...) __VA_ARGS__
 #undef CONFIG_BB_SYSCTL
 #define ENABLE_BB_SYSCTL 0
 #define USE_BB_SYSCTL(...)
