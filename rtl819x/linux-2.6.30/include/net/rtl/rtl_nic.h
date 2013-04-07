@@ -18,6 +18,7 @@
 #if defined(CONFIG_NET_WIRELESS_AGN) || defined (CONFIG_RTL8192SE) || defined(CONFIG_RTL8192CD) || defined(CONFIG_RTL8192CD_MODULE)
 #define BR_SHORTCUT	1
 #endif
+
 /*
 *#define	CONFIG_RTL_MULTI_LAN_DEV	1
 */

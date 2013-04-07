@@ -608,6 +608,7 @@ get_next:
 		buf = alloc_rx_buf(&skb, size_of_cluster);
 #endif
 		info->pid=pPkthdr->ph_portlist;
+
 		if (buf) 
 		{
 			info->input = pPkthdr->ph_mbuf->skb;

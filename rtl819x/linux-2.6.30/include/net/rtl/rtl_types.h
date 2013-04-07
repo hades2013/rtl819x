@@ -569,5 +569,9 @@ typedef struct ether_addr_s {
 #define CONFIG_RTL_8198_ESD        1
 #endif 
 
+/* Modified by Einsn for simplify the lan driver 20130407 */
+#define RTL_SIMPLE_LAN 1
+/* End */
+
 #endif 
 

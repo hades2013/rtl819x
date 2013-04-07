@@ -343,7 +343,13 @@ static struct rtl865x_vlanConfig vlanconfig[] = {
 #if defined(CONFIG_RTL_PUBLIC_SSID)
 	{	RTL_GW_WAN_DEVICE_NAME,	 1,   IF_ETHER,	RTL_WANVLANID,	   RTL_WAN_FID,		RTL_WANPORT_MASK,		RTL_WANPORT_MASK,		1500,	{ { 0x00, 0x12, 0x34, 0x56, 0x78, 0x91 } }, 0	},
 #else
-	{	RTL_DRV_WAN0_NETIF_NAME,	 1,   IF_ETHER,	RTL_WANVLANID,		RTL_WAN_FID,	RTL_WANPORT_MASK,		RTL_WANPORT_MASK,		1500,	{ { 0x00, 0x12, 0x34, 0x56, 0x78, 0x91 } }, 0	},
+/* Modified by Einsn for simplify the lan driver 20130407 */
+#ifdef RTL_SIMPLE_LAN
+// remove wan interface
+#else
+{   RTL_DRV_WAN0_NETIF_NAME,     1,   IF_ETHER, RTL_WANVLANID,      RTL_WAN_FID,    RTL_WANPORT_MASK,       RTL_WANPORT_MASK,       1500,   { { 0x00, 0x12, 0x34, 0x56, 0x78, 0x91 } }, 0   },
+#endif
+/* End */
 #endif
 #if defined(CONFIG_RTK_VLAN_SUPPORT)
 	{	RTL_DRV_LAN_P1_NETIF_NAME,	0,   IF_ETHER, 	RTL_LANVLANID,	RTL_LAN_FID, 	RTL_LANPORT_MASK_3, 	RTL_LANPORT_MASK_3,		1500, 	{ { 0x00, 0x12, 0x34, 0x56, 0x78, 0x92 } }, 0	},
@@ -371,7 +377,14 @@ static struct rtl865x_vlanConfig vlanconfig[] = {
 #endif
 #endif
 #endif
-	{	RTL_DRV_PPP_NETIF_NAME, 1,   IF_PPPOE,    	RTL_WANVLANID,		RTL_WAN_FID,    	RTL_WANPORT_MASK,         	RTL_WANPORT_MASK,     	1500, { { 0x00, 0x12, 0x34, 0x56, 0x78, 0x91 } }, 1 },
+
+/* Modified by Einsn for simplify the lan driver 20130407 */
+#ifdef RTL_SIMPLE_LAN
+// remove ppp interface
+#else
+{   RTL_DRV_PPP_NETIF_NAME, 1,   IF_PPPOE,      RTL_WANVLANID,      RTL_WAN_FID,        RTL_WANPORT_MASK,           RTL_WANPORT_MASK,       1500, { { 0x00, 0x12, 0x34, 0x56, 0x78, 0x91 } }, 1 },
+#endif
+/* End */
 	RTL865X_CONFIG_END,
 };
 
@@ -739,7 +752,7 @@ device mapping mainten
 struct rtl865x_vlanConfig * rtl_get_vlanconfig_by_netif_name(const char *name)
 {
 	int i;
-	for(i= 0; vlanconfig[i].vid != 0;i++)
+	for(i= 0; vlanconfig[i].vid != 0;i++)         
 	{
 		if(memcmp(vlanconfig[i].ifname,name,strlen(name)) == 0)
 			return &vlanconfig[i];
@@ -4105,7 +4118,9 @@ static inline int rtl_isHwlookup(struct sk_buff *skb, struct dev_priv *cp, uint3
 	} else
 #endif
 	if (flag==FALSE) {
+#if defined (CONFIG_RTL_MULTI_LAN_DEV) || defined (CONFIG_POCKET_ROUTER_SUPPORT) || defined(CONFIG_RTK_VLAN_SUPPORT)        
 assign_portmask:
+#endif 
 		*portlist = cp->portmask;
 	}
 
@@ -4874,8 +4889,8 @@ static int rtl865x_set_hwaddr(struct net_device *dev, void *addr)
 	vlancfg_entry = rtl_get_vlanconfig_by_netif_name(mapp_entry->drvName);
 	if(vlancfg_entry == NULL)
 		goto out;
-
-	if(vlancfg_entry->vid != 0)
+    
+    if(vlancfg_entry->vid != 0)
 	{
 		rtl865x_netif_t netif;
 		memcpy(vlancfg_entry->mac.octet,dev->dev_addr,ETHER_ADDR_LEN);
@@ -4956,8 +4971,8 @@ static int rtl865x_set_mtu(struct net_device *dev, int new_mtu)
 	vlancfg_entry = rtl_get_vlanconfig_by_netif_name(mapp_entry->drvName);
 	if(vlancfg_entry == NULL)
 		goto out;
-
-	if(vlancfg_entry->vid !=0)
+ 
+    if(vlancfg_entry->vid != 0)
 	{
 		rtl865x_netif_t netif;
 		vlancfg_entry->mtu = new_mtu;
@@ -5021,7 +5036,7 @@ static int rtl865x_addAclForMldSnooping(struct rtl865x_vlanConfig* vlanConfig)
 	pVlanConfig=vlanConfig;
 #endif
 
-	for(i=0; pVlanConfig[i].vid != 0; i++)
+    for(i=0; pVlanConfig[i].vid != 0; i++)
 	{
 		if (IF_ETHER!=pVlanConfig[i].if_type)
 		{
@@ -5116,7 +5131,8 @@ static int rtl865x_removeAclForMldSnooping(struct rtl865x_vlanConfig* vlanConfig
 	pVlanConfig=vlanConfig;
 #endif
 
-	for(i=0; pVlanConfig[i].vid != 0; i++)
+
+    for(i=0; pVlanConfig[i].vid != 0; i++)
 	{
 		if (IF_ETHER!=pVlanConfig[i].if_type)
 		{
@@ -5392,6 +5408,11 @@ int  __init re865x_probe (void)
 		{
 			continue;
 		}
+/* Modified by Einsn 20130407 */
+        if (0 == vlanconfig[i].vid){
+            continue;
+        }    
+/* End */        
 		dev = alloc_etherdev(sizeof(struct dev_priv));
 		if (!dev) {
 			printk("failed to allocate dev %d", i);
@@ -5401,7 +5422,7 @@ int  __init re865x_probe (void)
 		dp = dev->priv;
 		memset(dp,0,sizeof(*dp));
 		dp->dev = dev;
-		dp->id = vlanconfig[i].vid;
+        dp->id = vlanconfig[i].vid;        
 		dp->portmask =  vlanconfig[i].memPort;
 		dp->portnum  = 0;
 		#if defined(CONFIG_RTK_VLAN_SUPPORT)
@@ -5449,7 +5470,9 @@ int  __init re865x_probe (void)
 			_rtl86xx_dev.dev[i]=dev;
 			rtl_add_ps_drv_netif_mapping(dev,vlanconfig[i].ifname);
 			/*2007-12-19*/
-			rtlglue_printf("eth%d added. vid=%d Member port 0x%x...\n", i,vlanconfig[i].vid ,vlanconfig[i].memPort );
+/* Modified by Einsn for simplify the lan driver 20130407 */
+			rtlglue_printf("eth%d added. vid=%d Member port 0x%x...\n", i, dp->id, dp->portmask);                        
+/* End */            
 		}else
 			rtlglue_printf("Failed to allocate eth%d\n", i);
 
@@ -5490,6 +5513,8 @@ int  __init re865x_probe (void)
 	rtl_regist_multipleWan_dev();
 #endif
 
+rtlglue_printf("%s -> line:%d\n", __FUNCTION__, __LINE__);
+
 #if defined (CONFIG_RTL_IGMP_SNOOPING)
 	retVal=rtl_registerIgmpSnoopingModule(&nicIgmpModuleIndex);
 	#if defined (CONFIG_RTL_HARDWARE_MULTICAST)
@@ -5511,6 +5536,8 @@ int  __init re865x_probe (void)
 	#endif
 	rtl_setIpv4UnknownMCastFloodMap(nicIgmpModuleIndex, 0x0);
 	rtl_setIpv6UnknownMCastFloodMap(nicIgmpModuleIndex, 0xFFFFFFFF);
+
+	rtlglue_printf("%s -> line:%d\n", __FUNCTION__, __LINE__);
 
 	curLinkPortMask=rtl865x_getPhysicalPortLinkStatus();
 
@@ -5620,6 +5647,7 @@ int  __init re865x_probe (void)
 	    rtk_vlan_support_entry->write_proc=rtk_vlan_support_write;
 	}
 #endif
+rtlglue_printf("%s -> line:%d\n", __FUNCTION__, __LINE__);
 
 #if defined(CONFIG_819X_PHY_RW)
 //#if defined(CONFIG_RTK_VLAN_FOR_CABLE_MODEM)
@@ -5718,6 +5746,7 @@ int  __init re865x_probe (void)
 	#if defined(TX_TASKLET)
 	rtl_tx_tasklet_running=0;
 	#endif
+	rtlglue_printf("%s -> line:%d\n", __FUNCTION__, __LINE__);
 
 	return 0;
 }
@@ -6046,7 +6075,7 @@ int32 rtl865x_config(struct rtl865x_vlanConfig vlanconfig[])
 	for(i=0; vlanconfig[i].vid != 0; i++)
 	{
 		rtl865x_netif_t netif;
-
+        rtlglue_printf("vlanconfig[i].vid is %d,memPort is %x\n", vlanconfig[i].vid, vlanconfig[i].memPort);
 		if(vlanconfig[i].memPort == 0)
 			continue;
 

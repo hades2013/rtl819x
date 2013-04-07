@@ -362,8 +362,18 @@ typedef struct _rtl865x_AclRule_s
 /************************************
 *	const variable defination
 *************************************/
+
+/* Modified by Einsn for simplify the lan driver 20130407 */
+#ifdef RTL_SIMPLE_LAN
+// set 0 to disable the interface
+#define	RTL_WANVLANID			0
+#define	RTL_LANVLANID			1
+#else
 #define	RTL_WANVLANID			8
 #define	RTL_LANVLANID			9
+#endif
+/* End */
+
 #if defined(CONFIG_RTL_MULTIPLE_WAN)
 #define	RTL_WAN_1_VLANID		369
 #endif
@@ -426,8 +436,15 @@ typedef struct _rtl865x_AclRule_s
         #define RTL_WANPORT_MASK                0x01
         #define RTL_LANPORT_MASK                        0x110 //mark_inic , only port4 connect to MII
 	#else
-	#define	RTL_WANPORT_MASK		0x10
-	#define	RTL_LANPORT_MASK			0x10f
+    /* Modified by Einsn add port5 to lanports 20130407 */
+        #if defined(CONFIG_8198_PORT5_RGMII)
+	    #define	RTL_WANPORT_MASK		0x010        
+	    #define	RTL_LANPORT_MASK			0x12f
+        #else    
+	    #define	RTL_WANPORT_MASK		0x10
+	    #define	RTL_LANPORT_MASK			0x10f
+       #endif 
+    /* End */       
 	#endif
 #else
 	#define	RTL_WANPORT_MASK		0x01
@@ -447,7 +464,15 @@ typedef struct _rtl865x_AclRule_s
 	#define ETH_INTF_NUM	5
 #endif
 #else
-#define ETH_INTF_NUM	2
+
+/* Modified by Einsn for simplify the lan driver 20130407 */
+#ifdef RTL_SIMPLE_LAN
+#define ETH_INTF_NUM	1       
+#else
+#define ETH_INTF_NUM	2      
+#endif
+/* End */
+
 #endif
 
 typedef struct rtl865x_netif_s
