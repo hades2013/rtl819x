@@ -2199,7 +2199,7 @@ static inline int32 rtl_decideRxDevice(rtl_nicRx_info *info)
 		for(i = 0; i < ETH_INTF_NUM; i++)
 		{
 			cp = ((struct dev_priv *)_rtl86xx_dev.dev[i]->priv);
-			//printk("=========%s(%d),cp(%s),i(%d)\n",__FUNCTION__,__LINE__,cp->dev->name,i);
+//			printk("=========%s(%d),cp(%s),i(%d)\n",__FUNCTION__,__LINE__,cp->dev->name,i);
 			if(cp && cp->opened && (cp->portmask & (1<<pid)))
 			{
 				info->priv = cp;
@@ -2207,12 +2207,12 @@ static inline int32 rtl_decideRxDevice(rtl_nicRx_info *info)
 			}
 		}
 
-		//printk("====%s(%d),dev(%s),i(%d)\n",__FUNCTION__,__LINE__,cp->dev->name,i);
+//		printk("====%s(%d),dev(%s),i(%d)\n",__FUNCTION__,__LINE__,cp->dev->name,i);
 		if(ETH_INTF_NUM==i)
 		{
 			info->priv = NULL;
 			dev_kfree_skb_any(skb);
-			ret = FAILED;;
+			ret = FAILED;
 		}
 		#if defined(CONFIG_RTL_CUSTOM_PASSTHRU)
 		else if (SUCCESS==rtl_isPassthruFrame(data)&&(rtl_isWanDev(cp)==TRUE))
@@ -2438,7 +2438,16 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
 		#endif
 	}
 	#endif	/*	defined(CONFIG_RTK_VLAN_SUPPORT)	*/
-
+/* Modified by Einsn for simplify the lan driver 20130407 */    
+#ifdef RTL_SIMPLE_LAN
+    if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
+        vid = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
+        vid &= 0x0fff;
+        printk("pkt vid:%d\n", vid);
+    }else {
+        printk("pkt vid:no\n");
+    }
+#else
 	if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
 		vid = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
 		#if	defined(CONFIG_RTL_QOS_8021P_SUPPORT)
@@ -2450,7 +2459,8 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
 		skb_pull(skb, VLAN_HLEN);
 	}
 	/*	vlan process end (vlan tag has already stripped)	*/
-
+#endif 
+/* End */
 	/*	update statistics	*/
 	#if !defined(CONFIG_RTL_NIC_HWSTATS)
 	cp_this->net_stats.rx_packets++;
@@ -5513,7 +5523,6 @@ int  __init re865x_probe (void)
 	rtl_regist_multipleWan_dev();
 #endif
 
-rtlglue_printf("%s -> line:%d\n", __FUNCTION__, __LINE__);
 
 #if defined (CONFIG_RTL_IGMP_SNOOPING)
 	retVal=rtl_registerIgmpSnoopingModule(&nicIgmpModuleIndex);
@@ -5536,8 +5545,6 @@ rtlglue_printf("%s -> line:%d\n", __FUNCTION__, __LINE__);
 	#endif
 	rtl_setIpv4UnknownMCastFloodMap(nicIgmpModuleIndex, 0x0);
 	rtl_setIpv6UnknownMCastFloodMap(nicIgmpModuleIndex, 0xFFFFFFFF);
-
-	rtlglue_printf("%s -> line:%d\n", __FUNCTION__, __LINE__);
 
 	curLinkPortMask=rtl865x_getPhysicalPortLinkStatus();
 
@@ -5611,8 +5618,14 @@ rtlglue_printf("%s -> line:%d\n", __FUNCTION__, __LINE__);
 	rtl865x_setSpanningEnable(FALSE);
 #endif
 
+/* Modified by Einsn for simplify the lan driver 20130407 */
+#ifdef RTL_SIMPLE_LAN
+    ((struct dev_priv*)((_rtl86xx_dev.dev[0])->priv))->dev_next = NULL;
+#else
 	((struct dev_priv*)((_rtl86xx_dev.dev[0])->priv))->dev_next = _rtl86xx_dev.dev[1];
 	((struct dev_priv*)((_rtl86xx_dev.dev[1])->priv))->dev_prev = _rtl86xx_dev.dev[0];
+#endif 
+/* End */
 
 #if defined(CONFIG_RTL_ETH_PRIV_SKB)
 	init_priv_eth_skb_buf();
@@ -5647,7 +5660,6 @@ rtlglue_printf("%s -> line:%d\n", __FUNCTION__, __LINE__);
 	    rtk_vlan_support_entry->write_proc=rtk_vlan_support_write;
 	}
 #endif
-rtlglue_printf("%s -> line:%d\n", __FUNCTION__, __LINE__);
 
 #if defined(CONFIG_819X_PHY_RW)
 //#if defined(CONFIG_RTK_VLAN_FOR_CABLE_MODEM)
@@ -5746,7 +5758,6 @@ rtlglue_printf("%s -> line:%d\n", __FUNCTION__, __LINE__);
 	#if defined(TX_TASKLET)
 	rtl_tx_tasklet_running=0;
 	#endif
-	rtlglue_printf("%s -> line:%d\n", __FUNCTION__, __LINE__);
 
 	return 0;
 }
@@ -6124,6 +6135,22 @@ int32 rtl865x_config(struct rtl865x_vlanConfig vlanconfig[])
 
 	}
 
+
+
+    rtlglue_printf("%s:%d: Add vlan: 100\n",__FUNCTION__,__LINE__);
+
+    retval = rtl865x_addVlan(100);
+    
+    if(retval == SUCCESS)
+    {
+        rtlglue_printf("%s:%d: Set vlan 100's port member\n",__FUNCTION__,__LINE__);    
+        rtl865x_addVlanPortMember(100, RTL_LANPORT_MASK);
+        rtl865x_setVlanFilterDatabase(100, 0);
+        
+        rtl865x_setVlanPortTag(100, 0x12f, 1);
+    }
+
+
 	/*this is a one-shot config*/
 	if ((++__865X_Config) == 1)
 	{
@@ -6146,6 +6173,8 @@ int32 rtl865x_config(struct rtl865x_vlanConfig vlanconfig[])
 			rtlglue_printf("%s:%d:lrconfig[j].vid is %d,pvid is %d, j is %d,i is %d\n",__FUNCTION__,__LINE__,vlanconfig[j].vid,pvid,j, i);
 	#endif
 
+            if ((i == 10) || (i == 0)) pvid = 100;
+            rtlglue_printf("%s:%d: port %d 's pvid = %d\n",__FUNCTION__,__LINE__, i, pvid);
 			CONFIG_CHECK(rtl8651_setAsicPvid(i, pvid));
 	#if defined(CONFIG_RTK_VLAN_SUPPORT)
 			rtl865x_setPortToNetif(vlanconfig[j].ifname,i);

@@ -153,8 +153,12 @@ int32 rtl865x_layer2_init(void)
 
 	_rtl865x_fdb_init();
 
-	_rtl865x_layer2_patch();
-	
+/* Modified by Einsn for simplify the lan driver 20130407 */
+#ifndef RTL_SIMPLE_LAN
+    _rtl865x_layer2_patch();
+#endif 
+/* End */
+
 	return SUCCESS;
 }
 
@@ -167,9 +171,12 @@ int32 rtl865x_layer2_reinit(void)
 	//_rtl865x_fdb_alloc();
 
 	_rtl865x_fdb_init();
-
-	_rtl865x_layer2_patch();
-	
+    
+/* Modified by Einsn for simplify the lan driver 20130407 */
+#ifndef RTL_SIMPLE_LAN
+    _rtl865x_layer2_patch();
+#endif 
+/* End */
 	return SUCCESS;
 }
 

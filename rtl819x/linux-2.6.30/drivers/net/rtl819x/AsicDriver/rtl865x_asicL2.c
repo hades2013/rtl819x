@@ -4287,7 +4287,11 @@ int32 rtl865x_initAsicL2(rtl8651_tblAsic_InitPara_t *para)
 	/* Enable unknown unicast / multicast packet to be trapped to CPU. */
 //	WRITE_MEM32( FFCR, READ_MEM32( FFCR ) | EN_UNUNICAST_TOCPU );
 	WRITE_MEM32( FFCR, READ_MEM32( FFCR ) & ~EN_UNUNICAST_TOCPU );
+/* Modified by Einsn for simplify the lan driver 20130407 */    
+#ifndef RTL_SIMPLE_LAN
 	WRITE_MEM32( FFCR, READ_MEM32( FFCR ) | EN_UNMCAST_TOCPU );
+#endif 
+/* End */
 /*	WRITE_MEM32(SWTMCR,READ_MEM32(SWTMCR)&~MCAST_TO_CPU);*/
 /*	WRITE_MEM32(SWTMCR,READ_MEM32(SWTMCR)|EN_BCAST);//Enable special broadcast handling*/
 /*	WRITE_MEM32(SWTMCR,READ_MEM32(SWTMCR)&~BCAST_TO_CPU);//When EN_BCAST enables, this bit is invalid*/
