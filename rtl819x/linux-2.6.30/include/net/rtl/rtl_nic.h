@@ -453,12 +453,6 @@ typedef enum{
    EXT_CMD_GET_VLAN,
    EXT_CMD_DEL_VLAN,
 
-/* EOC special */
-   EXT_CMD_SET_CABLE_MASK,
-   EXT_CMD_GET_CABLE_MASK,
-   EXT_CMD_SET_MME_CPUTAG,
-   EXT_CMD_GET_MME_CPUTAG,
-
 /* Port Mirror */
    EXT_CMD_GET_PORT_MIRROR,
    EXT_CMD_SET_PORT_MIRROR,
@@ -474,6 +468,16 @@ typedef enum{
 /* Port pattern */
    EXT_CMD_GET_PORT_PATTERN,
    EXT_CMD_SET_PORT_PATTERN,
+
+/* Modified by Einsn for EOC features 20130409 */
+#ifdef RTL_EOC_SUPPORT
+/* EOC special */
+  EXT_CMD_SET_CABLE_MASK,
+  EXT_CMD_GET_CABLE_MASK,
+  EXT_CMD_SET_MGMT_VLAN,
+  EXT_CMD_GET_MGMT_VLAN,
+#endif
+/* End */
 
    EXT_CMD_NUM 
 }ext_req_cmd_t;
@@ -494,7 +498,7 @@ struct ext_req{
         cmd_mib_counter_t mib_counter;
         cmd_phy_reg_t phy_reg;
         cmd_vlan_t vlan;
-        
+        eoc_mgmt_vlan_t mgmt_vlan;
     }data;
 };
 

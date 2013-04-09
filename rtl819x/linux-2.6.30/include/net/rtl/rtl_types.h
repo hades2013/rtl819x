@@ -582,5 +582,20 @@ typedef struct ether_addr_s {
 /* End */
 
 
+#ifdef RTL_EOC_SUPPORT
+
+enum{
+  VLAN_8021Q = 0,
+  VLAN_TRANSARENT   
+};
+
+typedef struct {
+    uint32 mode; // 0 - 1Q mode, 1 - Transparent mode
+    uint32 vlan;
+    uint32 port_mask;
+}eoc_mgmt_vlan_t;
+
+#endif 
+/* End */
 #endif 
 
