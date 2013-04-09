@@ -37,6 +37,35 @@
 #define MAX_SPI_CS 1
 #endif
 
+/* Modified by Einsn for EOC support 20120409 */
+#define EOC_MTD_PARTITION 1
+/* End */
+
+/* Modified by Einsn for EOC support 20120409 */
+             
+#ifdef EOC_MTD_PARTITION
+#define EOC_ROOTFS0_NAME    "rootfs"
+#define EOC_ROOTFS0_SIZE    0x2B0000 
+#define EOC_ROOTFS0_OFFSET  (CONFIG_RTL_ROOT_IMAGE_OFFSET)
+
+#define EOC_NVRAM0_NAME    "nvram"
+#define EOC_NVRAM0_SIZE    0x20000 
+#define EOC_NVRAM0_OFFSET  (CONFIG_RTL_ROOT_IMAGE_OFFSET + EOC_ROOTFS0_SIZE)
+
+#define EOC_LINUX1_NAME    "linux1"
+#define EOC_LINUX1_SIZE    0x130000 
+#define EOC_LINUX1_OFFSET  (EOC_NVRAM0_OFFSET + EOC_NVRAM0_SIZE)
+
+#define EOC_ROOTFS1_NAME    "rootfs1"
+#define EOC_ROOTFS1_SIZE    0x2B0000 
+#define EOC_ROOTFS1_OFFSET  (EOC_LINUX1_OFFSET + EOC_LINUX1_SIZE)
+
+#define EOC_NVRAM1_NAME    "config"
+#define EOC_NVRAM1_SIZE    0x20000 
+#define EOC_NVRAM1_OFFSET  (EOC_ROOTFS1_OFFSET + EOC_ROOTFS1_SIZE)
+
+#endif 
+/* End */
 
 
 static struct mtd_info *rtl8196_mtd;
@@ -172,6 +201,34 @@ static struct mtd_partition rtl8196_parts1[] = {
                 size:           (CONFIG_RTL_ROOT_IMAGE_OFFSET-0),
                 offset:         0x00000000,
         },
+/* Modified by Einsn for EOC support 20120409 */        
+#ifdef EOC_MTD_PARTITION
+        {
+                name:  EOC_ROOTFS0_NAME,
+                size:  EOC_ROOTFS0_SIZE,
+                offset:  EOC_ROOTFS0_OFFSET,
+        },
+        {
+                name:  EOC_NVRAM0_NAME,
+                size:  EOC_NVRAM0_SIZE,
+                offset:  EOC_NVRAM0_OFFSET,
+        },
+        {
+                name:  EOC_LINUX1_NAME,
+                size:  EOC_LINUX1_SIZE,
+                offset:  EOC_LINUX1_OFFSET,
+        },
+        {
+                name:  EOC_ROOTFS1_NAME,
+                size:  EOC_ROOTFS1_SIZE,
+                offset:  EOC_ROOTFS1_OFFSET,
+        },
+        {
+                name:  EOC_NVRAM1_NAME,
+                size:  EOC_NVRAM1_SIZE,
+                offset:  EOC_NVRAM1_OFFSET,
+        }
+#else /* EOC_MTD_PARTITION */
         {
                 name:           "root fs",  
 #ifdef CONFIG_RTL_TWO_SPI_FLASH_ENABLE
@@ -185,6 +242,8 @@ static struct mtd_partition rtl8196_parts1[] = {
 #endif
                 offset:         (CONFIG_RTL_ROOT_IMAGE_OFFSET),
         }
+#endif /* not EOC_MTD_PARTITION */
+/* End */
 };
 
 #else //!CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE

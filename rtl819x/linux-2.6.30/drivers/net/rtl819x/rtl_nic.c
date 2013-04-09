@@ -2499,6 +2499,7 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
 
 /* Modified by Einsn for simplify the lan driver 20130407 */    
 #ifdef RTL_SIMPLE_LAN
+/* debug messages , to be removed */
     if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
         vid = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
         vid &= 0x0fff;
@@ -6499,7 +6500,7 @@ int32 rtl865x_config(struct rtl865x_vlanConfig vlanconfig[])
 	for(i=0; vlanconfig[i].vid != 0; i++)
 	{
 		rtl865x_netif_t netif;
-        rtlglue_printf("vlanconfig[i].vid is %d,memPort is %x\n", vlanconfig[i].vid, vlanconfig[i].memPort);
+        //rtlglue_printf("vlanconfig[i].vid is %d,memPort is %x\n", vlanconfig[i].vid, vlanconfig[i].memPort);
 		if(vlanconfig[i].memPort == 0)
 			continue;
 
@@ -6548,7 +6549,7 @@ int32 rtl865x_config(struct rtl865x_vlanConfig vlanconfig[])
 
 	}
 
-
+#if 0
     rtl865x_setVlanPortTag(1, 0x12f, 1);
 
 
@@ -6575,7 +6576,7 @@ int32 rtl865x_config(struct rtl865x_vlanConfig vlanconfig[])
     }
         
     rtl8651_setAsicVLAN1QTagIgnore(1);
-
+#endif 
 
 	/*this is a one-shot config*/
 	if ((++__865X_Config) == 1)
@@ -6599,8 +6600,8 @@ int32 rtl865x_config(struct rtl865x_vlanConfig vlanconfig[])
 			rtlglue_printf("%s:%d:lrconfig[j].vid is %d,pvid is %d, j is %d,i is %d\n",__FUNCTION__,__LINE__,vlanconfig[j].vid,pvid,j, i);
 	#endif
 
-            if ((i == 8) || (i == 0)) pvid = 100;
-            rtlglue_printf("%s:%d: port %d 's pvid = %d\n",__FUNCTION__,__LINE__, i, pvid);
+           //for debug, to be removed if ((i == 8) || (i == 0)) pvid = 100;
+            //rtlglue_printf("%s:%d: port %d 's pvid = %d\n",__FUNCTION__,__LINE__, i, pvid);
 			CONFIG_CHECK(rtl8651_setAsicPvid(i, pvid));
 	#if defined(CONFIG_RTK_VLAN_SUPPORT)
 			rtl865x_setPortToNetif(vlanconfig[j].ifname,i);

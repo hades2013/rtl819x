@@ -27,5 +27,23 @@ if [ "$CINIT" = 1 ]; then
 startup.sh
 fi
 
+##For eoc
+mkdir -p /tmp/etc
+mkdir -p /tmp/etc/snmp
+
+echo "Preparing web pages..."
+
+mkdir -p /tmp/www
+if [ -f /www.tar ];then
+echo "Found www.tar"
+tar xf /www.tar -C /tmp/www
+elif [ -f /www.tar.gz ];then
+echo "Found www.tar.gz"
+tar xf /www.tar.gz -C /tmp/www
+fi
+
+
+
+
 # start web server
 #webs&
