@@ -573,5 +573,14 @@ typedef struct ether_addr_s {
 #define RTL_SIMPLE_LAN 1
 /* End */
 
+/* Modified by Einsn for expand ioctl apis 20130407 */
+#define RTL_EXT_IOCTL 1
+/* End */
+
+/* Modified by Einsn for EOC features 20130408 */
+#define RTL_EOC_SUPPORT 1
+/* End */
+
+
 #endif 
 

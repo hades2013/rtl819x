@@ -362,4 +362,45 @@ int32 rtl8651_reset_dscp_priority(void);
 int32 rtl8651_cpu_tx_fc(int enable);
 #endif
 
+/* Modified by Einsn for expand ioctl apis 20130408 */
+#ifdef  RTL_EXT_IOCTL 
+
+#define	MULTICAST_STORM_CONTROL	1
+#define	BROADCAST_STORM_CONTROL	2
+#define	UNICAST_STORM_CONTROL	4
+
+typedef enum{
+   AcceptFrameType_All = 0,
+   AcceptFrameType_TaggedOnly,
+   AcceptFrameType_Untagged,
+   AcceptFrameType_End
+}acceptFrameType_t;
+
+typedef enum{
+   PortSpeed_10M = 0,
+   PortSpeed_100M,
+   PortSpeed_1000M,
+   PortSpeed_End
+}portSpeed_t;
+
+
+int32 rtl8651_setAsicPortStorm(uint32 port, uint32 rate, uint32 type);
+int32 rtl8651_getAsicPortStorm(uint32 port, uint32 *rate, uint32 *type);
+
+int32 rtl8651_setAsicPortAcceptFrameType(uint32 port, uint32 type);
+int32 rtl8651_getAsicPortAcceptFrameType(uint32 port, uint32 *type);
+int32 rtl8651_setAsicVLAN1QTagIgnore(uint32 enable);
+int32 rtl8651_getAsicVLAN1QTagIgnore(uint32 *enable);
+int32 rtl8651_setAsicPortIngressFilter(uint32 port, uint32 enable);
+int32 rtl8651_getAsicPortIngressFilter(uint32 port, uint32 *enable);
+int32 rtl8651_setAsicPortPriority(uint32 port, uint32 priority);
+int32 rtl8651_getAsicPortPriority(uint32 port, uint32 *priority);
+
+int32 rtl8651_getAsicPortLinkStatus(uint32 port, uint32 *linkStatus, uint32 *linkSpeed, uint32 *linkDuplex);
+
+
+
+#endif 
+/* End */
+
 #endif

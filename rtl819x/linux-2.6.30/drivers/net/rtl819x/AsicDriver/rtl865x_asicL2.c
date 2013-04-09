@@ -6624,9 +6624,14 @@ int32 rtl865xC_setAsicEthernetForceModeRegs(uint32 port, uint32 enForceMode, uin
 
 }
 
+/* Modified by Einsn for expand ioctl apis 20130408 */
+#ifdef  RTL_EXT_IOCTL
 
+#else
 #define	MULTICAST_STORM_CONTROL	1
 #define	BROADCAST_STORM_CONTROL	2
+#endif
+/* End */
 #define RTL865XC_MAXALLOWED_BYTECOUNT	30360	/* Used for BSCR in RTL865xC. Means max allowable byte count for 10Mbps port */
 
 static int32 rtl865xC_setBrdcstStormCtrlRate(uint32 percentage)
@@ -6638,7 +6643,7 @@ static int32 rtl865xC_setBrdcstStormCtrlRate(uint32 percentage)
 }
 
 
-static int32 rtl8651_perPortStormControl(uint32 type, uint32 portNum, uint32 enable)
+static int32 rtl8651_perPortStormControl(uint32 type, uint32 portNum, uint32 enable)  
 {
 	uint32 regAddress;
 	uint32 oldRegValue;
@@ -6685,7 +6690,32 @@ static int32 rtl8651_perPortStormControl(uint32 type, uint32 portNum, uint32 ena
 		
 	}
 
-	if((newRegValue & (BCSC_ENMULTICAST |BCSC_ENBROADCAST ))==0)
+/* Modified by Einsn for expand ioctl apis 20130408 */
+#ifdef  RTL_EXT_IOCTL 
+    if((type & UNICAST_STORM_CONTROL) !=0)
+    {
+        if(enable == TRUE)
+        {
+            newRegValue = newRegValue | ENBCSC |BCSC_ENUNKNOWNUNICAST;
+        }
+
+        if(enable==FALSE)
+        {
+            newRegValue = newRegValue & (~BCSC_ENUNKNOWNUNICAST);
+        }
+        
+    }
+#endif 
+/* End */
+
+
+/* Modified by Einsn for expand ioctl apis 20130408 */
+#ifdef  RTL_EXT_IOCTL 
+	if((newRegValue & (BCSC_ENMULTICAST | BCSC_ENBROADCAST | BCSC_ENUNKNOWNUNICAST))==0)
+#else 
+    if((newRegValue & (BCSC_ENMULTICAST | BCSC_ENBROADCAST ))==0)
+#endif 
+/* End */
 	{
 		/*no needn't storm control*/
 		newRegValue = newRegValue & (~ENBCSC);
@@ -7198,3 +7228,216 @@ int rtl8651_getAsicEthernetLinkStatus(uint32 port, int8 *linkUp)
 	return SUCCESS;
 }
 #endif
+
+
+/* Modified by Einsn for expand ioctl apis 20130408 */
+#ifdef  RTL_EXT_IOCTL 
+
+int32 rtl8651_setAsicPortStorm(uint32 port, uint32 rate, uint32 type)
+{
+	int32 ret;
+
+    /* Set Rate */
+    if (READ_MEM32(BSCR) != rate){
+        WRITE_MEM32( BSCR, rate);
+    }
+
+    ret = rtl8651_perPortStormControl(type, port, TRUE);
+    if (ret != SUCCESS){
+        return ret;
+    }
+    ret = rtl8651_perPortStormControl((~type) & 0x7, port, FALSE);
+    return ret;
+}
+
+
+int32 rtl8651_getAsicPortStorm(uint32 port, uint32 *rate, uint32 *type)
+{
+    uint32 regAddress;
+    uint32 regValue;
+    uint32 totalExtPortNum=3;
+    
+    if(port >= RTL8651_PORT_NUMBER + totalExtPortNum)
+    {
+        rtlglue_printf("wrong port number\n");
+        return FAILED;
+    }
+    if ((rate == NULL) || (type == NULL)){
+        rtlglue_printf("Empty parameters\n");        
+        return FAILED;
+    }
+    
+    regAddress=PCRP0 + port * 4;
+
+    regValue = READ_MEM32(regAddress);
+    if ((regValue & ENBCSC) == 0) {
+       *type = 0;  
+    }else {
+       *type = 0;
+        if (regValue & BCSC_ENBROADCAST){
+            *type |= BROADCAST_STORM_CONTROL;
+        }
+        if (regValue & BCSC_ENMULTICAST){
+            *type |= MULTICAST_STORM_CONTROL;
+        }
+        if (regValue & BCSC_ENUNKNOWNUNICAST){
+            *type |= UNICAST_STORM_CONTROL;
+        }
+    }
+
+    return SUCCESS;
+}
+
+int32 rtl8651_setAsicPortAcceptFrameType(uint32 port, uint32 type)
+{
+	uint32 regValue,offset;
+	
+	if(port>=RTL8651_AGGREGATOR_NUMBER || type >= AcceptFrameType_End)
+		return FAILED;
+
+    offset = port * 2 + 9;     
+	regValue=READ_MEM32(VCR0);
+    regValue &= ~(0x03 << offset);
+    regValue |= type << offset;
+
+	WRITE_MEM32(VCR0,regValue);
+	return SUCCESS;
+}
+
+int32 rtl8651_getAsicPortAcceptFrameType(uint32 port, uint32 *type)
+{
+	uint32 regValue,offset;
+	
+	if(port>=RTL8651_AGGREGATOR_NUMBER || type == NULL)
+		return FAILED;
+
+    offset = port * 2 + 9;     
+	regValue=READ_MEM32(VCR0);
+    *type = (regValue >> offset) & 0x03;
+
+	return SUCCESS;
+}
+
+
+
+int32 rtl8651_setAsicVLAN1QTagIgnore(uint32 enable)
+{
+	uint32 regValue;
+
+    if (enable){
+        regValue = READ_MEM32(VCR0) | EN_1QTAGVIDIGNORE;
+    }else {
+        regValue = READ_MEM32(VCR0) & (~EN_1QTAGVIDIGNORE);
+    }
+	WRITE_MEM32(VCR0, regValue);
+    
+	return SUCCESS;
+}
+
+int32 rtl8651_getAsicVLAN1QTagIgnore(uint32 *enable)
+{
+    if (enable == NULL){
+        rtlglue_printf("Empty parameters\n");        
+        return FAILED;
+    }
+
+    *enable = (READ_MEM32(VCR0) & EN_1QTAGVIDIGNORE) ? TRUE : FALSE;
+
+	return SUCCESS;
+}
+
+int32 rtl8651_setAsicPortIngressFilter(uint32 port, uint32 enable)
+{
+	uint32 regValue;
+	if(port>=RTL8651_AGGREGATOR_NUMBER)
+		return FAILED;
+    
+    if (enable){
+        regValue = READ_MEM32(VCR0) | (1 << port);
+    }else {
+        regValue = READ_MEM32(VCR0) & (~(1 << port));
+    }
+	WRITE_MEM32(VCR0, regValue);
+    
+	return SUCCESS;
+}
+
+int32 rtl8651_getAsicPortIngressFilter(uint32 port, uint32 *enable)
+{
+	if(port>=RTL8651_AGGREGATOR_NUMBER || enable == NULL)
+		return FAILED;
+
+    *enable = (READ_MEM32(VCR0) & (1 << port)) ? TRUE : FALSE;
+
+	return SUCCESS;
+}
+
+
+int32 rtl8651_setAsicPortPriority(uint32 port, uint32 priority)
+{
+	uint32 regValue,offset;
+	
+	if(port>=RTL8651_AGGREGATOR_NUMBER || priority>=7)
+		return FAILED;
+	offset=(port*2)&(~0x3);
+	regValue=READ_MEM32(PVCR0+offset);
+	if((port&0x1))
+	{
+		regValue=  ((priority & 0x7) <<28) | (regValue&~0x70000000);
+	}
+	else
+	{	
+	    regValue=  ((priority & 0x7) <<12) | (regValue&~0x00007000);
+	}
+	WRITE_MEM32(PVCR0+offset,regValue);
+	return SUCCESS;
+}
+
+
+int32 rtl8651_getAsicPortPriority(uint32 port, uint32 *priority) 
+{
+	uint16 offset;
+	offset=(port*2)&(~0x3);
+	if(port>=RTL8651_AGGREGATOR_NUMBER || priority == NULL)
+		return FAILED;
+	if((port&0x1))
+	{
+		*priority=(((READ_MEM32(PVCR0+offset)>>28)&0x7));		
+	}
+	else
+	{
+		*priority=(((READ_MEM32(PVCR0+offset)>>12)&0x7));
+	}
+	return SUCCESS;
+}
+
+
+int32 rtl8651_getAsicPortLinkStatus(uint32 port, uint32 *linkStatus, uint32 *linkSpeed, uint32 *linkDuplex) 
+{
+	uint32 regValue;
+
+	if(port>=RTL8651_AGGREGATOR_NUMBER || linkStatus == NULL
+        || linkSpeed == NULL || linkDuplex == NULL)
+		return FAILED;
+
+	regValue=READ_MEM32(PSRP0+(port<<2));
+
+    *linkStatus = (regValue & PortStatusLinkUp) ? TRUE : FALSE;
+    *linkDuplex = (regValue & PortStatusDuplex) ? TRUE : FALSE;
+
+    if (regValue & PortStatusLinkSpeed10M){
+        *linkSpeed = PortSpeed_10M;
+    }else if (regValue & PortStatusLinkSpeed100M){
+        *linkSpeed = PortSpeed_100M;
+    }if (regValue & PortStatusLinkSpeed1000M){
+        *linkSpeed = PortSpeed_1000M;
+    }
+	return SUCCESS;
+}
+
+
+#endif 
+/* End */
+
+
+

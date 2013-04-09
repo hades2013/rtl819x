@@ -1224,7 +1224,10 @@ to forward packet to the unauthorized node. Otherwise, it is not allowed.
 #define MIIcfg_RXER                         (1<<13)     /* MII interface Parameter setup */
 #define GMIIcfg_CRS                         (1<<12)     /* GMII interface Parameter setup */
 #define BCSC_Types_MASK                     (7<<9)     /* Broadcast Storm Control packet type selection */
-//#define BCSC_ENUNKNOWNUNICAST               (1<<11)     /* Enable control for unknown unicast packet */
+
+/* Modified by Einsn enable broadcast control for unknown unicast packets 20130408 */
+#define BCSC_ENUNKNOWNUNICAST               (1<<11)     /* Enable control for unknown unicast packet */
+/* End */
 #define BCSC_ENMULTICAST                    (1<<10)     /* Enable control for multicast packet */
 #define BCSC_ENBROADCAST                    (1<<9)     /* Enable control for broadcast packet */
 #define ENBCSC								(1<<8)		/* Enable broadcast storm control */

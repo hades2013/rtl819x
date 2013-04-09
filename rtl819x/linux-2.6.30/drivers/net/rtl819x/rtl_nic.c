@@ -181,6 +181,12 @@ EXPORT_SYMBOL(wirelessnet_hook);
 #endif
 #endif
 
+/* Modified by Einsn for EOC features 20130408 */
+#ifdef RTL_EOC_SUPPORT
+int eoc_cable_mask = 0;
+EXPORT_SYMBOL(eoc_cable_mask);
+#endif 
+/* End */
 
 #if defined(CONFIG_RTL_REINIT_SWITCH_CORE)
 #define STATE_NO_ERROR 0
@@ -2346,6 +2352,54 @@ static inline void rtl_processRxToProtcolStack(struct sk_buff *skb, struct dev_p
 #endif	/*	defined(RX_TASKLET)	*/
 }
 
+
+
+/* Modified by Einsn for EOC features 20130408 */    
+#ifdef RTL_EOC_SUPPORT 
+
+typedef struct __attribute__((__packed__)) {
+	uint16_t rtl_eth_type;
+	uint8_t protocol;
+	uint8_t reason;
+	uint16_t pritag;
+	union{
+		uint16_t txmask;
+		struct {
+			uint8_t rsvd;
+			uint8_t rxport;
+		};
+	};
+}
+rtk_cpu_tag_t;
+
+
+static struct sk_buff * skb_put_rtk_tag(struct sk_buff *skb, uint32 vlan, uint32 pid)
+{
+    rtk_cpu_tag_t *ptag;
+    
+    if (skb_cow_head(skb, sizeof(rtk_cpu_tag_t)) < 0){
+        return skb;
+    }
+    
+    skb_push(skb, sizeof(rtk_cpu_tag_t));
+    memmove(skb->data, skb->data + sizeof(rtk_cpu_tag_t), (ETH_ALEN<<1));
+    ptag = (rtk_cpu_tag_t*)(skb->data + 12);
+    ptag->rtl_eth_type = htons(0x8899);
+    ptag->protocol = 0;
+    ptag->reason = 0;
+    ptag->pritag = vlan;
+    ptag->rsvd = 0;
+    ptag->rxport = pid;
+    
+    return skb;
+}
+
+#endif 
+
+/* End */
+
+
+
 __MIPS16
 __IRAM_FWD
 static inline void rtl_processRxFrame(rtl_nicRx_info *info)
@@ -2438,6 +2492,7 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
 		#endif
 	}
 	#endif	/*	defined(CONFIG_RTK_VLAN_SUPPORT)	*/
+
 /* Modified by Einsn for simplify the lan driver 20130407 */    
 #ifdef RTL_SIMPLE_LAN
     if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
@@ -2461,6 +2516,38 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
 	/*	vlan process end (vlan tag has already stripped)	*/
 #endif 
 /* End */
+
+/* Modified by Einsn for EOC features 20130408 */    
+#ifdef RTL_EOC_SUPPORT 
+
+/*
+ if mme packets , add cpu tag 
+ if not mme packets, and from cable port, drop it
+*/
+    if (((*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q))
+        && (*((uint16*)(skb->data+(ETH_ALEN<<1) + VLAN_HLEN)) == __constant_htons(0x88E1)))
+        || (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(0x88E1)))
+    {
+        printk("pkt mme\n");
+        // if vlan tag, remove 
+        if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)){
+            memmove(data + VLAN_HLEN, data, VLAN_ETH_ALEN<<1);
+            skb_pull(skb, VLAN_HLEN);        
+        }
+        // add cpu tag
+        skb_put_rtk_tag(skb, info->vid, info->pid);
+    }else {
+        if (eoc_cable_mask && (eoc_cable_mask & (1 << info->pid))){
+            printk("pkt drop\n"); 
+			cp_this->net_stats.rx_dropped++;
+            dev_kfree_skb_any(skb);
+            return;            
+        }
+    }
+#endif 
+/* End */
+
+
 	/*	update statistics	*/
 	#if !defined(CONFIG_RTL_NIC_HWSTATS)
 	cp_this->net_stats.rx_packets++;
@@ -4347,7 +4434,6 @@ int re865x_priv_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
 		 	if (copy_to_user((void *)rq->ifr_data, (void *)&port_stats, sizeof(struct port_statistics)))
 				return -EFAULT;
 		 	break;
-		 	break;
 	     default :
 		 	rc = -EOPNOTSUPP;
 			break;
@@ -4357,6 +4443,276 @@ int re865x_priv_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
 }
 
 #endif
+
+
+/* Modified by Einsn for EOC features 20130408 */            
+#ifdef RTL_EOC_SUPPORT  
+
+/*
+  ports in this mask will be dropped non-mme packets
+*/
+uint32 rtl_setExtCableMask(uint32 mask)
+{
+    eoc_cable_mask = mask;
+    return SUCCESS;
+}
+
+uint32 rtl_getExtCableMask(uint32 *mask)
+{
+    if (mask){
+        *mask = eoc_cable_mask;
+        return SUCCESS;
+    }
+    return FAILED;
+}
+
+#endif 
+/* End */  
+
+
+/* Modified by Einsn for expand ioctl apis 20130407 */
+#ifdef RTL_EXT_IOCTL 
+
+static int rtl865x_do_ext_ioctl(struct ext_req *req)
+{
+    int32 ret;
+    switch(req->cmd)
+    {
+        case EXT_CMD_SET_PORT_FLOWCTRL:
+            ret = rtl8651_setAsicFlowControlRegister(req->data.port_simple.pid, req->data.port_simple.value ? TRUE : FALSE);
+            if (ret == 0){
+                ret = rtl865xC_setAsicPortPauseFlowControl(
+                    req->data.port_simple.pid,
+                    (req->data.port_simple.value & 0x01) ? TRUE : FALSE, 
+                    (req->data.port_simple.value & 0x02) ? TRUE : FALSE);
+            } 
+            break;
+        case EXT_CMD_GET_PORT_FLOWCTRL: 
+            ret = rtl8651_getAsicFlowControlRegister(req->data.port_simple.pid, &req->data.port_simple.value);
+            if ((ret == 0) && req->data.port_simple.value){
+                uint8 rx = 0, tx = 0;
+                ret = rtl865xC_getAsicPortPauseFlowControl(req->data.port_simple.pid, &rx, &tx);
+                req->data.port_simple.value = (rx << 0) | (tx << 1);
+            }
+            break;
+        case EXT_CMD_SET_PORT_MODE: 
+            {
+                cmd_port_mode_t *p = &req->data.port_mode;
+                ret = rtl865xC_setAsicEthernetForceModeRegs(p->pid, p->force_mode, p->force_link, p->force_speed, p->force_duplex);
+                if (ret != SUCCESS) break;
+                ret = rtl8651_setAsicEthernetPHYAdvCapality(p->pid, p->capality);
+                if (ret != SUCCESS) break;
+                ret = rtl8651_setAsicEthernetPHYSpeed( p->pid, p->speed );
+                if (ret != SUCCESS) break;
+                ret = rtl8651_setAsicEthernetPHYDuplex( p->pid, p->duplex );
+                if (ret != SUCCESS) break;
+                ret = rtl8651_setAsicEthernetPHYAutoNeg( p->pid, p->autoneg);
+                if (ret != SUCCESS) break;
+            }
+            break;/*
+        case EXT_CMD_GET_PORT_MODE:
+            {
+                cmd_port_mode_t *p = &req->data.port_mode;
+                ret = rtl865xC_getAsicEthernetForceModeRegs(p->pid, &p->force_mode, &p->force_link, &p->force_speed, &p->force_duplex);
+                if (ret != SUCCESS) break;
+                ret = rtl8651_getAsicEthernetPHYAdvCapality(p->pid, &p->capality);
+                if (ret != SUCCESS) break;
+                ret = rtl8651_getAsicEthernetPHYSpeed(p->pid, &p->speed);
+                if (ret != SUCCESS) break;
+                ret = rtl8651_getAsicEthernetPHYDuplex(p->pid, &p->duplex);
+                if (ret != SUCCESS) break;
+                ret = rtl8651_getAsicEthernetPHYAutoNeg(p->pid, &p->autoneg);
+                if (ret != SUCCESS) break;
+            }
+            break;    */        
+        case EXT_CMD_SET_PORT_ENABLE: 
+            ret = rtl8651_setAsicEthernetPHYPowerDown(req->data.port_simple.pid, req->data.port_simple.value ? FALSE : TRUE);
+            break;
+            /*
+        case EXT_CMD_GET_PORT_ENABLE: 
+            ret = rtl8651_getAsicEthernetPHYPowerDown(req->data.port_simple.pid, &req->data.port_simple.value);
+            req->data.port_simple.value = req->data.port_simple.value ? 0 : 1;
+            break;  */          
+        case EXT_CMD_SET_PORT_RATELIMIT:             
+            ret = rtl8651_setAsicPortIngressBandwidth(req->data.port_rate.pid, req->data.port_rate.ingress_rate);
+            if (ret != SUCCESS) break;
+            ret = rtl8651_setAsicPortEgressBandwidth(req->data.port_rate.pid, req->data.port_rate.egress_rate);        
+            break;    
+        case EXT_CMD_GET_PORT_RATELIMIT: 
+            ret = rtl8651_getAsicPortIngressBandwidth(req->data.port_rate.pid, &req->data.port_rate.ingress_rate);
+            if (ret != SUCCESS) break;
+            ret = rtl8651_getAsicPortEgressBandwidth(req->data.port_rate.pid, &req->data.port_rate.egress_rate);         
+            break;
+        case EXT_CMD_RESET_MIB_COUNTER:          
+            ret = rtl8651_resetAsicMIBCounter(req->data.mib_counter.pid, req->data.mib_counter.reset_in, req->data.mib_counter.reset_out);
+            break;
+        case EXT_CMD_GET_MIB_COUNTER:
+            ret = rtl8651_getAdvancedMIBCounter(req->data.mib_counter.pid,
+                ASIC_IN_COUNTERS | ASIC_OUT_COUNTERS | ASIC_WHOLE_SYSTEM_COUNTERS,
+                (rtl865x_tblAsicDrv_advancedCounterParam_t *)&req->data.mib_counter.counters);
+            break;
+        case EXT_CMD_GET_PORT_LINK_STATUS:
+            ret = rtl8651_getAsicPortLinkStatus(req->data.port_status.pid, 
+                &req->data.port_status.link,
+                &req->data.port_status.speed,
+                &req->data.port_status.duplex
+                );
+            break; 
+
+        case EXT_CMD_SET_PORT_FRAME_TYPE: 
+            ret = rtl8651_setAsicPortAcceptFrameType(req->data.port_simple.pid, req->data.port_simple.value);
+            break;
+        case EXT_CMD_GET_PORT_FRAME_TYPE: 
+            ret = rtl8651_getAsicPortAcceptFrameType(req->data.port_simple.pid, &req->data.port_simple.value);
+            break;            
+        case EXT_CMD_SET_PORT_INGRESS_FILTER: 
+            ret = rtl8651_setAsicPortIngressFilter(req->data.port_simple.pid, req->data.port_simple.value);
+            break;               
+        case EXT_CMD_GET_PORT_INGRESS_FILTER:
+            ret = rtl8651_getAsicPortIngressFilter(req->data.port_simple.pid, &req->data.port_simple.value);
+            break;               
+        case EXT_CMD_SET_VLAN_TAG_IGNORE: 
+            ret = rtl8651_setAsicVLAN1QTagIgnore(req->data.value);
+            break;
+        case EXT_CMD_GET_VLAN_TAG_IGNORE:
+            ret = rtl8651_getAsicVLAN1QTagIgnore(&req->data.value);
+            break;   
+/* Modified by Einsn for EOC features 20130408 */            
+#ifdef RTL_EOC_SUPPORT            
+        case EXT_CMD_SET_CABLE_MASK: 
+            ret = rtl_setExtCableMask(req->data.value);
+            break;
+        case EXT_CMD_GET_CABLE_MASK: 
+            ret = rtl_getExtCableMask(&req->data.value);
+            break;  
+#if 0            
+        case EXT_CMD_SET_MME_CPUTAG: 
+            ret = rtl_setExtMmeCpuTagEnable(req->data.value);
+            break;            
+        case EXT_CMD_GET_MME_CPUTAG:
+            ret = rtl_getExtMmeCpuTagEnable(&req->data.value);
+            break; 
+#endif 
+#endif 
+/* End */            
+        case  EXT_CMD_SET_PVID: 
+            ret = rtl8651_setAsicPvid(req->data.port_simple.pid, req->data.port_simple.value);
+            break;
+        case  EXT_CMD_GET_PVID: 
+            ret = rtl8651_getAsicPVlanId(req->data.port_simple.pid, &req->data.port_simple.value);            
+            break;
+        case  EXT_CMD_SET_PORT_PRIOPRITY: 
+            ret = rtl8651_setAsicPortPriority(req->data.port_simple.pid, req->data.port_simple.value);
+            break;            
+        case  EXT_CMD_GET_PORT_PRIOPRITY:  
+            ret = rtl8651_getAsicPortPriority(req->data.port_simple.pid, &req->data.port_simple.value);
+            break;                
+        case EXT_CMD_SET_VLAN:
+            {
+                rtl865x_tblAsicDrv_vlanParam_t vlanParam;
+                vlanParam.memberPortMask = req->data.vlan.port_mask;
+                vlanParam.untagPortMask = req->data.vlan.untag_mask;
+                vlanParam.fid= req->data.vlan.fid;
+                ret = rtl8651_setAsicVlan(req->data.vlan.vid, &vlanParam);
+            }
+            break;
+        case EXT_CMD_GET_VLAN:            
+            {
+                rtl865x_tblAsicDrv_vlanParam_t vlanParam;
+                ret = rtl8651_getAsicVlan(req->data.vlan.vid, &vlanParam);
+                req->data.vlan.port_mask = vlanParam.memberPortMask;
+                req->data.vlan.untag_mask = vlanParam.untagPortMask;
+                req->data.vlan.fid = vlanParam.fid;                
+            }
+            break;    
+        case EXT_CMD_DEL_VLAN:            
+            ret = rtl8651_delAsicVlan(req->data.vlan.vid);            
+            break;                
+        case EXT_CMD_GET_PORT_MIRROR:
+            ret = rtl8651_getAsicPortMirror(&req->data.port_mirror.rx_mask, &req->data.port_mirror.tx_mask, &req->data.port_mirror.dest_mask);
+            break;
+        case EXT_CMD_SET_PORT_MIRROR:
+            ret = rtl8651_setAsicPortMirror(req->data.port_mirror.rx_mask, req->data.port_mirror.tx_mask, req->data.port_mirror.dest_mask);
+            break;
+        case EXT_CMD_GET_PORT_STORM:
+            {
+                uint32 value = 0;
+                ret = rtl8651_getAsicPortStorm(req->data.port_storm.pid, &req->data.port_storm.rate, &value);
+                req->data.port_storm.broadcast = (value & BROADCAST_STORM_CONTROL) ? 1 : 0;
+                req->data.port_storm.multicast = (value & MULTICAST_STORM_CONTROL) ? 1 : 0;
+                req->data.port_storm.unicast = (value & UNICAST_STORM_CONTROL) ? 1 : 0;
+            }
+            break;
+        case EXT_CMD_SET_PORT_STORM:
+            {
+                uint32 value = 0;
+                if (req->data.port_storm.broadcast){
+                    value |= BROADCAST_STORM_CONTROL;
+                }
+                if (req->data.port_storm.multicast){
+                    value |= MULTICAST_STORM_CONTROL;
+                }
+                if (req->data.port_storm.unicast){
+                    value |= UNICAST_STORM_CONTROL;
+                }                
+                ret = rtl8651_setAsicPortStorm(req->data.port_storm.pid, req->data.port_storm.rate, value);
+            }
+
+            break;
+            case EXT_CMD_GET_PHY_REG:
+                ret = rtl8651_getAsicEthernetPHYReg(req->data.phy_reg.phy, req->data.phy_reg.reg, &req->data.phy_reg.data);
+                break;
+            case EXT_CMD_SET_PHY_REG:
+                ret = rtl8651_setAsicEthernetPHYReg(req->data.phy_reg.phy, req->data.phy_reg.reg, req->data.phy_reg.data);
+                break;
+            case EXT_CMD_GET_PORT_PATTERN:
+                ret = rtl8651_getAsicPortPatternMatch(req->data.port_pattern.pid, &req->data.port_pattern.pattern, &req->data.port_pattern.pattern_mask, &req->data.port_pattern.operation);
+                break;
+            case EXT_CMD_SET_PORT_PATTERN:
+                ret = rtl8651_setAsicPortPatternMatch(req->data.port_pattern.pid, req->data.port_pattern.pattern, req->data.port_pattern.pattern_mask, req->data.port_pattern.operation);
+                break;
+
+        default:
+           return -EOPNOTSUPP; 
+    }
+    
+    req->ret = ret;
+    return 0;
+}
+
+
+static int rtl865x_ext_ioctl (struct net_device *dev, struct ifreq *rq, int cmd)
+{
+	int32 rc = 0;
+    struct ext_req req;
+
+	if (copy_from_user(&req, (void *)rq->ifr_data, sizeof(struct ext_req)))
+	{
+        printk("copy_from_user err\n");	
+		return -EFAULT;
+	}
+
+    if(SIOCEXTPRIVATE != cmd){
+        return -EOPNOTSUPP;
+    }
+
+    rc = rtl865x_do_ext_ioctl(&req);
+
+    if (copy_to_user((void *)rq->ifr_data, &req, sizeof(struct ext_req)))
+    {
+        printk("copy_to_user err\n");
+        return -EFAULT;
+    }
+    
+	return rc;
+}
+#endif 
+/* End */
+
+
+
+
+
 int re865x_ioctl (struct net_device *dev, struct ifreq *rq, int cmd)
 {
 	int32 rc = 0;
@@ -4367,6 +4723,14 @@ int re865x_ioctl (struct net_device *dev, struct ifreq *rq, int cmd)
 	uint32	*pU32;
 	#endif
 
+/* Modified by Einsn for expand ioctl apis 20130407 */
+#ifdef RTL_EXT_IOCTL    
+    if (cmd == SIOCEXTPRIVATE){
+        rc = rtl865x_ext_ioctl(dev, rq, cmd);
+        return rc;
+    }else 
+#endif 
+/* End */
 	if (cmd != SIOCDEVPRIVATE)
 	{
 		#if defined(RTL819X_PRIV_IOCTL_ENABLE)
@@ -7713,8 +8077,16 @@ static void __exit rtl8651_customPassthru_exit(void)
 		res = NULL;
 	}
 }
+
+/* Modified by Einsn for expand ioctl apis 20130408 */
+#ifdef  RTL_EXT_IOCTL 
+
+#else
 #define	MULTICAST_STORM_CONTROL	1
 #define	BROADCAST_STORM_CONTROL	2
+#endif 
+/* End */
+
 
 static struct proc_dir_entry *stormCtrlProc=NULL;
 static int rtl865x_stormCtrlReadProc(char *page, char **start, off_t off,
