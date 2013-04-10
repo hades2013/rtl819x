@@ -369,6 +369,22 @@ echo "/dev/mtdblock1 b 666 root root  31  1" >> squashfs-pf-list.txt
 echo "/dev/mtdblock2 b 666 root root  31  2" >> squashfs-pf-list.txt
 echo "/dev/mtdblock3 b 666 root root  31  3" >> squashfs-pf-list.txt
 
+#DEVICES for EOC Paritition
+echo "/dev/mtdblock4 b 666 root root  31  4" >> squashfs-pf-list.txt
+echo "/dev/mtdblock5 b 666 root root  31  5" >> squashfs-pf-list.txt
+echo "/dev/mtdblock6 b 666 root root  31  6" >> squashfs-pf-list.txt
+echo "/dev/mtdblock7 b 666 root root  31  7" >> squashfs-pf-list.txt
+echo "/dev/mtd0 c 666 root root  90  0" >> squashfs-pf-list.txt
+echo "/dev/mtd1 c 666 root root  90  2" >> squashfs-pf-list.txt
+echo "/dev/mtd2 c 666 root root  90  4" >> squashfs-pf-list.txt
+echo "/dev/mtd3 c 666 root root  90  6" >> squashfs-pf-list.txt
+echo "/dev/mtd4 c 666 root root  90  8" >> squashfs-pf-list.txt
+echo "/dev/mtd5 c 666 root root  90  10" >> squashfs-pf-list.txt
+echo "/dev/mtd6 c 666 root root  90  12" >> squashfs-pf-list.txt
+echo "/dev/mtd7 c 666 root root  90  14" >> squashfs-pf-list.txt
+#End 
+
+
 if [ "$GW_VPN" = 1  ];then
 #DEVICES="$DEVICES  random,c,1,8"
 echo "/dev/random    c 666 root root   1  8" >> squashfs-pf-list.txt

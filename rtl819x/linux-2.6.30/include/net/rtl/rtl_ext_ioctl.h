@@ -1,7 +1,7 @@
 #ifndef	__RTL_EXT_IOCTL_H__
 #define	__RTL_EXT_IOCTL_H__
 
-#include <rtl_types.h>
+#include "rtl_types.h"
 
 /* Modified by Einsn for expand ioctl apis 20130407 */
 #ifdef RTL_EXT_IOCTL
