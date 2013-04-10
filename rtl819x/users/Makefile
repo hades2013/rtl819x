@@ -189,6 +189,9 @@ ifdef CONFIG_RTL_802_1X_CLIENT_SUPPORT
 lib_$(CONFIG_APP_OPENSSL)		+= openssl-0.9.8b
 endif
 
+# LSW-API for eoc application, added by Einsn - 20130410
+lib_$(CONFIG_APP_LSWAPI)			+= lsw-api
+
 lib:
 ifneq ($(lib_y),)
 	$(MAKE) $(sort $(lib_y)) || exit $$?

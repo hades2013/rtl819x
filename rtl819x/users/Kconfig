@@ -422,4 +422,12 @@ config APP_DLNA_DMS
 	bool "dlna_dms"
 	help
 	 ushare daemon
+	 
+comment "lan switch api"
+
+config APP_LSWAPI
+	bool "lsw-api"
+	help
+	  LSW-API is used to set switch vlan, interfaces and other features for eoc application.
+	  Added by Einsn - 20130410	 
 #############################################################################

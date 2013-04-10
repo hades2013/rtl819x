@@ -1,32 +1,45 @@
 
+#CC		= mips-uclibc-gcc
+#STRIP		= mips-uclibc-strip
+
+COPT		= -Os 
+CFLAGS		= ${COPT} 
+ifeq ($(CONFIG_RSDK_rsdk-1.5.0-4181-EB-2.6.30-0.9.30.2),y)
+CFLAGS 		+= -mips16
+endif
+ifeq ($(CONFIG_RSDK_rsdk-1.5.0-4181-EB-2.6.30-0.9.30.3),y)
+CFLAGS 		+= -mips16
+endif
+LDFLAGS		=
+
 LINUXDIR=$(shell pwd)/../../linux-2.6.30
 
-CROSS_COMPILE=mips-linux-
+CFLAGS += $(EXTRA_CFLAGS)
+CFLAGS += -I. -Wall 
+CFLAGS += -I$(LINUXDIR)/include
+CFLAGS += -I$(LINUXDIR)/include/net/rtl
 
-CC=$(CROSS_COMPILE)gcc
-AR=$(CROSS_COMPILE)ar
+LIBSWAPI=libswapi.a 
+APPTEST=test
 
-T=libswapi.a test
 
-OBJS=lsw_api.o
+all: $(LIBSWAPI) $(APPTEST)
 
-CFLAGS=-Wall -Os 
-CFLAGS+= -I$(LINUXDIR)/include
-CFLAGS+= -I$(LINUXDIR)/include/net/rtl
 
-all:$T
-
-$T:$(OBJS)
+$(LIBSWAPI):lsw_api.o
 	$(AR) -r $@ $<
 
-test:$T test.o
-	$(CC) $(CFLAGS) -o $@ $<
-
+$(APPTEST):$(LIBSWAPI) test.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test.o $(LIBSWAPI) 
 
 %.o:%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -rf *.o $T
+	rm -f *.o $(LIBSWAPI) $(APPTEST)
 
 .PHONY=clean all
+
+#romfs:
+#	$(ROMFSINST) reload /bin/reload
+
