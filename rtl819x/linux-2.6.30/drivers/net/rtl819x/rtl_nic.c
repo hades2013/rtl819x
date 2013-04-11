@@ -2499,14 +2499,14 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
 
 /* Modified by Einsn for simplify the lan driver 20130407 */    
 #ifdef RTL_SIMPLE_LAN
-/* debug messages , to be removed */
+/* debug messages , to be removed 
     if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
         vid = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
         vid &= 0x0fff;
         printk("pkt vid:%d\n", vid);
     }else {
         printk("pkt vid:no\n");
-    }
+    }*/
 #else
 	if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
 		vid = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
@@ -2533,7 +2533,7 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
         && (*((uint16*)(skb->data+(ETH_ALEN<<1) + VLAN_HLEN)) == __constant_htons(0x88E1)))
         || (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(0x88E1)))
     {
-        printk("pkt mme\n");
+       // printk("pkt mme\n");
         // if vlan tag, remove 
         if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)){
             memmove(data + VLAN_HLEN, data, VLAN_ETH_ALEN<<1);
@@ -2543,7 +2543,7 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
         skb_put_rtk_tag(skb, info->vid, info->pid);
     }else {
         if (eoc_cable_mask && (eoc_cable_mask & (1 << info->pid))){
-            printk("pkt drop by cable mask\n"); 
+//            printk("pkt drop by cable mask\n"); 
 			cp_this->net_stats.rx_dropped++;
             dev_kfree_skb_any(skb);
             return;            
@@ -2567,7 +2567,7 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
         }        
         if ((from_mgmt && (tag_vlan != 0) && (tag_vlan != eoc_mgmt_vlan.vlan))
             || (!from_mgmt && (tag_vlan != eoc_mgmt_vlan.vlan))){
-            printk("pkt drop by mgmt vlan\n");             
+            //printk("pkt drop by mgmt vlan\n");             
 			cp_this->net_stats.rx_dropped++;
             dev_kfree_skb_any(skb);
             return;              
@@ -4525,12 +4525,28 @@ int32 rtl_getExtMgmtVlan(eoc_mgmt_vlan_t *mgmt)
 /* Modified by Einsn for expand ioctl apis 20130407 */
 #ifdef RTL_EXT_IOCTL 
 
+
+#if defined(CONFIG_8198_PORT5_RGMII)
+
+void init_port5_rgmii(void)
+{
+  //REG32(PITCR) = REG32(PITCR) & 0xFFFFF3FF; //configure port 5 to be a MII interface
+  //rtl865xC_setAsicEthernetMIIMode(5, LINK_RGMII); //port 5  GMII/MII MAC auto mode
+
+    REG32(P5GMIICR) = REG32(P5GMIICR) | Conf_done;
+    REG32(PCRP5) = 0 | (0x5<<ExtPHYID_OFFSET) |      //JSW@20100309:For external 8211BN GMII ,PHYID must be 5
+                        EnForceMode| ForceLink|ForceSpeed1000M |ForceDuplex |
+                    MIIcfg_RXER | EnablePHYIf | MacSwReset;
+}                
+#endif
+
 static int rtl865x_do_ext_ioctl(struct ext_req *req)
 {
     int32 ret;
     switch(req->cmd)
     {
         case EXT_CMD_SET_PORT_FLOWCTRL:
+            printk("port flowctrl: port %d value:%02x\n", req->data.port_simple.pid, req->data.port_simple.value);
             ret = rtl8651_setAsicFlowControlRegister(req->data.port_simple.pid, req->data.port_simple.value ? TRUE : FALSE);
             if (ret == 0){
                 ret = rtl865xC_setAsicPortPauseFlowControl(
@@ -4550,14 +4566,22 @@ static int rtl865x_do_ext_ioctl(struct ext_req *req)
         case EXT_CMD_SET_PORT_MODE: 
             {
                 cmd_port_mode_t *p = &req->data.port_mode;
+                printk("port mode: port %d force:%d, link:%d, speed:%d, duplex:%d\n", p->pid, p->force_mode, p->force_link, p->force_speed, p->force_duplex);
+            
                 ret = rtl865xC_setAsicEthernetForceModeRegs(p->pid, p->force_mode, p->force_link, p->force_speed, p->force_duplex);
                 if (ret != SUCCESS) break;
+
+                printk("port mode: port %d capality:%08X\n", p->pid, p->capality);
+                
                 ret = rtl8651_setAsicEthernetPHYAdvCapality(p->pid, p->capality);
                 if (ret != SUCCESS) break;
+                printk("port mode: port %d speed:%d\n", p->pid, p->speed);                
                 ret = rtl8651_setAsicEthernetPHYSpeed( p->pid, p->speed );
                 if (ret != SUCCESS) break;
+                printk("port mode: port %d duplex:%d\n", p->pid, p->duplex);                  
                 ret = rtl8651_setAsicEthernetPHYDuplex( p->pid, p->duplex );
                 if (ret != SUCCESS) break;
+                printk("port mode: port %d auto:%d\n", p->pid, p->autoneg);                
                 ret = rtl8651_setAsicEthernetPHYAutoNeg( p->pid, p->autoneg);
                 if (ret != SUCCESS) break;
             }
@@ -4578,16 +4602,25 @@ static int rtl865x_do_ext_ioctl(struct ext_req *req)
             }
             break;    */        
         case EXT_CMD_SET_PORT_ENABLE: 
+            printk("port enable: port %d value:%d\n", req->data.port_simple.pid, req->data.port_simple.value); 
             ret = rtl8651_setAsicEthernetPHYPowerDown(req->data.port_simple.pid, req->data.port_simple.value ? FALSE : TRUE);
+            #if defined(CONFIG_8198_PORT5_RGMII)
+            if ((req->data.port_simple.pid == 5) && req->data.port_simple.value){
+                // fixed port5 can not be  up again when being down
+                init_port5_rgmii();
+            }            
+            #endif 
             break;
             /*
         case EXT_CMD_GET_PORT_ENABLE: 
             ret = rtl8651_getAsicEthernetPHYPowerDown(req->data.port_simple.pid, &req->data.port_simple.value);
             req->data.port_simple.value = req->data.port_simple.value ? 0 : 1;
             break;  */          
-        case EXT_CMD_SET_PORT_RATELIMIT:             
+        case EXT_CMD_SET_PORT_RATELIMIT:  
+              printk("port ratelimit: port %d in:%d\n",req->data.port_rate.pid, req->data.port_rate.ingress_rate);   
             ret = rtl8651_setAsicPortIngressBandwidth(req->data.port_rate.pid, req->data.port_rate.ingress_rate);
             if (ret != SUCCESS) break;
+             printk("port ratelimit: port %d out:%d\n",req->data.port_rate.pid, req->data.port_rate.egress_rate); 
             ret = rtl8651_setAsicPortEgressBandwidth(req->data.port_rate.pid, req->data.port_rate.egress_rate);        
             break;    
         case EXT_CMD_GET_PORT_RATELIMIT: 
@@ -4651,7 +4684,7 @@ static int rtl865x_do_ext_ioctl(struct ext_req *req)
         case  EXT_CMD_GET_PVID: 
             ret = rtl8651_getAsicPVlanId(req->data.port_simple.pid, &req->data.port_simple.value);            
             break;
-        case  EXT_CMD_SET_PORT_PRIOPRITY: 
+        case  EXT_CMD_SET_PORT_PRIOPRITY:             
             ret = rtl8651_setAsicPortPriority(req->data.port_simple.pid, req->data.port_simple.value);
             break;            
         case  EXT_CMD_GET_PORT_PRIOPRITY:  
@@ -4704,7 +4737,8 @@ static int rtl865x_do_ext_ioctl(struct ext_req *req)
                 }
                 if (req->data.port_storm.unicast){
                     value |= UNICAST_STORM_CONTROL;
-                }                
+                } 
+                printk("port storm: port:%d, rate:%d, b:%d m:%d, u:%d\n",req->data.port_storm.pid, req->data.port_storm.rate, req->data.port_storm.broadcast, req->data.port_storm.multicast, req->data.port_storm.unicast);                 
                 ret = rtl8651_setAsicPortStorm(req->data.port_storm.pid, req->data.port_storm.rate, value);
             }
 

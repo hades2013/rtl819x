@@ -4,12 +4,26 @@
 #include <stdint.h>
 
 
-/* speed & duplex */
+#ifndef PORT_SPEED_10M
+#define PORT_SPEED_10M 0
+#endif 
+
+#ifndef PORT_SPEED_100M
+#define PORT_SPEED_100M 1
+#endif 
+
+#ifndef PORT_SPEED_1000M
+#define PORT_SPEED_1000M 2
+#endif 
+
+/* speed & duplex 
 enum{
     PORT_SPEED_10M = 0,
     PORT_SPEED_100M = 1,
     PORT_SPEED_1000M = 2,    
 };        
+*/
+
 
 enum{
     PORT_DUPLEX_HALF = 0,

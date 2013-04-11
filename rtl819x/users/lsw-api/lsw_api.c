@@ -56,10 +56,10 @@ int rtl8198_set_port_flowctrl(uint32_t port, uint32_t rx, uint32_t tx)
     req.data.port_simple.pid = port;
     
     if (rx){
-        req.data.value |= (1 << 0);
+        req.data.port_simple.value |= (1 << 0);
     }
     if (tx){
-        req.data.value |= (1 << 1);
+        req.data.port_simple.value |= (1 << 1);
     }
 
     ret = rtl8198_ext_ioctl(local_ifname, &req);    
@@ -80,10 +80,10 @@ int rtl8198_get_port_flowctrl(uint32_t port, uint32_t *rx, uint32_t *tx)
     DBG_ASSERT((!ret && !req.ret), "ret: %d, req.ret:%d", ret, req.ret);    
 
     if (rx){
-        *rx = (req.data.value & 0x01) ? 1 : 0;
+        *rx = (req.data.port_simple.value & 0x01) ? 1 : 0;
     }
     if (tx){
-        *tx = (req.data.value & 0x02) ? 1 : 0;
+        *tx = (req.data.port_simple.value & 0x02) ? 1 : 0;
     }    
     return (ret == 0) ? req.ret : ret;   
 }  
@@ -184,9 +184,9 @@ int rtl8198_set_port_rate_limit(uint32_t port, uint32_t ingress_rate, uint32_t e
     /* egress_rate unit 64Kbps  3FFF disable */    
     req.data.port_rate.ingress_rate = ingress_rate / 16;
     if (egress_rate == 0){
-       req.data.port_rate.ingress_rate = 0x3fff;   
+       req.data.port_rate.egress_rate = 0x3fff;   
     }else {
-       req.data.port_rate.ingress_rate = egress_rate / 64; 
+       req.data.port_rate.egress_rate = egress_rate / 64; 
     }    
     ret = rtl8198_ext_ioctl(local_ifname, &req); 
     DBG_ASSERT((!ret && !req.ret), "ret: %d, req.ret:%d", ret, req.ret);

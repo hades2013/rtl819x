@@ -7308,7 +7308,7 @@ int32 rtl8651_getAsicPortAcceptFrameType(uint32 port, uint32 *type)
 {
 	uint32 regValue,offset;
 	
-	if(port>=RTL8651_AGGREGATOR_NUMBER || type == NULL)
+	if(port >= RTL8651_AGGREGATOR_NUMBER || type == NULL)
 		return FAILED;
 
     offset = port * 2 + 9;     
@@ -7349,7 +7349,7 @@ int32 rtl8651_getAsicVLAN1QTagIgnore(uint32 *enable)
 int32 rtl8651_setAsicPortIngressFilter(uint32 port, uint32 enable)
 {
 	uint32 regValue;
-	if(port>=RTL8651_AGGREGATOR_NUMBER)
+	if(port >= RTL8651_AGGREGATOR_NUMBER)
 		return FAILED;
     
     if (enable){
@@ -7364,7 +7364,7 @@ int32 rtl8651_setAsicPortIngressFilter(uint32 port, uint32 enable)
 
 int32 rtl8651_getAsicPortIngressFilter(uint32 port, uint32 *enable)
 {
-	if(port>=RTL8651_AGGREGATOR_NUMBER || enable == NULL)
+	if(port >= RTL8651_AGGREGATOR_NUMBER || enable == NULL)
 		return FAILED;
 
     *enable = (READ_MEM32(VCR0) & (1 << port)) ? TRUE : FALSE;
@@ -7377,7 +7377,7 @@ int32 rtl8651_setAsicPortPriority(uint32 port, uint32 priority)
 {
 	uint32 regValue,offset;
 	
-	if(port>=RTL8651_AGGREGATOR_NUMBER || priority>=7)
+	if(port >= RTL8651_AGGREGATOR_NUMBER || priority > 7)
 		return FAILED;
 	offset=(port*2)&(~0x3);
 	regValue=READ_MEM32(PVCR0+offset);
