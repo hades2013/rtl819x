@@ -2548,36 +2548,37 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
             dev_kfree_skb_any(skb);
             return;            
         }
-    }
-
 /* 
   in transparent mode, 
      if pkts from mgmt ports and not vlan tag in pkt or vlan tag = mvlan, remove tag if exist, submit to kernel, otherwise drop.
      if pkts from non-mgmt ports and with vlan tag = mvlan, remove its tag and submit to kernel, otherwise drop. 
 */
-    if (eoc_mgmt_vlan.mode == VLAN_TRANSARENT){
-        int tag_vlan = 0;
-        int from_mgmt = 0;
-        if (eoc_mgmt_vlan.port_mask & (1 << info->pid)){
-            from_mgmt = 1;
-        }
-        if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
-            tag_vlan = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
-            tag_vlan &= 0x0fff;
-        }        
-        if ((from_mgmt && (tag_vlan != 0) && (tag_vlan != eoc_mgmt_vlan.vlan))
-            || (!from_mgmt && (tag_vlan != eoc_mgmt_vlan.vlan))){
-            //printk("pkt drop by mgmt vlan\n");             
-			cp_this->net_stats.rx_dropped++;
-            dev_kfree_skb_any(skb);
-            return;              
-        }
-        // if has tag , remove it.
-        if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)){
-            memmove(data + VLAN_HLEN, data, VLAN_ETH_ALEN<<1);
-            skb_pull(skb, VLAN_HLEN);        
-        }        
+        if (eoc_mgmt_vlan.mode == VLAN_TRANSARENT){
+            int tag_vlan = 0;
+            int from_mgmt = 0;
+            if (eoc_mgmt_vlan.port_mask & (1 << info->pid)){
+                from_mgmt = 1;
+            }
+            if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
+                tag_vlan = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
+                tag_vlan &= 0x0fff;
+            }        
+            if ((from_mgmt && (tag_vlan != 0) && (tag_vlan != eoc_mgmt_vlan.vlan))
+                || (!from_mgmt && (tag_vlan != eoc_mgmt_vlan.vlan))){
+                //printk("pkt drop by mgmt vlan\n");             
+    			cp_this->net_stats.rx_dropped++;
+                dev_kfree_skb_any(skb);
+                return;              
+            }
+            // if has tag , remove it.
+            if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)){
+                memmove(data + VLAN_HLEN, data, VLAN_ETH_ALEN<<1);
+                skb_pull(skb, VLAN_HLEN);        
+            }        
+        }      
+    
     }
+
 #endif 
 /* End */
 
