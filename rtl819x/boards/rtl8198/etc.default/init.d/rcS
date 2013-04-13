@@ -46,7 +46,7 @@ fi
 
 
 if [ -x /usr/sbin/master ];then
-#master
+master
 fi
 
 # start web server
