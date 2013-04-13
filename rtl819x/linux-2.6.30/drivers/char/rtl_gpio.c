@@ -802,9 +802,13 @@ static void rtl_gpio_timer(unsigned long data)
 				//reload default
 				default_flag = '1';
 
+                /* Modified by Einsn for WDT and Factory default functions  20120412 */
+                /* don't return */
+                #ifndef CONFIG_HEXICOM_ECM201A  
 				//kernel_thread(reset_flash_default, (void *)1, SIGCHLD);
 				return;
-
+                #endif 
+                /* End */
 			}
 			else
 			{
