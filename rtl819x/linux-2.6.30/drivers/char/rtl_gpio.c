@@ -50,7 +50,14 @@
 #include <linux/kmod.h>
 #include <linux/proc_fs.h>
 //#include  "bspchip.h"
+
+#define CONFIG_HEXICOM_ECM201A
+
+/* Modified by Einsn for WDT and Factory default functions  20120412 */
+#ifndef CONFIG_HEXICOM_ECM201A
 #define AUTO_CONFIG
+#endif 
+/* End */
 
 // 2009-0414
 //#define	DET_WPS_SPEC
@@ -65,6 +72,12 @@
 	#define READ_RF_SWITCH_GPIO
 #endif
 #endif
+
+/* Modified by Einsn for WDT and Factory default functions  20120412 */
+#ifdef CONFIG_HEXICOM_ECM201A
+#undef READ_RF_SWITCH_GPIO
+#endif 
+/* End */
 
 #if defined(CONFIG_RTL_8196C) || defined(CONFIG_RTL_8198)
 	#include "drivers/net/rtl819x/AsicDriver/rtl865xc_asicregs.h"
@@ -295,8 +308,41 @@
 		#define RTL_GPIO_MUX_DATA 0x00340000
 	#else 
 		#define RTL_GPIO_MUX_DATA 0x00340C00//for WIFI ON/OFF and GPIO
+		/* Einsn
+		 MUX:
+		   31:16 - RSVD
+		   15 - RSVD
+		   14 - SPI 0
+		   13:12 - CS1 00
+                11:10 - P5MII 00 TXD RXD
+                9:8 - P5MII 00 GMII..
+                7:6 - PCIE_RST
+                5 - UART
+                4:3 - JTAG
+                2:1 - GPIOH 00- RSVD 11 GPIO
+		 */
 	#endif 
 	#define RTL_GPIO_WIFI_ONOFF     19
+
+/* Modified by Einsn for WDT and Factory default functions  20120412 */
+#ifdef CONFIG_HEXICOM_ECM201A
+    #define RTL_GPIO_MUX1 0xB8000044
+    #define RTL_GPIO_MUX1_DATA  (3 << 13) | (3 << 16) // SET LED_P0 LED_P1 as GPIO  mode
+
+    // GPIO C0
+	#define WDTEN_PIN_IOBASE PABCD_CNR
+	#define WDTEN_PIN_DIRBASE PABCD_DIR
+	#define WDTEN_PIN_DATABASE PABCD_DAT
+	#define WDTEN_PIN_NO 16 /*number of the ABCD*/    
+
+    // GPIO C1
+	#define WDTI_PIN_IOBASE PABCD_CNR
+	#define WDTI_PIN_DIRBASE PABCD_DIR
+	#define WDTI_PIN_DATABASE PABCD_DAT
+	#define WDTI_PIN_NO 17 /*number of the ABCD*/       
+    
+#endif 
+/* End */
 
 #if defined(CONFIG_RTL_8196C)	 
 	#if  defined(CONFIG_RTL_8196CS)
@@ -536,6 +582,127 @@ void autoconfig_gpio_slow_blink(void)
 
 
 
+/* Modified by Einsn for WDT and Factory default functions  20120412 */
+#ifdef CONFIG_HEXICOM_ECM201A    
+
+#define SYNC_EXPIRES_SEC   (5)
+#define WDT_EXPIRES_SEC    (60 * 5)
+#define WDT_LONG_EXPIRES_SEC    (60 * 20)
+
+#define WDT_TIME  (HZ/6)
+
+static unsigned long wdt_expires = 0;
+//static unsigned long sync_expires = 0;
+static unsigned long stop_feed = 0;
+static unsigned long wdt_en = 0;
+
+void wdt_on(void)
+{
+    stop_feed = 0;
+    wdt_expires = jiffies + (WDT_EXPIRES_SEC * HZ); 
+    wdt_en = 1;   
+	RTL_W32(WDTEN_PIN_DATABASE, (RTL_R32(WDTEN_PIN_DATABASE) & (~(1 << WDTEN_PIN_NO))));  
+}
+
+void wdt_off(void)
+{
+    stop_feed = 0;
+    wdt_en = 0;   
+	RTL_W32(WDTEN_PIN_DATABASE, (RTL_R32(WDTEN_PIN_DATABASE) | (1 << WDTEN_PIN_NO)));    
+}
+
+void wdt_feed(void)
+{
+    static int flag = 0;
+    if (!stop_feed && wdt_en){
+       if (flag){
+           RTL_W32(WDTI_PIN_DATABASE, (RTL_R32(WDTI_PIN_DATABASE) | ((1 << WDTI_PIN_NO)))); 
+       } else {
+           RTL_W32(WDTI_PIN_DATABASE, (RTL_R32(WDTI_PIN_DATABASE) & (~(1 << WDTI_PIN_NO))));          
+       } 
+       flag = !flag;
+    }    
+}
+
+EXPORT_SYMBOL(wdt_feed);
+
+
+void wdt_on_timer(void)
+{
+    if (!(stop_feed & 0x02) && time_before(wdt_expires, jiffies)){
+        printk("WDT sync lost, stop feeding HW WDT\n");                        
+        stop_feed = 0x03;       
+    }
+    wdt_feed();
+}
+
+
+static int wdt_read_proc(char *page, char **start, off_t off,
+				int count, int *eof, void *data)
+{
+	int len;
+    unsigned long sec, diff;
+    sec = jiffies;
+    diff = (sec < wdt_expires) ? (wdt_expires - sec) : (0xffffffffUL - sec + wdt_expires);
+        
+    len = sprintf(page, 
+        " [s] sync wdt\n"
+        " [e] enable wdt\n"
+        " [d] disable wdt\n"
+        " [q] stop feeding\n"        
+        "WDT:%s, Expires:%ld\n", wdt_en ? "on" : "off", wdt_en ? (diff/HZ) : 0);
+
+	if (len <= off+count) *eof = 1;
+	*start = page + off;
+	len -= off;
+	if (len > count) len = count;
+	if (len < 0) len = 0;
+	return len;
+}
+
+
+#ifdef CONFIG_RTL_KERNEL_MIPS16_CHAR
+__NOMIPS16
+#endif 
+static int wdt_write_proc(struct file *file, const char *buffer,
+				unsigned long count, void *data)
+{
+	char flag[20];
+
+	DPRINTK("file: %08x, buffer: %s, count: %lu, data: %08x\n",
+		(unsigned int)file, buffer, count, (unsigned int)data);
+
+	if (count < 2)
+		return -EFAULT;
+    
+	if (buffer && copy_from_user(flag, buffer, 1)) {
+		return -EINVAL;
+	}
+
+    flag[count] = 0;
+
+    if (flag[0] == 's'){
+        //sync_expires = jiffies + (SYNC_EXPIRES_SEC * HZ);
+        wdt_expires = jiffies + (WDT_EXPIRES_SEC * HZ);          
+    }else if (flag[0] == 'e'){
+        wdt_on();
+    }else  if (flag[0] == 'd'){
+        wdt_off();
+    }else if (flag[0] == 'q'){        
+        stop_feed = 1;
+    }else {
+		return -EFAULT;
+    }
+    return count;
+}
+
+
+#endif 
+/* End */
+
+
+
+
 
 static void rtl_gpio_timer(unsigned long data)
 {
@@ -547,6 +714,13 @@ static void rtl_gpio_timer(unsigned long data)
 	update_pcie_status();
 #endif
 #if  defined(CONFIG_RTL_8196C) || defined(CONFIG_RTL_8198)
+
+/* Modified by Einsn for WDT and Factory default functions  20120412 */
+#ifdef CONFIG_HEXICOM_ECM201A 
+    wdt_on_timer();
+#endif 
+/* End */
+
 
 	if ((RTL_R32(RESET_PIN_DATABASE) & (1 << RESET_BTN_PIN)))
 
@@ -563,13 +737,16 @@ static void rtl_gpio_timer(unsigned long data)
 	{
 		DPRINTK("Key pressed %d!\n", probe_counter+1);
 	}
-
+    
+/* Modified by Einsn 20120412 */
+#ifdef AUTO_CONFIG
 	if (RTL_R32(AUTOCFG_PIN_DATABASE) & (1 << AUTOCFG_BTN_PIN)){
 		wps_button_push = 0;
 	}else{
 		wps_button_push++;
 	}
-
+#endif 
+/* End  */
 	if (probe_state == PROBE_NULL)
 	{
 		if (pressed)
@@ -679,8 +856,11 @@ static void rtl_gpio_timer(unsigned long data)
 	}
 #endif
 
-
-	mod_timer(&probe_timer, jiffies + HZ);
+/* Modified by Einsn for WDT and Factory default functions  20120412 */
+#ifdef CONFIG_HEXICOM_ECM201A    
+   mod_timer(&probe_timer, jiffies + WDT_TIME);
+#endif 
+/* End */
 
 }
 
@@ -1191,7 +1371,15 @@ int __init rtl_gpio_init(void)
 	RTL_W32(RTL_GPIO_MUX, (RTL_R32(RTL_GPIO_MUX) | (RTL_GPIO_MUX_DATA)));
 #endif	
 #if defined(CONFIG_RTL_8198)
+    /* Set JTAG Port as GPIO */
+    /* Set GPIOH as GPIO */
 	RTL_W32(RTL_GPIO_MUX, (RTL_R32(RTL_GPIO_MUX) | 0xf));
+
+/* Modified by Einsn for WDT and Factory default functions  20120412 */
+#ifdef CONFIG_HEXICOM_ECM201A
+    RTL_W32(RTL_GPIO_MUX1, (RTL_R32(RTL_GPIO_MUX1) | RTL_GPIO_MUX1_DATA));
+#endif 
+/* End */
 #endif
 #if defined(CONFIG_RTL_8196CS)
 extern int PCIE_reset_procedure(int PCIE_Port0and1_8196B_208pin, int Use_External_PCIE_CLK, int mdio_reset,unsigned long conf_addr);
@@ -1358,13 +1546,40 @@ extern int PCIE_reset_procedure(int PCIE_Port0and1_8196B_208pin, int Use_Externa
 	mod_timer(&pocket_ap_timer, jiffies + HZ);
 #endif
 
+/* Modified by Einsn for WDT and Factory default functions  20120412 */
+#ifdef CONFIG_HEXICOM_ECM201A
+	RTL_W32(WDTEN_PIN_IOBASE, (RTL_R32(WDTEN_PIN_IOBASE) | (~(1 << WDTEN_PIN_NO))));
+	RTL_W32(WDTI_PIN_IOBASE, (RTL_R32(WDTI_PIN_IOBASE) | (~(1 << WDTI_PIN_NO))));
+
+    // set as output
+	RTL_W32(WDTEN_PIN_DIRBASE, (RTL_R32(WDTEN_PIN_DIRBASE) | ((1 << WDTEN_PIN_NO))));
+    RTL_W32(WDTI_PIN_DIRBASE, (RTL_R32(WDTI_PIN_DIRBASE) | ((1 << WDTI_PIN_NO))));
+
+    wdt_on();
+    
+	res = create_proc_entry("gpio_wdt", 0, NULL);
+	if (res) {
+		res->read_proc = wdt_read_proc;
+		res->write_proc = wdt_write_proc;
+	}
+	else {
+		printk("Realtek GPIO Driver, create proc failed!\n");
+	}
+#endif 
+/* End */
+
 	init_timer(&probe_timer);
 	probe_counter = 0;
 	probe_state = PROBE_NULL;
 	probe_timer.expires = jiffies + HZ;
 	probe_timer.data = (unsigned long)NULL;
 	probe_timer.function = &rtl_gpio_timer;
-	mod_timer(&probe_timer, jiffies + HZ);
+
+/* Modified by Einsn for WDT and Factory default functions  20120412 */
+#ifdef CONFIG_HEXICOM_ECM201A    
+	mod_timer(&probe_timer, jiffies + WDT_TIME);
+#endif 
+/* End */
 
 #ifdef CONFIG_RTL865X_CMO
 	extra_led_gpio_init();

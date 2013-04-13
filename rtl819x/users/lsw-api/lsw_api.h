@@ -46,14 +46,14 @@ enum
 
 
 typedef struct {
-    uint32 force_mode;
-    uint32 force_link;
-    uint32 force_speed;
-    uint32 force_duplex;
-    uint32 capality;
-    uint32 autoneg;
-    uint32 speed;
-    uint32 duplex;
+    uint32_t force_mode;
+    uint32_t force_link;
+    uint32_t force_speed;
+    uint32_t force_duplex;
+    uint32_t capality;
+    uint32_t autoneg;
+    uint32_t speed;
+    uint32_t duplex;
 }rtl8198_port_mode_t;
 
 

@@ -2709,6 +2709,11 @@ static int32 interrupt_dsr_rx(unsigned long task_priv)
 			default:
 				break;
 		}
+/* Modified by Einsn, when full speed packets flood into cpu port, wdt reset 20130413 */        
+#ifdef CONFIG_HEXICOM_ECM201A
+        wdt_feed();   
+#endif 
+/* End */
 	}
 
 rx_out:
@@ -4617,10 +4622,12 @@ static int rtl865x_do_ext_ioctl(struct ext_req *req)
             req->data.port_simple.value = req->data.port_simple.value ? 0 : 1;
             break;  */          
         case EXT_CMD_SET_PORT_RATELIMIT:  
-              printk("port ratelimit: port %d in:%d\n",req->data.port_rate.pid, req->data.port_rate.ingress_rate);   
-            ret = rtl8651_setAsicPortIngressBandwidth(req->data.port_rate.pid, req->data.port_rate.ingress_rate);
-            if (ret != SUCCESS) break;
-             printk("port ratelimit: port %d out:%d\n",req->data.port_rate.pid, req->data.port_rate.egress_rate); 
+            printk("port ratelimit: port %d in:%d\n",req->data.port_rate.pid, req->data.port_rate.ingress_rate);   
+            if (req->data.port_rate.pid != CPU){ // cpu port don't have ingress Rate Limit. 
+                ret = rtl8651_setAsicPortIngressBandwidth(req->data.port_rate.pid, req->data.port_rate.ingress_rate);
+                if (ret != SUCCESS) break;                
+            }
+            printk("port ratelimit: port %d out:%d\n",req->data.port_rate.pid, req->data.port_rate.egress_rate); 
             ret = rtl8651_setAsicPortEgressBandwidth(req->data.port_rate.pid, req->data.port_rate.egress_rate);        
             break;    
         case EXT_CMD_GET_PORT_RATELIMIT: 
@@ -5855,6 +5862,15 @@ int  __init re865x_probe (void)
 
 	igmpInitFlag=rtl_initMulticastSnooping(mCastSnoopingGlobalConfig);
 #endif
+
+/* Modified by Einsn for EOC features 20130408 */
+#ifdef RTL_EOC_SUPPORT
+/*set rate limit to 40Mbps, 640 * 64  */
+    rtl8651_setAsicPortEgressBandwidth(CPU, (40960 / 64));
+#endif
+/* End */
+
+
 
 	for(i=0;i<totalVlans;i++)
 	{

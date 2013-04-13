@@ -569,6 +569,10 @@ typedef struct ether_addr_s {
 #define CONFIG_RTL_8198_ESD        1
 #endif 
 
+
+/* Modified by Einsn for ECM201A 20130413 */
+#ifdef CONFIG_HEXICOM_ECM201A
+
 /* Modified by Einsn for simplify the lan driver 20130407 */
 #define RTL_SIMPLE_LAN 1
 /* End */
@@ -581,7 +585,10 @@ typedef struct ether_addr_s {
 #define RTL_EOC_SUPPORT 1
 /* End */
 
+#endif 
+/* End */
 
+/* Modified by Einsn for EOC features 20130408 */
 #ifdef RTL_EOC_SUPPORT
 
 enum{

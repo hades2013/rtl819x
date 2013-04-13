@@ -73,7 +73,8 @@ echo "/dev/ttyp1     c 666 root root   3  1" >> squashfs-pf-list.txt
 echo "/dev/urandom   c 666 root root   1  9" >> squashfs-pf-list.txt
 echo "/dev/ptmx      c 666 root tty    5  2" >> squashfs-pf-list.txt
 
-if [ "$USE_SAMBA" = 1 ]; then
+#if [ "$USE_SAMBA" = 1 ]; then
+if [ "$USE_SAMBA" = N ]; then
 #DEVICES="$DEVICES   zero,c,1,5     random,c,1,8       urandom,c,1,9
 #        sda,b,8,0 sda1,b,8,1 sda2,b,8,2 sda3,b,8,3 sda4,b,8,4
 #        sda5,b,8,5 sda6,b,8,6 sda7,b,8,7
@@ -382,6 +383,13 @@ echo "/dev/mtd4 c 666 root root  90  8" >> squashfs-pf-list.txt
 echo "/dev/mtd5 c 666 root root  90  10" >> squashfs-pf-list.txt
 echo "/dev/mtd6 c 666 root root  90  12" >> squashfs-pf-list.txt
 echo "/dev/mtd7 c 666 root root  90  14" >> squashfs-pf-list.txt
+echo "/dev/zero      c 666 root root   1  5" >> squashfs-pf-list.txt
+echo "/dev/random    c 666 root root   1  8" >> squashfs-pf-list.txt
+echo "/dev/urandom   c 666 root root   1  9" >> squashfs-pf-list.txt
+echo "/dev/tty0   c 666 root root   4  0" >> squashfs-pf-list.txt
+echo "/dev/tty1   c 666 root root   4  1" >> squashfs-pf-list.txt
+echo "/dev/tty   c 666 root root   5  0" >> squashfs-pf-list.txt
+echo "/dev/rtc0   c 666 root root   254  0" >> squashfs-pf-list.txt
 #End 
 
 

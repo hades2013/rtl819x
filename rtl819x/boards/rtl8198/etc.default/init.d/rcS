@@ -4,10 +4,11 @@ ifconfig lo 127.0.0.1
 
 CINIT=1
 
-hostname ecm201a
+#hostname ecm201a
 
 mount -t proc proc /proc
 mount -t ramfs ramfs /var
+mount -t devpts devpts /dev/pts
 
 mkdir /var/tmp
 mkdir /var/web
@@ -45,7 +46,7 @@ fi
 
 
 if [ -x /usr/sbin/master ];then
-master
+#master
 fi
 
 # start web server

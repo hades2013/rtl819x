@@ -400,6 +400,12 @@ config RTL_REINIT_SWITCH_CORE
 	bool
 	default y
 	depends on RTL_8196C
+
+config HEXICOM_ECM201A
+	bool "Support Hexicom ECM201A EOC switch functions"
+	default n
+	depends on RTL_819X
+
 endif #RTL_819X_SWCORE
 #endmenu
 #============================= End of Kconfig ===============================#
