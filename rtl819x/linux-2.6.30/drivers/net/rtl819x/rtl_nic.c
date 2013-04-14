@@ -2499,14 +2499,15 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
 
 /* Modified by Einsn for simplify the lan driver 20130407 */    
 #ifdef RTL_SIMPLE_LAN
-/* debug messages , to be removed 
+ /*debug messages , to be removed
     if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
         vid = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
         vid &= 0x0fff;
-        printk("pkt vid:%d\n", vid);
+        printk("pkt vid:%d, tag:%d\n", info->vid, vid);
     }else {
-        printk("pkt vid:no\n");
-    }*/
+        printk("pkt vid:%d, tag:no\n", info->vid);
+    }
+     */
 #else
 	if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
 		vid = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
@@ -2556,6 +2557,7 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
         if (eoc_mgmt_vlan.mode == VLAN_TRANSARENT){
             int tag_vlan = 0;
             int from_mgmt = 0;
+            int vlan_matched = 0;
             if (eoc_mgmt_vlan.port_mask & (1 << info->pid)){
                 from_mgmt = 1;
             }
@@ -2563,14 +2565,20 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
                 tag_vlan = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
                 tag_vlan &= 0x0fff;
             }        
-            if ((from_mgmt && (tag_vlan != 0) && (tag_vlan != eoc_mgmt_vlan.vlan))
-                || (!from_mgmt && (tag_vlan != eoc_mgmt_vlan.vlan))){
-                //printk("pkt drop by mgmt vlan\n");             
+            /* mgmt vlan = 1, tag_vlan should be 0 or 1 , otherwise, tag_vlan should be mvlan */
+            if (((eoc_mgmt_vlan.vlan == 1) && (tag_vlan == 0)) || (eoc_mgmt_vlan.vlan == tag_vlan)){
+                vlan_matched = 1;
+            }
+            /* if from mgmt tag_vlan = 0 or vlan_matched should be true, otherwise , vlan_matched should be true */
+            if ((from_mgmt && (tag_vlan != 0) && !vlan_matched) 
+                 || (!from_mgmt && !vlan_matched)){
+//                printk("pkt drop by mgmt vlan\n");             
     			cp_this->net_stats.rx_dropped++;
                 dev_kfree_skb_any(skb);
                 return;              
             }
-            // if has tag , remove it.
+
+            /*  if has tag , remove it. */
             if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)){
                 memmove(data + VLAN_HLEN, data, VLAN_ETH_ALEN<<1);
                 skb_pull(skb, VLAN_HLEN);        
@@ -4269,7 +4277,12 @@ static inline int rtl_fill_txInfo(rtl_nicTx_info *txInfo)
 	struct sk_buff *skb = txInfo->out_skb;
 	struct dev_priv *cp;
 	cp = skb->dev->priv;
+    
+#ifdef RTL_EOC_SUPPORT
+    txInfo->vid = eoc_mgmt_vlan.vlan;
+#else
 	txInfo->vid = cp->id;
+#endif /* End */
 
 	#if	defined(CONFIG_RTL_HW_QOS_SUPPORT)
 	txInfo->priority= rtl_qosGetPriorityByVid(cp->id, skb->mark);
@@ -4277,7 +4290,12 @@ static inline int rtl_fill_txInfo(rtl_nicTx_info *txInfo)
 
 	//default output queue is 0
 	txInfo->txIdx = 0;
-
+    
+#ifdef RTL_EOC_SUPPORT
+    portlist = cp->portmask;
+    txInfo->portlist = cp->portmask;
+    rtl_hwLookup_txInfo(txInfo);
+#else 
 	if((skb->data[0]&0x01)==0)
 	{
 		if(rtl_isHwlookup(skb, cp, &portlist) == TRUE)
@@ -4302,8 +4320,9 @@ static inline int rtl_fill_txInfo(rtl_nicTx_info *txInfo)
 			re865x_setMCastTxInfo(skb,cp->dev, txInfo);
 		}
 #endif
-
 	}
+#endif /* not  RTL_EOC_SUPPORT */
+/* End */    
 	if(txInfo->portlist==0)
 	{
 		dev_kfree_skb_any(skb);

@@ -609,7 +609,7 @@ get_next:
 #endif
 		info->pid=pPkthdr->ph_portlist;
 
-      //  printk("rx: pid:%d, vid:%d\n", info->pid, info->vid);
+//        printk("rx: pid:%d, vid:%d\n", info->pid, info->vid);
 
 		if (buf) 
 		{
