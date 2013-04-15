@@ -153,6 +153,10 @@ typedef struct {
 	uint16		portlist;
 	uint16		srcExtPort;
 	uint16		flags;
+/* Modified by Einsn for EOC features 20130415 */    
+#ifdef RTL_EOC_SUPPORT    
+    uint16      addtagports;     
+#endif /* End */
 	uint32		txIdx:1;
 #if defined(CONFIG_RTL_HW_QOS_SUPPORT)
 	uint32		priority:3;

@@ -323,6 +323,9 @@ clean:
 	-for i in $(sort $(app_y) $(app_n) $(app_)) ; do \
 		$(MAKE) -C $$i clean ; \
 	done
+	-for i in $(sort $(lib_y) $(lib_n) $(lib_)) ; do \
+		$(MAKE) -C $$i clean ; \
+	done
 
 prune:
 	-for i in $(sort $(app_n) $(app_)) ; do \

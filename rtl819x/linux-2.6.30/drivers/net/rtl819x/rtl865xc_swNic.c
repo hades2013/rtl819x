@@ -712,6 +712,13 @@ __IRAM_FWD  inline int32 _swNic_send(void *skb, void * output, uint32 len,rtl_ni
 	pPkthdr->ph_txPriority = nicTx->priority;
 #endif
 
+
+/* Modified by Einsn for EOC features 20130415 */
+#ifdef RTL_EOC_SUPPORT
+    pPkthdr->ph_txCVlanTagAutoAdd = nicTx->addtagports;
+#endif 
+/* End */
+
 	/* Set cluster pointer to buffer */
 	pPkthdr->ph_mbuf->m_data    = (output);
 	pPkthdr->ph_mbuf->m_extbuf = (output);

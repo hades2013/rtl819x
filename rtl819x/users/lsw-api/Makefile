@@ -15,7 +15,7 @@ LDFLAGS		=
 LINUXDIR=$(shell pwd)/../../linux-2.6.30
 
 CFLAGS += $(EXTRA_CFLAGS)
-CFLAGS += -I. -Wall 
+CFLAGS += -I. -Wall -DCONFIG_HEXICOM_ECM201A 
 CFLAGS += -I$(LINUXDIR)/include
 CFLAGS += -I$(LINUXDIR)/include/net/rtl
 
@@ -26,7 +26,7 @@ APPTEST=test
 all: $(LIBSWAPI) $(APPTEST)
 
 
-$(LIBSWAPI):lsw_api.o
+$(LIBSWAPI):lsw_api.o $(LINUXDIR)/include/net/rtl/rtl_ext_ioctl.h
 	$(AR) -r $@ $<
 
 $(APPTEST):$(LIBSWAPI) test.o
