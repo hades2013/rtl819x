@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # RLX Linux builder
-# Wed Apr 10 10:40:08 2013
+# Sun Apr 14 18:39:15 2013
 #
 
 #
@@ -18,7 +18,7 @@ CONFIG_APP_BUSYBOX=y
 # CONFIG_APP_DNSMASQ is not set
 # CONFIG_APP_DOSFSCK is not set
 # CONFIG_APP_GDBSERVER is not set
-# CONFIG_APP_GOAHEAD is not set
+CONFIG_APP_GOAHEAD=y
 # CONFIG_APP_GPROXY is not set
 # CONFIG_APP_IAPP is not set
 # CONFIG_APP_IGMPPROXY is not set
@@ -96,4 +96,4 @@ CONFIG_APP_SQUASHFS40=y
 #
 # lan switch api
 #
-CONFIG_APP_LSWAPI=y
+# CONFIG_APP_LSWAPI is not set

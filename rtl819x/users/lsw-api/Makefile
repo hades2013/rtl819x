@@ -26,7 +26,7 @@ APPTEST=test
 all: $(LIBSWAPI) $(APPTEST)
 
 
-$(LIBSWAPI):lsw_api.o $(LINUXDIR)/include/net/rtl/rtl_ext_ioctl.h
+$(LIBSWAPI):lsw_api.o
 	$(AR) -r $@ $<
 
 $(APPTEST):$(LIBSWAPI) test.o
