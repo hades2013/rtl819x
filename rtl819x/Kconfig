@@ -31,6 +31,8 @@ choice
   prompt "Selected Busybox"
 config BZBOX_busybox-1.13
 	bool "busybox-1.13"
+config BZBOX_busybox-1.19.4
+	bool "busybox-1.19.4"
 endchoice
 
 config BZBOXDIR
