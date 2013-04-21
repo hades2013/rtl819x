@@ -4272,6 +4272,7 @@ assign_portmask:
 	return flag;
 }
 
+#ifdef RTL_EOC_SUPPORT
 static int32 rtl865x_getPortlistByMac(const unsigned char *mac,uint32 *portlist)
 {
 	int32 found = FAILED;
@@ -4290,6 +4291,7 @@ static int32 rtl865x_getPortlistByMac(const unsigned char *mac,uint32 *portlist)
 	return found;
 
 }
+#endif 
 
 static inline int rtl_fill_txInfo(rtl_nicTx_info *txInfo)
 {
@@ -6644,7 +6646,7 @@ int32 rtl865x_config(struct rtl865x_vlanConfig vlanconfig[])
 
 	}
 
-#if 1
+#if 0
    // rtl865x_setVlanPortTag(1, 0x12f, 1);
 
 
@@ -6671,12 +6673,12 @@ int32 rtl865x_config(struct rtl865x_vlanConfig vlanconfig[])
     }
         
     rtl8651_setAsicVLAN1QTagIgnore(1);
-#endif 
+
 
     eoc_mgmt_vlan.mode = VLAN_TRANSARENT;
     eoc_mgmt_vlan.vlan = 100;
     eoc_mgmt_vlan.port_mask = (1 << 0);
-        
+ #endif        
 	/*this is a one-shot config*/
 	if ((++__865X_Config) == 1)
 	{

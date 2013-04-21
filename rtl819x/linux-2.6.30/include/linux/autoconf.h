@@ -1,7 +1,7 @@
 /*
  * Automatically generated C config: don't edit
  * Linux kernel version: 2.6.30.9
- * Sat Apr  6 18:08:13 2013
+ * Sun Apr 21 23:46:52 2013
  */
 #define AUTOCONF_INCLUDED
 #define CONFIG_SQUASHFS_LZMA 1
@@ -21,6 +21,7 @@
 #define CONFIG_MTD_MAP_BANK_WIDTH_4 1
 #define CONFIG_RTL_ETH_PRIV_SKB 1
 #define CONFIG_ROOTFS_SQUASH 1
+#define CONFIG_HEXICOM_ECM201A 1
 #define CONFIG_HW_HAS_PCI 1
 #define CONFIG_BLK_DEV 1
 #define CONFIG_RTL_CURRENT_SETTING_OFFSET 0xC000
@@ -85,6 +86,7 @@
 #define CONFIG_PRINTK_FUNC 1
 #define CONFIG_CRYPTO_HASH 1
 #define CONFIG_LEGACY_PTYS 1
+#define CONFIG_UNIX98_PTYS 1
 #define CONFIG_BLOCK 1
 #define CONFIG_GENERIC_CLOCKEVENTS_BUILD 1
 #define CONFIG_GENERIC_HWEIGHT 1

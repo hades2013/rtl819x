@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.30.9
-# Sat Apr 13 14:49:57 2013
+# Sun Apr 21 23:45:52 2013
 #
 CONFIG_RTL_819X=y
 CONFIG_RTL_8198=y
@@ -433,13 +433,7 @@ CONFIG_MTD_CFI_I2=y
 #
 # CONFIG_MTD_UBI is not set
 # CONFIG_PARPORT is not set
-CONFIG_BLK_DEV=y
-# CONFIG_BLK_DEV_COW_COMMON is not set
-# CONFIG_BLK_DEV_LOOP is not set
-# CONFIG_BLK_DEV_NBD is not set
-# CONFIG_BLK_DEV_RAM is not set
-# CONFIG_CDROM_PKTCDVD is not set
-# CONFIG_ATA_OVER_ETH is not set
+# CONFIG_BLK_DEV is not set
 # CONFIG_MISC_DEVICES is not set
 
 #
@@ -546,7 +540,7 @@ CONFIG_RTL_PROC_DEBUG=y
 # CONFIG_RTK_VLAN_SUPPORT is not set
 # CONFIG_RTL_UNKOWN_UNICAST_CONTROL is not set
 # CONFIG_RTL_EEE_DISABLED is not set
-# CONFIG_HEXICOM_ECM201A is not set
+CONFIG_HEXICOM_ECM201A=y
 # CONFIG_ISDN is not set
 # CONFIG_PHONE is not set
 

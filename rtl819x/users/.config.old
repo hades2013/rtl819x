@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # RLX Linux builder
-# Sun Apr 14 18:39:15 2013
+# Sun Apr 14 18:56:38 2013
 #
 
 #
@@ -96,4 +96,4 @@ CONFIG_APP_SQUASHFS40=y
 #
 # lan switch api
 #
-# CONFIG_APP_LSWAPI is not set
+CONFIG_APP_LSWAPI=y
