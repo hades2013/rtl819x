@@ -201,6 +201,10 @@ typedef enum{
    EXT_CMD_GET_PORT_PATTERN,
    EXT_CMD_SET_PORT_PATTERN,
 
+/* Port STP State */
+   EXT_CMD_GET_PORT_STP_STATE,
+   EXT_CMD_SET_PORT_STP_STATE,
+
 /* Modified by Einsn for EOC features 20130409 */
 #ifdef RTL_EOC_SUPPORT
 /* EOC special */

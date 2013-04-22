@@ -86,7 +86,8 @@ romfs:
 	mkdir $(DIR_ROMFS)/dev/misc
 	mkdir $(DIR_ROMFS)/dev/pts
 	#chmod 777 $(DIR_ROMFS)/tmp
-	$(ROMFSINST) etc /etc
+	#$(ROMFSINST) etc /etc // ROMFSINST can not copy softlink files -- Einsn
+	cd etc;tar cvf ../etc.tar *; cd ..; tar xvf etc.tar -C $(DIR_ROMFS)/etc; rm -f etc.tar 
 	rm -f $(DIR_ROMFS)/etc/smb.conf.bak
 
 ifdef CONFIG_APP_VSFTPD

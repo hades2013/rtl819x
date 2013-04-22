@@ -609,7 +609,7 @@ get_next:
 #endif
 		info->pid=pPkthdr->ph_portlist;
 
-        printk("rx: pid:%d, vid:%d\n", info->pid, info->vid);
+//        printk("rx: pid:%d, vid:%d\n", info->pid, info->vid);
 
 		if (buf) 
 		{
@@ -712,18 +712,23 @@ __IRAM_FWD  inline int32 _swNic_send(void *skb, void * output, uint32 len,rtl_ni
 	pPkthdr->ph_txPriority = nicTx->priority;
 #endif
 
+
+/* Modified by Einsn for EOC features 20130415 */
+#ifdef RTL_EOC_SUPPORT
+    pPkthdr->ph_txCVlanTagAutoAdd = nicTx->addtagports;
+#endif 
+/* End */
+
 	/* Set cluster pointer to buffer */
 	pPkthdr->ph_mbuf->m_data    = (output);
 	pPkthdr->ph_mbuf->m_extbuf = (output);
     
-    pPkthdr->ph_txCVlanTagAutoAdd = (1 << 1);
-	
 	ret = currTxPkthdrDescIndex[nicTx->txIdx];
 	currTxPkthdrDescIndex[nicTx->txIdx] = next_index;
 	/* Give descriptor to switch core */
 	txPkthdrRing[nicTx->txIdx][ret] |= DESC_SWCORE_OWNED;
 
-#if 1
+#if 0
 	memDump((void*)output, 64, "TX");
 	printk("index %d address 0x%p, 0x%x 0x%p.\n", ret, &txPkthdrRing[nicTx->txIdx][ret], (*(volatile uint32 *)&txPkthdrRing[nicTx->txIdx][ret]), pPkthdr);
 	printk("Flags 0x%x proto 0x%x portlist 0x%x vid %d extPort %d srcExtPort %d len %d.\n", 
