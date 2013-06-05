@@ -320,7 +320,7 @@ romfs:
 	done
 
 clean:
-	-for i in $(sort $(app_y) $(app_n) $(app_)) ; do \
+	-for i in $(sort $(app_y) $(app_n) $(app_) $(lib_y)) ; do \
 		$(MAKE) -C $$i clean ; \
 	done
 
