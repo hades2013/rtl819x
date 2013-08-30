@@ -1,3 +1,17 @@
+/*
+Copyright (c) 2011,  Shenzhen Hexicom Technologies Co., Ltd.
+All rights reserved.
+
+File         : lsw_api.c
+Status       : Current
+Description  :	
+
+Author       : Einsn Liu
+Contact      : liuchuansen@hexicomtech.com
+
+Revision     : 2012-09-18
+Description  : Primary beta released
+*/
 
 
 #include <stdio.h>

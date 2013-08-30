@@ -427,6 +427,33 @@ uint32 rtl865x_getVlanPortMask(uint32 vid)
 }
 
 
+/* RTL_EOC_SUPPORT  einsn added */
+/*
+@func uint32 | rtl865x_getVlanUntaggedPortMask | get the untagged member portMask of a vlan
+@parm uint16 | vid | VLAN ID.
+@comm
+if the retrun value is zero, it means vlan entry is invalid or no member port in this vlan.
+*/
+uint32 rtl865x_getVlanUntaggedPortMask(uint32 vid)
+{
+	rtl865x_vlan_entry_t *vlanEntry;
+	
+	if((vid < 1) || (vid > VLAN_NUMBER -1))
+	{
+		return 0;
+	}
+	
+	vlanEntry = &vlanTbl[vid];
+
+	if(vlanEntry->valid == 0)
+	{
+		return 0;
+	}	
+	
+	return vlanEntry->untagPortMask;
+}
+
+
 /*
 @func int32 | rtl865x_setVlanPortTag | configure member port vlan tag attribute
 @parm uint16 | vid | VLAN ID.
@@ -498,6 +525,36 @@ int32 rtl865x_getVlanFilterDatabaseId(uint16 vid, uint32 *fid)
 
 	return retval;
 }
+
+
+
+/* RTL_EOC_SUPPORT  einsn added 20130830 */
+/*
+@func int32 | rtl865x_setVlanEntry | set vlan entry.
+@rvalue SUCCESS | Success.
+@rvalue FAILED | Failed,system should be reboot.
+*/
+
+int32 rtl865x_setVlanEntry(int valid, uint16 vid, uint32 portMask, uint32 untaggedPortMask, uint32 fid)
+{
+	rtl865x_vlan_entry_t *vlanEntry;
+    
+	/* vid should be legal vlan ID */
+	if(vid < 1 || vid > VLAN_NUMBER -1)
+		return RTL_EINVALIDVLANID;
+	
+	vlanEntry = &vlanTbl[vid];
+
+    vlanEntry->valid = valid;
+    vlanEntry->memberPortMask = portMask;
+    vlanEntry->untagPortMask = untaggedPortMask;
+    vlanEntry->fid = fid;
+    vlanEntry->vid = vid;
+
+	return SUCCESS;
+}
+
+
 
 /*
 @func int32 | rtl865x_initVlanTable | initialize vlan table.

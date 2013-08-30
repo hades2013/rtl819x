@@ -106,7 +106,7 @@
 #include <linux/ip.h>
 #if defined (CONFIG_RTL_MLD_SNOOPING)
 #include <linux/ipv6.h>
-int mldSnoopEnabled;
+int mldSnoopEnabled = 0;
 #endif
 uint32 nicIgmpModuleIndex=0xFFFFFFFF;
 extern int  igmpsnoopenabled;
@@ -1626,7 +1626,14 @@ int re865x_getIpv6TransportProtocol(struct ipv6hdr* ipv6h)
 	return -1;
 }
 #endif
-static inline void re865x_relayTrappedMCast(struct sk_buff *skb, unsigned int vid, unsigned int mcastFwdPortMask, unsigned int keepOrigSkb)
+static inline void re865x_relayTrappedMCast(
+    struct sk_buff *skb, 
+    unsigned int vid, 
+    unsigned int mcastFwdPortMask, 
+#ifdef RTL_EOC_SUPPORT    
+    unsigned int mcastFwdTaggedPortMask, 
+#endif 
+    unsigned int keepOrigSkb)
 {
 	rtl_nicTx_info	nicTx;
  	struct sk_buff *skb2=NULL;
@@ -1656,6 +1663,9 @@ static inline void re865x_relayTrappedMCast(struct sk_buff *skb, unsigned int vi
 #endif
 		nicTx.vid = vid;
 		nicTx.portlist = mcastFwdPortMask;
+#ifdef RTL_EOC_SUPPORT          
+        nicTx.addtagports = mcastFwdTaggedPortMask;
+#endif 
 		nicTx.srcExtPort = 0;
 		nicTx.flags = (PKTHDR_USED|PKT_OUTGOING);
 		_dma_cache_wback_inv((unsigned long)skb2->data, skb2->len);
@@ -1746,6 +1756,10 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 {
 
 	unsigned int  vlanRelayPortMask=0;
+    #ifdef RTL_EOC_SUPPORT
+    unsigned int  vlanRelayTaggedPortMask=0;
+    #endif 
+    
 	struct iphdr *iph=NULL;
 	struct rtl_multicastDataInfo multicastDataInfo;
 	struct rtl_multicastFwdInfo nicMCastFwdInfo;
@@ -1768,8 +1782,28 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 	}
 
 	/*set flooding port mask first*/
-	vlanRelayPortMask=rtl865x_getVlanPortMask(vid) & (~(1<<pid)) & ((1<<RTL8651_MAC_NUMBER)-1);
+    #ifdef RTL_EOC_SUPPORT
 
+    if (eoc_mgmt_vlan.mode == VLAN_TRANSARENT){
+        vlanRelayPortMask = ( 1 << RTL8651_MAC_NUMBER) - 1;
+        vlanRelayPortMask &= ~ (1 << pid);// remove to the source port
+        // do not send to mgmt port if vlan != mvlan
+        if (eoc_mgmt_vlan.vlan != vid){
+            vlanRelayPortMask &= (~ eoc_mgmt_vlan.port_mask);
+        }
+        // untagged for mgmt ports        
+        vlanRelayTaggedPortMask = vlanRelayPortMask & (~ eoc_mgmt_vlan.port_mask);
+    } else {
+        vlanRelayPortMask = rtl865x_getVlanPortMask(vid);
+        vlanRelayPortMask &= ~(1 << pid);// remove to the source port
+        // set tagged ports
+        vlanRelayTaggedPortMask = vlanRelayPortMask & (~rtl865x_getVlanUntaggedPortMask(vid));        
+    }
+
+    #else
+   	vlanRelayPortMask=rtl865x_getVlanPortMask(vid) & (~(1<<pid)) & ((1<<RTL8651_MAC_NUMBER)-1);
+    #endif 
+    
 	if((skb->data[0]==0x01) && (skb->data[1]==0x00)&& (skb->data[2]==0x5e))
 	{
 		#if defined(CONFIG_RTK_VLAN_SUPPORT)
@@ -1820,7 +1854,11 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 
 					}
 				}
-				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask, TRUE);
+				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask, 
+#ifdef RTL_EOC_SUPPORT
+                vlanRelayTaggedPortMask,
+#endif 
+                    TRUE);
 				#endif/*end of CONFIG_RTL_HARDWARE_MULTICAST*/
 			}
 			else if(l4Protocol==IPPROTO_IGMP)
@@ -1836,14 +1874,22 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 					vlanRelayPortMask=rtl865x_getVlanPortMask(vid) & vlanRelayPortMask & ((1<<RTL8651_MAC_NUMBER)-1);
 				}
 
-				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask, TRUE);
+				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask, 
+#ifdef RTL_EOC_SUPPORT
+                    vlanRelayTaggedPortMask,
+#endif 
+                    TRUE);
 
 			}
 			else
 			{
 
 				#if defined (CONFIG_RTL_HARDWARE_MULTICAST)
-				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask, TRUE);
+				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask, 
+#ifdef RTL_EOC_SUPPORT
+                 vlanRelayTaggedPortMask,
+#endif 
+                TRUE);
 				#endif
 
 			}
@@ -1913,7 +1959,12 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 					}
 				}
 
-				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask, TRUE);
+				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask,
+#ifdef RTL_EOC_SUPPORT
+                    vlanRelayTaggedPortMask,
+#endif 
+
+                    TRUE);
 
 			}
 			else if(l4Protocol==IPPROTO_ICMPV6)
@@ -1925,17 +1976,29 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 					vlanRelayPortMask=rtl865x_getVlanPortMask(vid) & vlanRelayPortMask & ((1<<RTL8651_MAC_NUMBER)-1);
 				}
 
-				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask, TRUE);
+				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask,
+#ifdef RTL_EOC_SUPPORT
+                    vlanRelayTaggedPortMask,
+#endif 
+                    TRUE);
 
 			}
 			else
 			{
-				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask, TRUE);
+				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask, 
+#ifdef RTL_EOC_SUPPORT
+                    vlanRelayTaggedPortMask,
+#endif 
+                    TRUE);
 			}
 		}
 		else
 		{
-			re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask, TRUE);
+			re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask,
+#ifdef RTL_EOC_SUPPORT
+                vlanRelayTaggedPortMask,
+#endif 
+                TRUE);
 		}
 
 	}
@@ -2376,7 +2439,6 @@ typedef struct __attribute__((__packed__)) {
 }
 rtk_cpu_tag_t;
 
-
 static struct sk_buff * skb_put_rtk_tag(struct sk_buff *skb, uint32 vlan, uint32 pid)
 {
     rtk_cpu_tag_t *ptag;
@@ -2401,8 +2463,6 @@ static struct sk_buff * skb_put_rtk_tag(struct sk_buff *skb, uint32 vlan, uint32
 #endif 
 
 /* End */
-
-
 
 __MIPS16
 __IRAM_FWD
@@ -2499,15 +2559,15 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
 
 /* Modified by Einsn for simplify the lan driver 20130407 */    
 #ifdef RTL_SIMPLE_LAN
- /*debug messages , to be removed
+ /*debug messages , to be removed  
     if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
         vid = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
         vid &= 0x0fff;
         printk("pkt pid:%d vid:%d, tag:%d\n", info->pid, info->vid, vid);
     }else {
         printk("pkt pid:%d vid:%d, tag:no\n", info->pid, info->vid);
-    }
-*/     
+    }  
+ */ 
 #else
 	if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
 		vid = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
@@ -2530,63 +2590,76 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
  if mme packets , add cpu tag 
  if not mme packets and from cable port, drop it
 */
-    if (((*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q))
-        && (*((uint16*)(skb->data+(ETH_ALEN<<1) + VLAN_HLEN)) == __constant_htons(0x88E1)))
-        || (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(0x88E1)))
-    {
-       // printk("pkt mme\n");
-        // if vlan tag, remove 
-        if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)){
-            memmove(data + VLAN_HLEN, data, VLAN_ETH_ALEN<<1);
-            skb_pull(skb, VLAN_HLEN);        
-        }
-        // add cpu tag
-        skb_put_rtk_tag(skb, info->vid, info->pid);
-    }else {
-        if (eoc_cable_mask && (eoc_cable_mask & (1 << info->pid))){
-//            printk("pkt drop by cable mask\n"); 
-			cp_this->net_stats.rx_dropped++;
-            dev_kfree_skb_any(skb);
-            return;            
-        }
-/* 
-  in transparent mode, 
-     if pkts from mgmt ports and not vlan tag in pkt or vlan tag = mvlan, remove tag if exist, submit to kernel, otherwise drop.
-     if pkts from non-mgmt ports and with vlan tag = mvlan, remove its tag and submit to kernel, otherwise drop. 
-*/
-        if (eoc_mgmt_vlan.mode == VLAN_TRANSARENT){
-            int tag_vlan = 0;
-            int from_mgmt = 0;
-            int vlan_matched = 0;
-            if (eoc_mgmt_vlan.port_mask & (1 << info->pid)){
-                from_mgmt = 1;
-            }
-            if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
-                tag_vlan = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
-                tag_vlan &= 0x0fff;
-            }        
-            /* mgmt vlan = 1, tag_vlan should be 0 or 1 , otherwise, tag_vlan should be mvlan */
-            if (((eoc_mgmt_vlan.vlan == 1) && (tag_vlan == 0)) || (eoc_mgmt_vlan.vlan == tag_vlan)){
-                vlan_matched = 1;
-            }
-            /* if from mgmt tag_vlan = 0 or vlan_matched should be true, otherwise , vlan_matched should be true */
-            if ((from_mgmt && (tag_vlan != 0) && !vlan_matched) 
-                 || (!from_mgmt && !vlan_matched)){
-//                printk("pkt drop by mgmt vlan\n");             
-    			cp_this->net_stats.rx_dropped++;
-                dev_kfree_skb_any(skb);
-                return;              
-            }
-
-            /*  if has tag , remove it. */
+    if (0==(data[0]&0x01)) {//  only unicast pkts
+        if (((*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q))
+            && (*((uint16*)(skb->data+(ETH_ALEN<<1) + VLAN_HLEN)) == __constant_htons(0x88E1)))
+            || (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(0x88E1)))
+        {
+            //printk("->pkt mme\n");
+            // if vlan tag, remove 
             if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)){
                 memmove(data + VLAN_HLEN, data, VLAN_ETH_ALEN<<1);
                 skb_pull(skb, VLAN_HLEN);        
-            }        
-        }      
-    
-    }
+            }
+            // add cpu tag
+            skb_put_rtk_tag(skb, info->vid, info->pid);
+        }else {
+            if (eoc_cable_mask && (eoc_cable_mask & (1 << info->pid))){
+                //printk("->pkt drop by cable mask\n"); 
+    			cp_this->net_stats.rx_dropped++;
+                dev_kfree_skb_any(skb);
+                return;            
+            }
+    /* 
+      in transparent mode, 
+         if pkts from mgmt ports and not vlan tag in pkt or vlan tag = mvlan, remove tag if exist, submit to kernel, otherwise drop.
+         if pkts from non-mgmt ports and with vlan tag = mvlan, remove its tag and submit to kernel, otherwise drop. 
+    */
+            if (eoc_mgmt_vlan.mode == VLAN_TRANSARENT){
+                int tag_vlan = 0;
+                int from_mgmt = 0;
+                int vlan_matched = 0;
+                if (eoc_mgmt_vlan.port_mask & (1 << info->pid)){
+                    from_mgmt = 1;
+                }
+                if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
+                    tag_vlan = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
+                    tag_vlan &= 0x0fff;
+                }        
+                /* mgmt vlan = 1, tag_vlan should be 0 or 1 , otherwise, tag_vlan should be mvlan */
+                if (((eoc_mgmt_vlan.vlan == 1) && (tag_vlan == 0)) || (eoc_mgmt_vlan.vlan == tag_vlan)){
+                    vlan_matched = 1;
+                }
+                /* if from mgmt tag_vlan = 0 or vlan_matched should be true, otherwise , vlan_matched should be true */
+                if ((from_mgmt && (tag_vlan != 0) && !vlan_matched) 
+                     || (!from_mgmt && !vlan_matched)){
+                    //printk("->pkt drop by mgmt vlan\n");             
+        			cp_this->net_stats.rx_dropped++;
+                    dev_kfree_skb_any(skb);
+                    return;              
+                }
 
+                /*  if has tag , remove it. -- remove it at below
+                if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)){
+                    memmove(data + VLAN_HLEN, data, VLAN_ETH_ALEN<<1);
+                    skb_pull(skb, VLAN_HLEN);        
+                } */       
+            }      
+        
+        }
+    }
+    
+	if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)) {
+		vid = *((unsigned short *)(data+(ETH_ALEN<<1)+2));
+		#if	defined(CONFIG_RTL_QOS_8021P_SUPPORT)
+		skb->srcVlanPriority = (vid>>13)&0x7;
+		#endif
+		vid &= 0x0fff;
+
+		memmove(data + VLAN_HLEN, data, VLAN_ETH_ALEN<<1);
+		skb_pull(skb, VLAN_HLEN);
+	}  
+        
 #endif 
 /* End */
 
@@ -4391,7 +4464,8 @@ static int re865x_start_xmit(struct sk_buff *skb, struct net_device *dev)
 		return 0;
 	}
 
-#if defined (CONFIG_RTL_IGMP_SNOOPING)
+//#if defined (CONFIG_RTL_IGMP_SNOOPING)
+#if 1 // always do this is fine, einsn added 20130830
 	retval = rtl_fill_txInfo(&nicTx);
 	if(FAILED == retval)
 		return 0;
@@ -4604,6 +4678,7 @@ void init_port5_rgmii(void)
 static int rtl865x_do_ext_ioctl(struct ext_req *req)
 {
     int32 ret;
+    unsigned long flags;
     switch(req->cmd)
     {
         case EXT_CMD_SET_PORT_FLOWCTRL:
@@ -4759,20 +4834,31 @@ static int rtl865x_do_ext_ioctl(struct ext_req *req)
                 vlanParam.memberPortMask = req->data.vlan.port_mask;
                 vlanParam.untagPortMask = req->data.vlan.untag_mask;
                 vlanParam.fid= req->data.vlan.fid;
+                local_irq_save(flags);
                 ret = rtl8651_setAsicVlan(req->data.vlan.vid, &vlanParam);
+                local_irq_restore(flags);
+                // IGMP etc need table entries in memory
+                rtl865x_setVlanEntry(1, req->data.vlan.vid, vlanParam.memberPortMask, vlanParam.untagPortMask, vlanParam.fid);
             }
             break;
         case EXT_CMD_GET_VLAN:            
             {
                 rtl865x_tblAsicDrv_vlanParam_t vlanParam;
+                local_irq_save(flags);
                 ret = rtl8651_getAsicVlan(req->data.vlan.vid, &vlanParam);
+                local_irq_restore(flags);
                 req->data.vlan.port_mask = vlanParam.memberPortMask;
                 req->data.vlan.untag_mask = vlanParam.untagPortMask;
                 req->data.vlan.fid = vlanParam.fid;                
             }
             break;    
-        case EXT_CMD_DEL_VLAN:            
-            ret = rtl8651_delAsicVlan(req->data.vlan.vid);            
+        case EXT_CMD_DEL_VLAN:    
+            local_irq_save(flags);
+            ret = rtl8651_delAsicVlan(req->data.vlan.vid);  
+            local_irq_restore(flags);
+
+            // IGMP etc need table entries in memory
+            rtl865x_setVlanEntry(0, req->data.vlan.vid, 0, 0, 0);            
             break;                
         case EXT_CMD_GET_PORT_MIRROR:
             ret = rtl8651_getAsicPortMirror(&req->data.port_mirror.rx_mask, &req->data.port_mirror.tx_mask, &req->data.port_mirror.dest_mask);

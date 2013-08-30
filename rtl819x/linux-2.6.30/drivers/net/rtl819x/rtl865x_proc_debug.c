@@ -2408,6 +2408,7 @@ struct file_operations acl_single_seq_file_operations = {
         .release        = single_release,
 };
 
+#ifdef CONFIG_RTL_IGMP_SNOOPING
 extern int igmp_show(struct seq_file *s, void *v);
 extern int igmp_write(struct file *file, const char __user *buffer, size_t count, loff_t *data);
 int igmp_single_open(struct inode *inode, struct file *file)
@@ -2422,6 +2423,7 @@ struct file_operations igmp_single_seq_file_operations = {
         .llseek         = seq_lseek,
         .release        = single_release,
 };
+#endif 
 
 #ifdef CONFIG_RTL_LAYERED_DRIVER
 int aclChains_show(struct seq_file *s, void *v)
@@ -5150,7 +5152,7 @@ int32 rtl865x_proc_debug_init(void)
 			retval = SUCCESS;
 		}
 
-#if defined CONFIG_RTL_IGMP_SNOOPING
+#ifdef CONFIG_RTL_IGMP_SNOOPING
 		igmp_entry=create_proc_entry("igmp", 0, rtl865x_proc_dir);
 		if(igmp_entry != NULL)
 		{

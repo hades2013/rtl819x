@@ -40,9 +40,11 @@ int32 rtl865x_delVlan(uint16 vid);
 int32 rtl865x_addVlanPortMember(uint16 vid, uint32 portMask);
 int32 rtl865x_delVlanPortMember(uint16 vid,uint32 portMask);
 
-#if defined (CONFIG_RTL_HARDWARE_MULTICAST)
 uint32 rtl865x_getVlanPortMask(uint32 vid); 
-#endif
+/* RTL_EOC_SUPPORT einsn added 20130830 */
+uint32 rtl865x_getVlanUntaggedPortMask(uint32 vid);
+/* RTL_EOC_SUPPORT einsn added 20130830 */
+int32 rtl865x_setVlanEntry(int valid, uint16 vid, uint32 portMask, uint32 untaggedPortMask, uint32 fid);
 
 int32 rtl865x_setVlanPortTag(uint16 vid,uint32 portMask,uint8 tag);
 int32 rtl865x_setVlanFilterDatabase(uint16 vid, uint32 fid);

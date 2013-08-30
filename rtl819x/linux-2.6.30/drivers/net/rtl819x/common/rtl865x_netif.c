@@ -4025,6 +4025,8 @@ int32 rtl865x_reConfigDefaultAcl(char *ifName)
 			ret=_rtl865x_add_acl(&rule, ifName, RTL865X_ACL_SYSTEM_USED); 
 		}
 #else
+#ifdef CONFIG_RTL_LAYERED_DRIVER_ACL
+
 		{
 			/*del old default permit acl*/
 			bzero((void*)&rule,sizeof(rtl865x_AclRule_t));
@@ -4040,6 +4042,11 @@ int32 rtl865x_reConfigDefaultAcl(char *ifName)
 			rule.actionType_ = RTL865X_ACL_PERMIT;
 			ret=_rtl865x_add_acl(&rule, ifName, RTL865X_ACL_SYSTEM_USED); 
 		}
+#else
+    bzero((void*)&rule,sizeof(rtl865x_AclRule_t));
+    flags = 0;
+    ret = 0;
+#endif 
 #endif			
 		local_irq_restore(flags);
 
