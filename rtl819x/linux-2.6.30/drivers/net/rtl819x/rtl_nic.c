@@ -4392,11 +4392,27 @@ static inline int rtl_fill_txInfo(rtl_nicTx_info *txInfo)
     
 /* Modified by Einsn for EOC features 20130415 */    
 #ifdef RTL_EOC_SUPPORT
+    if (((*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q))
+        && (*((uint16*)(skb->data+(ETH_ALEN<<1) + VLAN_HLEN)) == __constant_htons(0x88E1)))
+        || (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(0x88E1)))
+    {
+        #if 0
+        if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)){
+            memmove(data + VLAN_HLEN, data, VLAN_ETH_ALEN<<1);
+            skb_pull(skb, VLAN_HLEN);        
+        }
+        #endif
+        txInfo->vid = 1;
+        portlist = eoc_cable_mask;
+        rtl_direct_txInfo(portlist, txInfo);     
+        txInfo->addtagports = 0;          
+    } else 
+    
     if (eoc_mgmt_vlan.mode == VLAN_TRANSARENT){
         if (get_fdb_portlist(skb->data, &portlist) == FAILED){
             portlist = cp->portmask;
         }        
-   rtl_direct_txInfo(portlist, txInfo);  
+        rtl_direct_txInfo(portlist, txInfo);  
    
         txInfo->addtagports = portlist & (~eoc_mgmt_vlan.port_mask);        
     }else {
