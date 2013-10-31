@@ -2590,7 +2590,12 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
  if mme packets , add cpu tag 
  if not mme packets and from cable port, drop it
 */
-    if (0==(data[0]&0x01)) {//  only unicast pkts
+    if ((0==(data[0]&0x01)) 
+	|| (
+	(data[0] == 0xff) && (data[1] == 0xff)
+	&& (data[2] == 0xff) && (data[3] == 0xff)
+	&& (data[4] == 0xff) && (data[5] == 0xff)
+		)) {//  only unicast pkts
         if (((*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q))
             && (*((uint16*)(skb->data+(ETH_ALEN<<1) + VLAN_HLEN)) == __constant_htons(0x88E1)))
             || (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(0x88E1)))
