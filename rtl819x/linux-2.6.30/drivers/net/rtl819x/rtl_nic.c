@@ -1828,6 +1828,9 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 			if((l4Protocol==IPPROTO_UDP) || (l4Protocol==IPPROTO_TCP))
 			{
 
+                #ifdef RTL_EOC_SUPPORT
+                return -2;
+                #endif 			
 
 				/*relay packets which are trapped by hardware multicast table*/
 				#if defined (CONFIG_RTL_HARDWARE_MULTICAST)
@@ -1883,6 +1886,9 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 			}
 			else
 			{
+                #ifdef RTL_EOC_SUPPORT
+                return -2;
+                #endif 			
 
 				#if defined (CONFIG_RTL_HARDWARE_MULTICAST)
 				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask, 
@@ -1899,7 +1905,7 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 	}
 #if defined (CONFIG_RTL_MLD_SNOOPING)
 	else if ((skb->data[0]==0x33) && (skb->data[1]==0x33) && (skb->data[2]!=0xff))
-	{
+	{	
 		#if defined (CONFIG_RTL_HARDWARE_MULTICAST)
 		skb->srcVlanId=0;
 		skb->srcPort=0xFFFF;
@@ -1934,6 +1940,9 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 			/*udp or tcp packet*/
 			if((l4Protocol==IPPROTO_UDP) || (l4Protocol==IPPROTO_TCP))
 			{
+                #ifdef RTL_EOC_SUPPORT
+                return -2;
+                #endif  
 
 				if(igmpsnoopenabled && (nicIgmpModuleIndex!=0xFFFFFFFF))
 				{
@@ -1985,6 +1994,9 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 			}
 			else
 			{
+                #ifdef RTL_EOC_SUPPORT
+                return -2;
+                #endif 				
 				re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask, 
 #ifdef RTL_EOC_SUPPORT
                     vlanRelayTaggedPortMask,
@@ -1994,6 +2006,9 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 		}
 		else
 		{
+            #ifdef RTL_EOC_SUPPORT
+            return -2;
+            #endif 			
 			re865x_relayTrappedMCast( skb, vid, vlanRelayPortMask,
 #ifdef RTL_EOC_SUPPORT
                 vlanRelayTaggedPortMask,
@@ -2004,7 +2019,7 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 	}
 #endif
 	else
-	{
+	{	    
 		#if defined (CONFIG_RTL_HARDWARE_MULTICAST)
 		skb->srcVlanId=0;
 		skb->srcPort=0xFFFF;
@@ -2699,13 +2714,17 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
 		/*	unknow unicast control end	*/
 	}
 	else		/*	multicast		*/
-	{
+	{      
 		/*	multicast process	*/
 		#if defined (CONFIG_RTL_IGMP_SNOOPING)
 		//rtl_MulticastRxCheck(skb, cp_this, vid, pid);
-		rtl_MulticastRxCheck(skb, info);
+		if (rtl_MulticastRxCheck(skb, info) == -2){
+    		cp_this->net_stats.rx_dropped++;
+            dev_kfree_skb_any(skb);
+            return;               
+        }
 		#endif	/*end of CONFIG_RTL865X_IGMP_SNOOPING*/
-		/*	multicast process end	*/
+		/*	multicast process end	*/        
 	}
 
 #if defined(CONFIG_RTL_STP)
