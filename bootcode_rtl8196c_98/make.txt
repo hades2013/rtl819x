@@ -1,0 +1,67 @@
+make -C boot boot JUMP_ADDR=0x80500000 RTL865X=1
+make[1]: Entering directory `/opt/workspace/rtl8198/bootcode_rtl8196c_98/boot'
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -D__ASSEMBLY__  -x assembler-with-cpp -G 0 -o ./Output/head.o ./arch/mips/kernel/head.S
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/eth_tftpd.o ./init/eth_tftpd.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/irq.o ./init/irq.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -D__ASSEMBLY__  -x assembler-with-cpp -G 0 -o ./Output/inthandler.o ./init/inthandler.S
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/setup.o ./arch/mips/kernel/setup.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/utility.o ./init/utility.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/main.o ./init/main.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/traps.o ./arch/mips/kernel/traps.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE  -o ./Output/init.o ./io/init.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE  -o ./Output/string.o ./io/string.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE  -o ./Output/strtol.o ./io/strtol.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/strtoul.o ./io/strtoul.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/ctool.o ./io/ctool.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/misc.o ./io/misc.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/calloc.o ./init/calloc.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/spi_flash.o ./flash/spi_flash.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/spi_common.o ./flash/spi_common.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/ethInt_865x.o ./init/ethInt_865x.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/swCore.o ./rtl8196x/swCore.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/swNic_poll.o ./rtl8196x/swNic_poll.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/swTable.o ./rtl8196x/swTable.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/vlanTable.o ./rtl8196x/vlanTable.c
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DJUMP_ADDR=0x80500000 -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/monitor.o ./monitor/monitor.c
+mips-linux-ld -nostdlib  -T./ld.script  -EB   --static ./Output/head.o ./Output/eth_tftpd.o ./Output/irq.o ./Output/inthandler.o ./Output/setup.o ./Output/utility.o  ./Output/main.o ./Output/traps.o ./Output/init.o ./Output/string.o  ./Output/strtol.o ./Output/strtoul.o ./Output/ctool.o ./Output/misc.o  ./Output/calloc.o ./Output/spi_flash.o ./Output/spi_common.o ./Output/ethInt_865x.o ./Output/swCore.o ./Output/swNic_poll.o ./Output/swTable.o ./Output/vlanTable.o ./Output/monitor.o    -o ./Output/boot.out
+mips-linux-nm	./Output/boot.out | sort > ./Output/boot.nm
+# mips-linux-objcopy -g -Obinary ./Output/boot.out ./Output/boot.img
+mips-linux-objcopy -g -Obinary ./Output/boot.out ./Output/boot.img
+mips-linux-objdump -h -S ./Output/boot.out > ./Output/boot.text
+cp ./Output/boot.img ../btcode/boot.img -f
+make[1]: Leaving directory `/opt/workspace/rtl8198/bootcode_rtl8196c_98/boot'
+make -C btcode RTL865X=1
+make[1]: Entering directory `/opt/workspace/rtl8198/bootcode_rtl8196c_98/btcode'
+sync;sync;sync
+mips-linux-gcc -march=5281 -g  -I../boot/include -fno-pic -mno-abicalls -O2 -fomit-frame-pointer -D__KERNEL__ -DMEMORY_32_BIT_MODE -DLZMA_COMPRESS -D_LZMA_PROB32 -Os -c piggy.S -o piggy.o 
+mips-linux-gcc -march=5281 -g  -fomit-frame-pointer -nostdinc -fno-pic -mno-abicalls  -D__KERNEL__ -DMEMORY_32_BIT_MODE -DLZMA_COMPRESS -D_LZMA_PROB32 -Os  -c bootload.c -o bootload.o
+#mips-linux-gcc -march=5181 -g  -I../boot/include -fno-inline -fno-pic -mno-abicalls -O2 -fomit-frame-pointer -D__KERNEL__ -DMEMORY_32_BIT_MODE -DLZMA_COMPRESS -D_LZMA_PROB32 -Os -c gunzip.c -o gunzip.o	
+mips-linux-gcc -march=5281 -g  -I../boot/include -fno-inline -fno-pic -mno-abicalls -O2 -fomit-frame-pointer -D__KERNEL__ -DMEMORY_32_BIT_MODE -DLZMA_COMPRESS -D_LZMA_PROB32 -Os -c LzmaDecode.c -o LzmaDecode.o
+#cat boot.img | gzip -9 > boot.img.gz
+./lzma e boot.img boot.img.gz
+
+mips-linux-objcopy --add-section .initrd=boot.img.gz piggy.o
+mips-linux-ld  -X -nostdlib -Tpiggy.script  --static piggy.o bootload.o LzmaDecode.o -o piggy.elf
+mips-linux-objcopy  -Obinary piggy.elf piggy.bin
+mips-linux-objdump -h -S piggy.elf > piggy.elf.txt
+mips-linux-gcc -march=5281 -I../boot/include -fno-pic -mno-abicalls -O2 -fomit-frame-pointer -D__KERNEL__ -DMEMORY_32_BIT_MODE -DLZMA_COMPRESS -D_LZMA_PROB32 -Os -c start.S -o start.o 
+mips-linux-objcopy --add-section .initrd=piggy.bin start.o	# Compress
+mips-linux-ld -X -nostdlib -Tld.script start.o -o boot.elf
+mips-linux-objcopy -Obinary boot.elf boot
+cp boot ../boot/Output/boot -f 			#sync 
+mips-linux-objdump -h -S   boot.elf > boot.elf.txt 
+mips-linux-nm boot.elf  | sort > system.map
+./cvimg boot boot boot.bin 0 0
+Generate image successfully, length=24278, checksum=0x46e6
+cp boot.bin ../boot/Output/boot.bin -f 			#copy file to Output for easy use.
+make[1]: Leaving directory `/opt/workspace/rtl8198/bootcode_rtl8196c_98/btcode'
+make -C boot wboot RTL865X=1
+make[1]: Entering directory `/opt/workspace/rtl8198/bootcode_rtl8196c_98/boot'
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -o ./Output/temp.o temp.c
+mips-linux-objcopy --add-section .btimg=./Output/boot ./Output/temp.o
+mips-linux-gcc -c -march=5281 -g  -Os -fomit-frame-pointer -fno-pic -mno-abicalls  -G 0 -I. -I./include -D__KERNEL__ -Dlinux -O  -DCONFIG_BOOT_DEBUG_ENABLE -DRTL865X=1 -DCONFIG_RTL865X=y -DCONFIG_RTL865XC=1  -DDDR_SDRAM -DDDR2_SDRAM -DCONFIG_SPI_STD_MODE -DWRAPPER -DRTL865X -o ./Output/wmonitor.o ./monitor/monitor.c
+mips-linux-ld -nostdlib  -T./ldw.script  -EB   --static ./Output/head.o ./Output/eth_tftpd.o ./Output/irq.o ./Output/inthandler.o ./Output/setup.o ./Output/utility.o  ./Output/main.o ./Output/traps.o ./Output/init.o ./Output/string.o  ./Output/strtol.o ./Output/strtoul.o ./Output/ctool.o ./Output/misc.o  ./Output/calloc.o ./Output/spi_flash.o ./Output/spi_common.o ./Output/ethInt_865x.o ./Output/swCore.o ./Output/swNic_poll.o ./Output/swTable.o ./Output/vlanTable.o ./Output/temp.o ./Output/wmonitor.o    -o ./Output/wboot.out
+mips-linux-nm	./Output/wboot.out | sort > ./Output/wboot.nm
+mips-linux-objcopy -g -Obinary ./Output/wboot.out ./Output/wboot.img
+mips-linux-objdump -h -S ./Output/wboot.out > ./Output/wboot.text
+make[1]: Leaving directory `/opt/workspace/rtl8198/bootcode_rtl8196c_98/boot'
