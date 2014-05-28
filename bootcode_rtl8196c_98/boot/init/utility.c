@@ -4,6 +4,7 @@
 #include <asm/system.h>
 #include <rtl8196x/asicregs.h>
 
+
 //#define UTILITY_DEBUG 1
 #define NEED_CHKSUM 1
 
@@ -131,7 +132,7 @@ int check_system_image(unsigned long addr,IMG_HEADER_Tp pHeader,SETTING_HEADER_T
 	else{
 		prom_printf("no sys signature at %X!\n",addr-FLASH_BASE);
 	}		
-	prom_printf("ret=%d  sys signature at %X!\n",ret,addr-FLASH_BASE);
+	//prom_printf("ret=%d  sys signature at %X!\n",ret,addr-FLASH_BASE);
 	if (ret) {
 		for (i=0; i<pHeader->len; i+=2) {
 #if 1  //slowly
@@ -156,7 +157,7 @@ int check_system_image(unsigned long addr,IMG_HEADER_Tp pHeader,SETTING_HEADER_T
 		}	
 #if defined(NEED_CHKSUM)			
 		if ( sum ) {
-			prom_printf("ret=%d  ------> line %d!    sum=%d\n",ret,sum,__LINE__);
+			//prom_printf("ret=%d  ------> line %d!    sum=%d\n",ret,sum,__LINE__);
 			ret=0;
 		}
 #endif		
@@ -195,7 +196,7 @@ int check_rootfs_image(unsigned long addr)
 
 	length = *(((unsigned long *)tmpbuf) + OFFSET_OF_LEN) + SIZE_OF_SQFS_SUPER_BLOCK + SIZE_OF_CHECKSUM;
 
-    prom_printf("check_rootfs_image %s,length=%d\n",tmpbuf,length);
+    //prom_printf("check_rootfs_image %s,length=%d\n",tmpbuf,length);
 
 	for (i=0; i<length; i+=2) {
 #if 1  //slowly
@@ -218,7 +219,7 @@ int check_rootfs_image(unsigned long addr)
 
 #if defined(NEED_CHKSUM)		
 	if ( sum ) {
-		prom_printf("rootfs checksum error at %X!\n",addr-FLASH_BASE);
+		//prom_printf("rootfs checksum error at %X!\n",addr-FLASH_BASE);
 		return 0;
 	}	
 #endif	
@@ -228,57 +229,130 @@ int check_rootfs_image(unsigned long addr)
 static int check_image_header(IMG_HEADER_Tp pHeader,SETTING_HEADER_Tp psetting_header,unsigned long bank_offset)
 {
 	int i,ret=0;
+    int bootflag = 0;
 
-	//flash mapping
-	return_addr = (unsigned long)FLASH_BASE+CODE_IMAGE_OFFSET+bank_offset;
-	ret = check_system_image((unsigned long)FLASH_BASE+CODE_IMAGE_OFFSET+bank_offset,pHeader, psetting_header);
+    unsigned long linux_start = 0;
+    unsigned long linux_end = 0;
+    unsigned long rootfs_start = 0;
+    unsigned long rootfs_end = 0;
+    
+    flashread((unsigned long)&bootflag, CONFIG_BOOTFLAG, 4);
+    prom_printf("bootflag=%d\n",bootflag);
+    if(bootflag != 1 && bootflag != 0){
+        bootflag = 0;
+        flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);
+    }
+    
+    linux_start = bootflag ? CONFIG_LINUX_IMAGE2_OFFSET_START : CODE_IMAGE_OFFSET;
+    linux_end = bootflag ? CONFIG_LINUX_IMAGE2_OFFSET_END : CONFIG_LINUX_IMAGE_OFFSET_END;
+    
+    rootfs_start = bootflag ? CONFIG_ROOT_IMAGE2_OFFSET_START : CONFIG_ROOT_IMAGE_OFFSET_START;
+    rootfs_end = bootflag ? CONFIG_ROOT_IMAGE2_OFFSET_END : CONFIG_ROOT_IMAGE_OFFSET_END;
 
-	if(ret==0) {
-		return_addr = (unsigned long)FLASH_BASE+CODE_IMAGE_OFFSET2+bank_offset;		
-		ret=check_system_image((unsigned long)FLASH_BASE+CODE_IMAGE_OFFSET2+bank_offset,  pHeader, psetting_header);
-	}
-	if(ret==0) {
-		return_addr = (unsigned long)FLASH_BASE+CODE_IMAGE_OFFSET3+bank_offset;				
-		ret=check_system_image((unsigned long)FLASH_BASE+CODE_IMAGE_OFFSET3+bank_offset,  pHeader, psetting_header);
-	}			
-
-#ifdef CONFIG_RTL_FLASH_MAPPING_ENABLE	
-	i=CONFIG_LINUX_IMAGE_OFFSET_START;	
-	while(i<=CONFIG_LINUX_IMAGE_OFFSET_END && (0==ret))
-	{
-		return_addr=(unsigned long)FLASH_BASE+i+bank_offset; 
-		if(CODE_IMAGE_OFFSET == i || CODE_IMAGE_OFFSET2 == i || CODE_IMAGE_OFFSET3 == i){
-			i += CONFIG_LINUX_IMAGE_OFFSET_STEP; 
-			continue;
-		}
-		ret = check_system_image((unsigned long)FLASH_BASE+i+bank_offset, pHeader, psetting_header);
-		i += CONFIG_LINUX_IMAGE_OFFSET_STEP; 
-	}
+    //flash mapping
+    return_addr = (unsigned long)FLASH_BASE+linux_start+bank_offset;
+    ret = check_system_image((unsigned long)FLASH_BASE+linux_start+bank_offset,pHeader, psetting_header);
+    
+    if(ret==0) {
+        return_addr = (unsigned long)FLASH_BASE+linux_start+CODE_IMAGE_OFFSET_OP1+bank_offset;     
+        ret=check_system_image((unsigned long)FLASH_BASE+linux_start+CODE_IMAGE_OFFSET_OP1+bank_offset,  pHeader, psetting_header);
+    }
+    if(ret==0) {
+        return_addr = (unsigned long)FLASH_BASE+linux_start+2*CODE_IMAGE_OFFSET_OP1+bank_offset;             
+        ret=check_system_image((unsigned long)FLASH_BASE+linux_start+2*CODE_IMAGE_OFFSET_OP1+bank_offset,  pHeader, psetting_header);
+    }
+    
+#ifdef CONFIG_RTL_FLASH_MAPPING_ENABLE  
+    i = linux_start;  
+    while(i<=linux_end && (0==ret))
+    {
+        return_addr=(unsigned long)FLASH_BASE+i+bank_offset; 
+        if(linux_start == i || linux_start+CODE_IMAGE_OFFSET_OP1 == i || linux_start+2*CODE_IMAGE_OFFSET_OP1 == i){
+            i += CONFIG_LINUX_IMAGE_OFFSET_STEP; 
+            continue;
+        }
+        ret = check_system_image((unsigned long)FLASH_BASE+i+bank_offset, pHeader, psetting_header);
+        i += CONFIG_LINUX_IMAGE_OFFSET_STEP; 
+    }
 #endif
-
-	if(ret==2)
+        
+    if(ret==2)
+    {
+        ret=check_rootfs_image((unsigned long)FLASH_BASE+rootfs_start+bank_offset);
+        if(ret==0)
+            ret=check_rootfs_image((unsigned long)FLASH_BASE+rootfs_start+ROOT_FS_OFFSET_OP1+bank_offset);
+        if(ret==0)
+            ret=check_rootfs_image((unsigned long)FLASH_BASE+rootfs_start+ROOT_FS_OFFSET_OP1+ROOT_FS_OFFSET_OP2+bank_offset);
+    
+        #ifdef CONFIG_RTL_FLASH_MAPPING_ENABLE
+        i = rootfs_start;
+        while((i <= rootfs_end) && (0==ret))
         {
-                ret=check_rootfs_image((unsigned long)FLASH_BASE+ROOT_FS_OFFSET+bank_offset);
-                if(ret==0)
-                	ret=check_rootfs_image((unsigned long)FLASH_BASE+ROOT_FS_OFFSET+ROOT_FS_OFFSET_OP1+bank_offset);
-                if(ret==0)
-                	ret=check_rootfs_image((unsigned long)FLASH_BASE+ROOT_FS_OFFSET+ROOT_FS_OFFSET_OP1+ROOT_FS_OFFSET_OP2+bank_offset);
+            if( rootfs_start == i ||
+                (rootfs_start + ROOT_FS_OFFSET_OP1) == i ||
+                    (rootfs_start + ROOT_FS_OFFSET_OP1 + ROOT_FS_OFFSET_OP2) == i){
+                i += CONFIG_ROOT_IMAGE_OFFSET_STEP;
+                continue;
+            }
+            ret = check_rootfs_image((unsigned long)FLASH_BASE+i+bank_offset);
+            i += CONFIG_ROOT_IMAGE_OFFSET_STEP;
+        }
+        #endif
+    }
+        
+        
+#if 0 //old codes :
+    	//flash mapping
+    	return_addr = (unsigned long)FLASH_BASE+CODE_IMAGE_OFFSET+bank_offset;
+    	ret = check_system_image((unsigned long)FLASH_BASE+CODE_IMAGE_OFFSET+bank_offset,pHeader, psetting_header);
 
-#ifdef CONFIG_RTL_FLASH_MAPPING_ENABLE
-		i = CONFIG_ROOT_IMAGE_OFFSET_START;
-		while((i <= CONFIG_ROOT_IMAGE_OFFSET_END) && (0==ret))
-		{
-			if( ROOT_FS_OFFSET == i ||
-			    (ROOT_FS_OFFSET + ROOT_FS_OFFSET_OP1) == i ||
-		            (ROOT_FS_OFFSET + ROOT_FS_OFFSET_OP1 + ROOT_FS_OFFSET_OP2) == i){
-				i += CONFIG_ROOT_IMAGE_OFFSET_STEP;
-				continue;
-			}
-			ret = check_rootfs_image((unsigned long)FLASH_BASE+i+bank_offset);
-			i += CONFIG_ROOT_IMAGE_OFFSET_STEP;
-		}
-#endif
-	}
+    	if(ret==0) {
+    		return_addr = (unsigned long)FLASH_BASE+CODE_IMAGE_OFFSET2+bank_offset;		
+    		ret=check_system_image((unsigned long)FLASH_BASE+CODE_IMAGE_OFFSET2+bank_offset,  pHeader, psetting_header);
+    	}
+    	if(ret==0) {
+    		return_addr = (unsigned long)FLASH_BASE+CODE_IMAGE_OFFSET3+bank_offset;				
+    		ret=check_system_image((unsigned long)FLASH_BASE+CODE_IMAGE_OFFSET3+bank_offset,  pHeader, psetting_header);
+    	}			
+
+        #ifdef CONFIG_RTL_FLASH_MAPPING_ENABLE	
+    	i=CONFIG_LINUX_IMAGE_OFFSET_START;	
+    	while(i<=CONFIG_LINUX_IMAGE_OFFSET_END && (0==ret))
+    	{
+    		return_addr=(unsigned long)FLASH_BASE+i+bank_offset; 
+    		if(CODE_IMAGE_OFFSET == i || CODE_IMAGE_OFFSET2 == i || CODE_IMAGE_OFFSET3 == i){
+    			i += CONFIG_LINUX_IMAGE_OFFSET_STEP; 
+    			continue;
+    		}
+    		ret = check_system_image((unsigned long)FLASH_BASE+i+bank_offset, pHeader, psetting_header);
+    		i += CONFIG_LINUX_IMAGE_OFFSET_STEP; 
+    	}
+        #endif
+
+    	if(ret==2)
+        {
+            ret=check_rootfs_image((unsigned long)FLASH_BASE+ROOT_FS_OFFSET+bank_offset);
+            if(ret==0)
+            	ret=check_rootfs_image((unsigned long)FLASH_BASE+ROOT_FS_OFFSET+ROOT_FS_OFFSET_OP1+bank_offset);
+            if(ret==0)
+            	ret=check_rootfs_image((unsigned long)FLASH_BASE+ROOT_FS_OFFSET+ROOT_FS_OFFSET_OP1+ROOT_FS_OFFSET_OP2+bank_offset);
+
+            #ifdef CONFIG_RTL_FLASH_MAPPING_ENABLE
+        	i = CONFIG_ROOT_IMAGE_OFFSET_START;
+        	while((i <= CONFIG_ROOT_IMAGE_OFFSET_END) && (0==ret))
+        	{
+        		if( ROOT_FS_OFFSET == i ||
+        		    (ROOT_FS_OFFSET + ROOT_FS_OFFSET_OP1) == i ||
+        	            (ROOT_FS_OFFSET + ROOT_FS_OFFSET_OP1 + ROOT_FS_OFFSET_OP2) == i){
+        			i += CONFIG_ROOT_IMAGE_OFFSET_STEP;
+        			continue;
+        		}
+        		ret = check_rootfs_image((unsigned long)FLASH_BASE+i+bank_offset);
+        		i += CONFIG_ROOT_IMAGE_OFFSET_STEP;
+        	}
+            #endif
+        }
+#endif        
 	return ret;
 }
 
@@ -490,7 +564,7 @@ unsigned long sel_burnbank_offset()
 
 	if( ((boot_bank == BANK1_BOOT) && ( bank_mark != FORCEBOOT_BANK_MARK)) ||
 	     ((boot_bank == BANK2_BOOT) && ( bank_mark == FORCEBOOT_BANK_MARK))) //burn to bank2
-		 burn_offset = CONFIG_RTL_FLASH_DUAL_IMAGE_OFFSET;
+		 burn_offset = CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE;
 
 	return burn_offset;
 }
@@ -533,7 +607,7 @@ int check_dualbank_setting(int in_mode)
 	unsigned long back_bank_mark = 0, bank_offset;
 
 	ret1 = find_system_header(&tmp_bank_Header, 0, &retAddr1);
-	ret2 = find_system_header(&Header, CONFIG_RTL_FLASH_DUAL_IMAGE_OFFSET, &retAddr2);
+	ret2 = find_system_header(&Header, CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE, &retAddr2);
 	tmp_bank_mark1 = header_to_mark(ret1, &tmp_bank_Header);
 	tmp_bank_mark2 = header_to_mark(ret2, &Header);
 	
@@ -542,7 +616,7 @@ int check_dualbank_setting(int in_mode)
 		back_bank = BANK1_BOOT;
 		bank_mark = tmp_bank_mark2;
 		back_bank_mark = tmp_bank_mark1;
-		bank_offset = CONFIG_RTL_FLASH_DUAL_IMAGE_OFFSET;
+		bank_offset = CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE;
 		back_bank_offset = 0;
 	} else {	
 		boot_bank = BANK1_BOOT;
@@ -550,10 +624,10 @@ int check_dualbank_setting(int in_mode)
 		bank_mark = tmp_bank_mark1;
 		back_bank_mark = tmp_bank_mark2;
 		bank_offset = 0;
-		back_bank_offset = CONFIG_RTL_FLASH_DUAL_IMAGE_OFFSET;
+		back_bank_offset = CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE;
 	}
 	
-	prom_printf("bootbank is %d, bankmark %X\n", boot_bank, bank_mark);
+	prom_printf("bootbank is %d, bankmark %X [1-2=%x-%x]\n", boot_bank, bank_mark,tmp_bank_mark2,tmp_bank_mark1);
 	/*TFTP MODE no need to checksum*/
 	if(IN_TFTP_MODE == in_mode)
 		return (ret1 || ret2);
@@ -578,16 +652,19 @@ int check_dualbank_setting(int in_mode)
 int check_image(IMG_HEADER_Tp pHeader,SETTING_HEADER_Tp psetting_header)
 {
 	int ret=0;
+    
 #ifdef CONFIG_NFBI
 	prom_printf("---NFBI---\n");
 #else
  	//only one bank
- #ifndef CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE	
- 	ret=check_image_header(pHeader,psetting_header,0); 
- #else
-       ret = check_dualbank_setting(IN_BOOTING_MODE);
-#endif
+    #ifndef CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE	
+	    ret=check_image_header(pHeader,psetting_header,0); 
+    #else
+        ret = check_dualbank_setting(IN_BOOTING_MODE);
+    #endif
+
 #endif //end of NFBI else
+
 	return ret;
 }
 
@@ -1145,7 +1222,7 @@ void goToDownMode()
 #ifdef CONFIG_BOOT_TIME_MEASURE
 		cp3_count_print();
 #endif		
-		dprintf("\n goToDownMode ---Ethernet init Okay!\n");
+		dprintf("\n---Ethernet init Okay!\n");
 		sti();
 		tftpd_entry();
 #ifdef DHCP_SERVER			
@@ -1184,15 +1261,14 @@ void goToLocalStartMode(unsigned long addr,IMG_HEADER_Tp pheader)
 	void	(*jump)(void);
 	int i;
 	
-	prom_printf("\n goToLocalStartMode ---%X.[0x%x]\n",return_addr,addr);
 	word_ptr = (unsigned short *)pheader;
 	for (i=0; i<sizeof(IMG_HEADER_T); i+=2, word_ptr++)
-	*word_ptr = rtl_inw(addr + i);
+	    *word_ptr = rtl_inw(addr + i);
 			
 	// move image to SDRAM
 	flashread( pheader->startAddr,	(unsigned int)(addr-FLASH_BASE+sizeof(IMG_HEADER_T)), 	pheader->len-2);
 		
-    prom_printf("\n goToLocalStartMode st=0x%x,sig=%s,len=0x%x,bd=0x%x.\n",pheader->startAddr,pheader->signature,pheader->len,pheader->burnAddr);
+    //prom_printf("\n goToLocal [%x-%x] st=0x%x,sig=%s,len=0x%x,bd=0x%x.\n",return_addr,addr,pheader->startAddr,pheader->signature,pheader->len,pheader->burnAddr);
 
     if ( !user_interrupt(0) )  // See if user escape during copy image
 	{
@@ -1206,7 +1282,7 @@ void goToLocalStartMode(unsigned long addr,IMG_HEADER_Tp pheader)
 #ifdef CONFIG_BOOT_TIME_MEASURE
 		cp3_count_print();
 #endif
-		prom_printf("Jump to image start=[0x%x]...\n", pheader->startAddr);
+		prom_printf("Jump to 0x%x...\n", pheader->startAddr);
 		
 #ifdef CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE
 		set_bankinfo_register();
@@ -1226,7 +1302,7 @@ void debugGoToLocalStartMode(unsigned long addr,IMG_HEADER_Tp pheader)
 	void	(*jump)(void);
 	int i, count=500;
 
-	prom_printf("\n debugGoToLocalStartMode ---%X\n",return_addr);
+	//prom_printf("\n debugGoToLocalStartMode ---%X\n",return_addr);
 	word_ptr = (unsigned short *)pheader;
 	for (i=0; i<sizeof(IMG_HEADER_T); i+=2, word_ptr++)
 	*word_ptr = rtl_inw(addr + i);
@@ -1250,13 +1326,14 @@ void debugGoToLocalStartMode(unsigned long addr,IMG_HEADER_Tp pheader)
 		
 		if(REG32(0xb8019004)!=0xFE)
 			prom_printf("fail debug-Jump to image start=0x%x...\n", pheader->startAddr);
-		prom_printf("Debug-Jump to image start=0x%x...\n", pheader->startAddr);
+		//prom_printf("Debug-Jump to image start=0x%x...\n", pheader->startAddr);
 		jump = (void *)(pheader->startAddr);
 				
 		cli();
 		flush_cache(); 
 		jump();				 // jump to start
 	}
+   
 }
 
 //-------------------------------------------------------
@@ -1347,7 +1424,7 @@ void initInterrupt(void)
 void initFlash(void)
 {
 #if !defined(CONFIG_NONE_FLASH) && defined(CONFIG_SPI_FLASH)
-   	prom_printf("\n initFlash ...\n ========== SPI =============\n");    	
+   	//prom_printf("\n========== SPI =============\n");    	
    	spi_probe();                                    //JSW : SPI flash init		
 #elif !defined(CONFIG_NONE_FLASH)
 	flashinit();
@@ -1376,9 +1453,9 @@ void doBooting(int flag, unsigned long addr, IMG_HEADER_Tp pheader)
 #if defined(CONFIG_BOOT_TIME_MEASURE)
 			cp3_count_print();
 #endif
-			dprintf("\n---Escape booting by user\n");	
+			//dprintf("\n---Escape booting by user\n");	
 			//cli();
-		REG32(GIMR_REG)=0x0;   //add by jiawenjian
+		    REG32(GIMR_REG)=0x0;   //add by jiawenjian
 #if defined(CONFIG_BOOT_RESET_ENABLE)
 			Set_GPIO_LED_ON();
 #endif

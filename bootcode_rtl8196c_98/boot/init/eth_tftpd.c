@@ -73,6 +73,8 @@ char message[128];
 #endif
 char filename[TFTP_DEFAULTSIZE_PACKET];
 
+static char upgrade_name[15];//only upgrade fw.bin,we set the  CONFIG_BOOTFLAG  into a opposite value
+
 typedef void (* Func_t) (void);
 /*there are 3 states in the boot downloader*/
 /*Different frames received, these event can
@@ -427,7 +429,10 @@ static void setTFTP_WRQ(void)
     /*memorize CLIENT IP address*/
     memcpy(&(arptable_tftp[TFTP_CLIENT].ipaddr.s_addr),(Int8*)&nic.packet[ETH_HLEN+12],4);
     /*here we can parse the file name if required.*/
-    prom_printf("\n>> TFTP Client Upload, File Name: %s\n",tftppacket->u.wrq);   
+    prom_printf("\n>> TFTP Client Upload, File Name: %s\n",tftppacket->u.wrq);  
+
+    memset(upgrade_name,0,sizeof(upgrade_name));
+    memcpy(upgrade_name,tftppacket->u.wrq,sizeof(upgrade_name)-1);
     /*Cyrus Tsai*/
     /*initializaiton of writing file.*/
     //image_address=FILESTART; //sc_yang
@@ -617,7 +622,7 @@ void autoreboot()
 	cli();
 
 	flush_cache(); 
-	prom_printf("\n autoreboot reboot.......\n");
+	prom_printf("\nreboot.......\n");
 #if defined(RTL865X) || defined(RTL8196B) || defined(RTL8198)
 	/* this is to enable 865xc watch dog reset */
 	*(volatile unsigned long *)(0xB800311c)=0; 
@@ -640,10 +645,18 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 	int skip_check_signature=0;
 	unsigned long burn_offset =0; //mark_dual
 	
+    int bootflag = 0;
+    
+    flashread((unsigned long)&bootflag, CONFIG_BOOTFLAG, 4);
+    if(bootflag != 1 && bootflag != 0){
+        bootflag = 1;
+    }
+    bootflag = bootflag ? 0 : 1;
+	
 #ifdef CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE	
 	check_dualbank_setting(0); //must do check image to get current boot_bank.......
 #endif		
-    prom_printf("check enter ...\n");
+    prom_printf("check enter [0x%x]\n",startAddr);
 
 	while( (head_offset + sizeof(IMG_HEADER_T)) <  len){
 		sum=0; sum1=0;
@@ -724,20 +737,12 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 				
 				for (i=0; i< Header.len; i+=2) 
 				{
-					
-#if defined(RTL8196B) || defined(RTL8198)																		
-#if 1				
-					//sum +=*((unsigned short *)(startAddr+ head_offset + sizeof(IMG_HEADER_T) + i));
+                    #if defined(RTL8196B) || defined(RTL8198)																		
 					memcpy(&temp, (startAddr+ head_offset + sizeof(IMG_HEADER_T) + i), 2); // for alignment issue
 					sum+=temp;
-#else						
-					x=*((unsigned char *)(startAddr+ head_offset + sizeof(IMG_HEADER_T) + i));						
-					y=*((unsigned char *)(startAddr+ head_offset + sizeof(IMG_HEADER_T) + i+1));
-					sum+=(y|x<<8)&0xFFFF;
-#endif
-#else
-    			sum += *((unsigned short *)(startAddr+ head_offset + sizeof(IMG_HEADER_T) + i));
-#endif	//#if defined(RTL8196B) || defined(RTL8198)
+                    #else
+        			sum += *((unsigned short *)(startAddr+ head_offset + sizeof(IMG_HEADER_T) + i));
+                    #endif	//#if defined(RTL8196B) || defined(RTL8198)
     			}
     		}
 			if ( sum ) {
@@ -768,9 +773,9 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 		}
 		//prom_printf("checksum Ok !\n");
 		
-		prom_printf("burn Addr =0x%x! srcAddr=0x%x len =0x%x \n", Header.burnAddr, srcAddr, burnLen);
+		//prom_printf("burn Addr =0x%x! srcAddr=0x%x len =0x%x \n", Header.burnAddr, srcAddr, burnLen);
 
-#ifdef CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE				
+        #ifdef CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE				
 		if(!memcmp(Header.signature, FW_SIGNATURE, SIG_LEN) || !memcmp(Header.signature, FW_SIGNATURE_WITH_ROOT, SIG_LEN))
 		{
 			IMG_HEADER_T header_t, *header_p;
@@ -787,28 +792,48 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 			burn_offset = sel_burnbank_offset();
 			prom_printf("burn_offset = %x !\n",burn_offset);
 		}
-#endif
+        #endif
 
         int trueorfaulse = 0;
-#ifdef CONFIG_SPI_FLASH
+        #ifdef CONFIG_SPI_FLASH
+        
 		#ifdef SUPPORT_SPI_MIO_8198_8196C
-			if(Header.burnAddr+burn_offset+burnLen > spi_flash_info[0].chip_size)
-			{
-    			if(spi_flw_image_mio_8198(0,Header.burnAddr+burn_offset, srcAddr, spi_flash_info[0].chip_size-(Header.burnAddr+burn_offset))&&
-    				spi_flw_image_mio_8198(1,0, srcAddr+spi_flash_info[0].chip_size-(Header.burnAddr+burn_offset), Header.burnAddr+burn_offset+burnLen-spi_flash_info[0].chip_size))
-    				trueorfaulse = 1;
-			}
-			else
-				if(spi_flw_image_mio_8198(0,Header.burnAddr+burn_offset, srcAddr, burnLen))
-					trueorfaulse = 1;
+            if(Header.burnAddr+burn_offset+burnLen > spi_flash_info[0].chip_size)
+            {
+                prom_printf("no spaces enough!\n");
+                return;
+                if(spi_flw_image_mio_8198(0,Header.burnAddr+burn_offset, srcAddr, spi_flash_info[0].chip_size-(Header.burnAddr+burn_offset))&&
+                    spi_flw_image_mio_8198(1,0, srcAddr+spi_flash_info[0].chip_size-(Header.burnAddr+burn_offset), Header.burnAddr+burn_offset+burnLen-spi_flash_info[0].chip_size))
+                    trueorfaulse = 1;
+            }
+            else{
+                unsigned long offset = Header.burnAddr+burn_offset;
+                
+                if(!memcmp(Header.signature, FW_SIGNATURE, SIG_LEN) || !memcmp(Header.signature, FW_SIGNATURE_WITH_ROOT, SIG_LEN)){
+                    offset = bootflag ? CONFIG_LINUX_IMAGE2_OFFSET_START : offset;
+                    //flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);
+                }else if(!memcmp(Header.signature, ROOT_SIGNATURE, SIG_LEN)){
+                    offset = bootflag ? CONFIG_ROOT_IMAGE2_OFFSET_START : offset;
+                    //flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);
+                }
+
+                prom_printf("set bf=%d of=0x%x\n",bootflag,offset);
+                
+                //if(spi_flw_image_mio_8198(0,Header.burnAddr+burn_offset, srcAddr, burnLen))
+                if(spi_flw_image_mio_8198(0,offset, srcAddr, burnLen))
+                    trueorfaulse = 1;
+
+            }
 		#else
-			if(spi_flw_image(0,Header.burnAddr+burn_offset, srcAddr, burnLen))
+            if(spi_flw_image(0,Header.burnAddr+burn_offset, srcAddr, burnLen))
 		#endif
-#else
-		if (flashwrite(Header.burnAddr+burn_offset, srcAddr, burnLen))
-#endif
+        
+        #else
+    		if (flashwrite(Header.burnAddr+burn_offset, srcAddr, burnLen))
+        #endif
+        
 		if(trueorfaulse)
-			prom_printf("\nFlash Write Successed!\n%s", "<RealTek>");
+			prom_printf("\nFlash Write Successed!\n");
 		else{
 			prom_printf("\nFlash Write Failed!\n%s", "<RealTek>");
 			return ;
@@ -817,6 +842,9 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 		head_offset += Header.len + sizeof(IMG_HEADER_T);
 	} //while
 	if(reboot){
+        if(strstr(upgrade_name,"fw.bin")){
+            flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);
+        }
 	    autoreboot();
 	}
 		
@@ -913,7 +941,7 @@ static void prepareACK(void)
          one_tftp_lock=0; 
          SERVER_port++;
          
- 	 prom_printf( "\nSuccess!\n%s[jump_to_test=%d]", "<RealTek>",jump_to_test );
+ 	    prom_printf( "\nSuccess!\n" );
  	      
 #ifdef CONFIG_NFBI
         ret = check_system_image((unsigned long)image_address,&header);
@@ -941,7 +969,7 @@ static void prepareACK(void)
             outl(0,GIMR0); // mask all interrupt	    
             cli();
 
-            dprintf("Jump to [0x%x]\n", image_address);
+			dprintf("Jump to 0x%x\n", image_address);
             flush_cache(); 
             jumpF();	
         }

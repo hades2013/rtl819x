@@ -70,6 +70,7 @@ extern struct arptable_t	arptable[MAX_ARP];
 int YesOrNo(void);
 int CmdHelp( int argc, char* argv[] );
 
+#undef CONFIG_BOOT_DEBUG_ENABLE
 
 #if defined(CONFIG_BOOT_DEBUG_ENABLE)
 int CmdDumpWord( int argc, char* argv[] );
@@ -82,7 +83,16 @@ int CmdCmp(int argc, char* argv[]);
 int CmdIp(int argc, char* argv[]);
 int CmdAuto(int argc, char* argv[]);
 int CmdLoad(int argc, char* argv[]);
+
 #endif
+
+#define CONFIG_FLASH_DEBUG 1
+
+#if CONFIG_FLASH_DEBUG == 1
+int CmdFlashLoad(int argc, char* argv[]);
+int CmdFlashWrite(int argc, char* argv[]);
+#endif
+
 //int CmdEDl(int argc, char* argv[]);
 //int CmdEUl(int argc, char* argv[]);
 int CmdCfn(int argc, char* argv[]);
@@ -302,6 +312,12 @@ COMMAND_TABLE	MainCmdTable[] =
 #endif
 #ifdef RTL8198
 	{ "EEE"   ,1, CmdEEEPatch			, "EEE :Set EEE Pathch "}, 
+	
+#if CONFIG_FLASH_DEBUG == 1
+    { "FL"    ,1, CmdFlashLoad          , "FL <src>: Read from flash"},
+    { "FW"    ,2, CmdFlashWrite         , "FW <src><value>: Write to flash"},
+#endif
+
 #endif 
 };
 
@@ -711,7 +727,6 @@ int CmdIp(int argc, char* argv[])
 	unsigned char  *ptr;
 	unsigned int i;
 	int  ip[4];
-	
 	if (argc==0)
 	{	
 		printf(" Target Address=%d.%d.%d.%d\n",
@@ -849,7 +864,6 @@ int CmdWriteWord( int argc, char* argv[] )
 #ifdef REMOVED_UNUSED
 int CmdWriteAll( int argc, char* argv[] )
 {
-	
 	unsigned long src;
 	unsigned int value,i;
 	unsigned int length;
@@ -866,7 +880,6 @@ int CmdWriteAll( int argc, char* argv[] )
 	{
 		*(volatile unsigned int *)(src) = value;
 	}
-	
 }
 //---------------------------------------------------------------------------
 
@@ -959,6 +972,44 @@ int CmdLoad(int argc, char* argv[])
 
 	image_address= strtoul((const char*)(argv[0]), (char **)NULL, 16);		
 	printf("Set TFTP Load Addr 0x%x\n",image_address);
+}
+
+#endif
+
+#if CONFIG_FLASH_DEBUG == 1
+
+int CmdFlashLoad(int argc, char* argv[])
+{
+    unsigned long ret = 0,src=0x0400000;
+    if(argc==1){
+        src = strtoul((const char*)(argv[0]), (char **)NULL, 0);
+    }else{
+        printf("argc error!\n");
+        return 0;
+    }
+    flashread(&ret,src,4);
+    printf("0x%08x==0x%x\n",src,ret);
+    return 1;
+}
+
+int CmdFlashWrite(int argc, char* argv[])
+{
+    unsigned long ret = 0,src=0x0400000;
+    if(argc>=2){
+        src = strtoul((const char*)(argv[0]), (char **)NULL, 0);
+        ret = strtoul((const char*)(argv[1]), (char **)NULL, 0);
+
+        if(src < CONFIG_CFG_EXT_OFFSET_START || src >= CONFIG_CFG_EXT_OFFSET_END){
+            printf("address not in range(%x-%x)!\n",CONFIG_CFG_EXT_OFFSET_START,CONFIG_CFG_EXT_OFFSET_END-4);
+            return 0;
+        }
+    }else{
+        printf("argc error!\n");
+        return 0;
+    }
+    flashwrite(src,&ret,4);
+    printf("0x%08x==0x%x\n",src,ret);
+    return 1;
 }
 
 #endif

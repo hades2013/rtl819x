@@ -236,7 +236,7 @@ Author: Martin Renters
 #define AWAIT_QDRAIN	5	/* drain queue, process ARP requests */
 
 //-----------mib defines----
-#define HW_SETTING_OFFSET			0x6000
+#define HW_SETTING_OFFSET		0x6000
 #define DEFAULT_SETTING_OFFSET	0x8000
 
 #define CURRENT_SETTING_OFFSET	0xc000

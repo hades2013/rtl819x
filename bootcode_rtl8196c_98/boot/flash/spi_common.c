@@ -274,6 +274,8 @@ unsigned int test_spi_flash(unsigned char ucChip);
 #endif
 
 struct spi_flash_known spi_flash_registed[] = {
+
+#if 0
 /****************************************** Micronix Flash ******************************************/
 //#define MX25L1605D		0x00C22015
 {0x00C22015, 0x00, SIZE2N_02MB, SIZE_064K, SIZE_004K, SIZE_256B, "MX25L1605D/E"
@@ -291,6 +293,10 @@ struct spi_flash_known spi_flash_registed[] = {
 , 86, ComSrlCmd_SE,  SpiRead_11110B, ComSrlCmd_NoneQeBit,  PageWrite_111002
 #endif
 },
+
+#endif
+
+
 //#define MX25L6405D		0x00C22017
 //#define MX25L6405E		0x00C22017
 //#define MX25L6445E		0x00C22017
@@ -301,6 +307,9 @@ struct spi_flash_known spi_flash_registed[] = {
 , 86, ComSrlCmd_SE,  SpiRead_11110B, ComSrlCmd_NoneQeBit,  PageWrite_111002
 #endif
 },
+
+#if 0
+
 //#defien MX25L12805D		0x00C22018
 //#define MX25L12845E		0x00C22018
 {0x00C22018, 0x00, SIZE2N_16MB, SIZE_064K, SIZE_004K, SIZE_256B, "MX25L12805D/45E"
@@ -494,6 +503,8 @@ struct spi_flash_known spi_flash_registed[] = {
 , 50, ComSrlCmd_SE,  SpiRead_11110B, ComSrlCmd_NoneQeBit,  PageWrite_111002
 #endif
 }
+
+#endif
 };
 
 // spi flash probe
@@ -661,13 +672,12 @@ unsigned char calShift(unsigned char ucCapacityId, unsigned char ucChipSize)
 void prnFlashInfo(unsigned char ucChip, struct spi_flash_type sftInfo)
 {
 #if (SPI_DRIVER_MODE == 1)
-	NDEBUG(" [a]========================= Registed SPI Flash Model ========================= \n");
+	NDEBUG(" ========================= Registed SPI Flash Model ========================= \n");
 	NDEBUG("|No chipID  Sft chipSize blkSize secSize pageSize sdCk opCk      chipName    |\n");
 	NDEBUG("|%2d %6xh %2xh %7xh %6xh %6xh %7xh %4d %4d %17s|\n", ucChip, sftInfo.chip_id, sftInfo.size_shift, sftInfo.chip_size, sftInfo.block_size, sftInfo.sector_size, sftInfo.page_size, sftInfo.chipClock, sftInfo.chip_clk, sftInfo.chip_name);
 	////////1111 2222 3333 4444 5555 6666 7777 8888 9999 aaaa
 	NDEBUG(" ============================================================================ \n");
 #else
-    NDEBUG("prnFlashInfo ...\n");
 	NDEBUG(" ------------------------- Force into Single IO Mode ------------------------ \n");
 	NDEBUG("|No chipID  Sft chipSize blkSize secSize pageSize sdCk opCk      chipName    |\n");
 	NDEBUG("|%2d %6xh %2xh %7xh %6xh %6xh %7xh %4d %4d %17s|\n", ucChip, sftInfo.chip_id, sftInfo.size_shift, sftInfo.chip_size, sftInfo.block_size, sftInfo.sector_size, sftInfo.page_size, sftInfo.chipClock, sftInfo.chip_clk, sftInfo.chip_name);
@@ -770,7 +780,6 @@ unsigned int SeqCmd_Read(unsigned char ucChip,  unsigned char ucIOWidth, unsigne
 // Sector Erase (SE) Sequence (Command 20)
 unsigned int ComSrlCmd_SE(unsigned char ucChip, unsigned int uiAddr)
 {
-    prom_printf("ComSrlCmd_SE... \n");
 	SeqCmd_Order(ucChip,  IOWIDTH_SINGLE, SPICMD_WREN);
 	SeqCmd_Write(ucChip,  IOWIDTH_SINGLE, SPICMD_SE, uiAddr, 3);
 	KDEBUG("ComSrlCmd_SE: ucChip=%x; uiSector=%x; uiSectorSize=%x; SPICMD_SE=%x\n", ucChip, uiAddr, spi_flash_info[ucChip].sector_size, SPICMD_SE);	
@@ -795,7 +804,6 @@ unsigned int ComSrlCmd_CE(unsigned char ucChip)
 // without QE bit
 unsigned int ComSrlCmd_NoneQeBit(unsigned char ucChip)
 {
-    prom_printf("ComSrlCmd_NoneQeBit \n");
 	KDEBUG("ComSrlCmd_NoneQeBit: ucChip=%x;\n", ucChip);
 	return 0;
 }
@@ -1017,7 +1025,6 @@ unsigned int ComSrlCmd_ComWriteData(unsigned char ucChip, unsigned int uiAddr, u
 // MX25L1605 MX25L3205 Read at High Speed (FAST_READ) Sequence (Command 0B)
 unsigned int  SpiRead_11110B(unsigned char ucChip, unsigned int uiAddr, unsigned int uiLen, unsigned char* pucBuffer)
 {
-    prom_printf("SpiRead_11110B ucChip=%x\n",ucChip);
 	KDEBUG(" SpiRead_11110B: ucChip=%x; uiAddr=%x; uiLen=%x; pucBuffer=%x; SPICMD_FASTREAD=%x;\n", ucChip, uiAddr, uiLen, (unsigned int)pucBuffer, SPICMD_FASTREAD);
 	return ComSrlCmd_ComRead(ucChip, uiAddr, uiLen, pucBuffer, SPICMD_FASTREAD, ISFAST_NO, IOWIDTH_SINGLE, DUMMYCOUNT_1);
 }

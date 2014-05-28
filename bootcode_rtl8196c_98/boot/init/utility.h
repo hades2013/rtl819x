@@ -39,10 +39,12 @@ unsigned long kernelsp;
 #define DS_IMAGE_OFFSET		(25*1024)	//0x6400
 #define CS_IMAGE_OFFSET		(32*1024)	//0x8000
 
-#define CODE_IMAGE_OFFSET		(64*1024)	//0x10000
+#define CODE_IMAGE_OFFSET	(64*1024)	//0x10000
 #define CODE_IMAGE_OFFSET2	(128*1024)	//0x20000
 #define CODE_IMAGE_OFFSET3	(192*1024)	//0x30000
 #define CODE_IMAGE_OFFSET4	(0x8000)
+#define CODE_IMAGE_OFFSET_OP1 (0x10000)
+
 
 //flash mapping
 #define ROOT_FS_OFFSET		(0xE0000)

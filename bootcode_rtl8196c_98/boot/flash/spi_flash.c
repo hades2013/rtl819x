@@ -121,6 +121,7 @@ int spi_flw_image(unsigned int chip, unsigned int flash_addr_offset ,unsigned ch
 int spi_flw_image_mio_8198(unsigned int cnt, unsigned int flash_addr_offset , unsigned char *image_addr, unsigned int image_size)
 {
 	KDEBUG("spi_flw_image_mio_8198: cnt=%x; flash_addr_offset=%x; image_addr=%x; image_size=%x\n", cnt, flash_addr_offset, (unsigned int)image_addr, 	image_size);
+	prom_printf("spi: c=%x; a=%x; i=%x; s=%x\n", cnt, flash_addr_offset, (unsigned int)image_addr, 	image_size);
 	return spi_flash_info[cnt].pfWrite(cnt, flash_addr_offset, image_size, image_addr);
 }
 
