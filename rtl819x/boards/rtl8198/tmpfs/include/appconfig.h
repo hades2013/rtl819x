@@ -180,6 +180,7 @@
 #define CONFIG_NLS_DEFAULT "iso8859-1"
 #define CONFIG_FRAME_WARN 1024
 #define CONFIG_CMDLINE "console=ttyS0,38400 root=/dev/mtdblock1"
+#define CONFIG_CMDLINE2 "console=ttyS0,38400 root=/dev/mtdblock5"
 #define CONFIG_CRYPTO 1
 #define CONFIG_CRYPTO_ALGAPI 1
 #define CONFIG_CRYPTO_ALGAPI2 1

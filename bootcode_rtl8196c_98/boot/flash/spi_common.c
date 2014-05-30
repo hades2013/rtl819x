@@ -275,7 +275,6 @@ unsigned int test_spi_flash(unsigned char ucChip);
 
 struct spi_flash_known spi_flash_registed[] = {
 
-#if 0
 /****************************************** Micronix Flash ******************************************/
 //#define MX25L1605D		0x00C22015
 {0x00C22015, 0x00, SIZE2N_02MB, SIZE_064K, SIZE_004K, SIZE_256B, "MX25L1605D/E"
@@ -294,8 +293,6 @@ struct spi_flash_known spi_flash_registed[] = {
 #endif
 },
 
-#endif
-
 
 //#define MX25L6405D		0x00C22017
 //#define MX25L6405E		0x00C22017
@@ -307,8 +304,6 @@ struct spi_flash_known spi_flash_registed[] = {
 , 86, ComSrlCmd_SE,  SpiRead_11110B, ComSrlCmd_NoneQeBit,  PageWrite_111002
 #endif
 },
-
-#if 0
 
 //#defien MX25L12805D		0x00C22018
 //#define MX25L12845E		0x00C22018
@@ -503,8 +498,6 @@ struct spi_flash_known spi_flash_registed[] = {
 , 50, ComSrlCmd_SE,  SpiRead_11110B, ComSrlCmd_NoneQeBit,  PageWrite_111002
 #endif
 }
-
-#endif
 };
 
 // spi flash probe

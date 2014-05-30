@@ -645,18 +645,22 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 	int skip_check_signature=0;
 	unsigned long burn_offset =0; //mark_dual
 	
-    int bootflag = 0;
-    
-    flashread((unsigned long)&bootflag, CONFIG_BOOTFLAG, 4);
-    if(bootflag != 1 && bootflag != 0){
-        bootflag = 1;
+    int bootflag = 0,fl_size = 0;
+
+    fl_size = (((*((unsigned int *)0xb8001204))>>21) & 0x7);
+
+    if(fl_size >= 6){// flash is large than 8Mbytes
+        flashread((unsigned long)&bootflag, CONFIG_BOOTFLAG, 4);
+        if(bootflag != 1 && bootflag != 0){
+            bootflag = 1;
+        }
+        bootflag = bootflag ? 0 : 1;
     }
-    bootflag = bootflag ? 0 : 1;
 	
 #ifdef CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE	
 	check_dualbank_setting(0); //must do check image to get current boot_bank.......
 #endif		
-    prom_printf("check enter [0x%x]\n",startAddr);
+    //prom_printf("check enter [0x%x]\n",startAddr);
 
 	while( (head_offset + sizeof(IMG_HEADER_T)) <  len){
 		sum=0; sum1=0;
@@ -684,7 +688,7 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 #endif			
 
 			skip_header = sign_tbl[i].skip ;
-            prom_printf("sig=%s,len=%d, skip=%d\n",Header.signature,Header.len,sign_tbl[i].skip);
+            //prom_printf("sig=%s,len=%d, skip=%d\n",Header.signature,Header.len,sign_tbl[i].skip);
 			if(skip_header){
 				srcAddr = startAddr + head_offset + sizeof(IMG_HEADER_T);
 					burnLen = Header.len; // +checksum
@@ -811,14 +815,12 @@ void checkAutoFlashing(unsigned long startAddr, int len)
                 
                 if(!memcmp(Header.signature, FW_SIGNATURE, SIG_LEN) || !memcmp(Header.signature, FW_SIGNATURE_WITH_ROOT, SIG_LEN)){
                     offset = bootflag ? CONFIG_LINUX_IMAGE2_OFFSET_START : offset;
-                    //flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);
                 }else if(!memcmp(Header.signature, ROOT_SIGNATURE, SIG_LEN)){
                     offset = bootflag ? CONFIG_ROOT_IMAGE2_OFFSET_START : offset;
-                    //flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);
                 }
 
-                prom_printf("set bf=%d of=0x%x\n",bootflag,offset);
-                
+                //prom_printf("set bf=%d of=0x%x\n",bootflag,offset);
+
                 //if(spi_flw_image_mio_8198(0,Header.burnAddr+burn_offset, srcAddr, burnLen))
                 if(spi_flw_image_mio_8198(0,offset, srcAddr, burnLen))
                     trueorfaulse = 1;
@@ -842,7 +844,7 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 		head_offset += Header.len + sizeof(IMG_HEADER_T);
 	} //while
 	if(reboot){
-        if(strstr(upgrade_name,"fw.bin")){
+        if(strstr(upgrade_name,"fw.bin") && (fl_size >= 6)){
             flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);
         }
 	    autoreboot();

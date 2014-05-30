@@ -53,7 +53,7 @@ void start_kernel(void)
 	return_addr=0;
 	ret=check_image	(&header,&setting_header);
 
-    //prom_printf("start_kernel ret=%d signature=%s\n",ret,header.signature);
+    prom_printf("start kernel at flash [%x]\n",return_addr-FLASH_BASE);
 
 #if defined(CONFIG_POST_ENABLE)
 	int post_test_result=1;

@@ -1496,7 +1496,7 @@ extern int PCIE_reset_procedure(int PCIE_Port0and1_8196B_208pin, int Use_Externa
 		res->read_proc = default_read_proc;
 		res->write_proc = default_write_proc;
 	}
-
+    
 #ifdef READ_RF_SWITCH_GPIO
 	res = create_proc_entry("rf_switch", 0, NULL);
 	if (res) {

@@ -9,3 +9,6 @@
 
 extern struct mutex mtd_table_mutex;
 extern struct mtd_info *mtd_table[MAX_MTD_DEVICES];
+
+int mtd_flash_read(unsigned char * src, unsigned int addr, unsigned int cnt);
+

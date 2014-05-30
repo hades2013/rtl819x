@@ -182,13 +182,17 @@ static void spi_destroy2(struct mtd_info *mtd)
 	}
 }
 #endif
+
 int __init spi_probe_init(void)
 {
+    struct proc_dir_entry *res=NULL;
+    
 	printk("SPI INIT\n");
 	register_mtd_chip_driver(&spi_chipdrv1);
 #ifdef CONFIG_RTL_TWO_SPI_FLASH_ENABLE
 	register_mtd_chip_driver(&spi_chipdrv2);
 #endif
+
 	return 0;
 }
 
@@ -199,6 +203,9 @@ void __exit spi_probe_exit(void)
 	unregister_mtd_chip_driver(&spi_chipdrv2);
 #endif
 }
+
+
+
 
 module_init(spi_probe_init);
 module_exit(spi_probe_exit);

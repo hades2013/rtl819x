@@ -1,0 +1,175 @@
+
+<1>  增加支持备份分区功能
+<2>  XXXXXXX
+
+
+
+
+***************************************************修改记录 <1> **************************************************
+
+<1>  增加支持备份分区功能
+#define HW_SETTING_OFFSET	0x6000
+#define DEFAULT_SETTING_OFFSET	0x8000
+#define CURRENT_SETTING_OFFSET	0xc000
+
+
+#define CONFIG_LINUX_IMAGE_OFFSET_START 0x10000
+#define CONFIG_LINUX_IMAGE_OFFSET_END 0x40000
+#define CONFIG_LINUX_IMAGE_OFFSET_STEP 0x1000
+#define CONFIG_ROOT_IMAGE_OFFSET_START 0xE0000
+#define CONFIG_ROOT_IMAGE_OFFSET_END 0x130000
+#define CONFIG_ROOT_IMAGE_OFFSET_STEP 0x1000
+#define CONFIG_BOOT_CODE_SIZE_CHECK 1
+#define CONFIG_BOOT_CODE_SIZE 0x6000
+
+
+#define MTD_BOOT_OFFSET  0x00000
+#define MTD_BOOT_SIZE 0x6000
+#define MTD_KERNEL_OFFSET 0x30000
+#define MTD_KERNEL_SIZE  (0x130000 - MTD_KERNEL_OFFSET)
+
+#define MTD_BOOT "/dev/mtd0"
+#define MTD_KERNEL "/dev/mtd0"
+#define MTD_ROOTFS "/dev/mtd1"
+#define MTD_ROOTFS1 "/dev/mtd4"
+
+
+#define MTDBLOCK_BOOT "/dev/mtdblock0"
+#define MTDBLOCK_KERNEL "/dev/mtdblock0"
+#define MTDBLOCK_ROOTFS  "/dev/mtdblock1"
+#define MTDBLOCK_ROOTFS1 "/dev/mtdblock4"
+
+[boot修改]： 目录-->bootcode_rtl8196c_98
+
+原来保存镜像的flash地址分配是：
+
+0x00000000   --   0x00006000   --boot
+0x00006000   --   0x00010000   --cfg,比如MAC，IP address
+0x00010000   --   0x00030000   --webpages 
+0x00030000   --   0x00130000   --linux kernel
+0x00130000   --   0x003E0000   --linux rootfs
+0x003E0000   --   0x00400000   --nvram
+0x00400000   --   0x00530000   --linux kernel1，但是没有用到
+0x00530000   --   0x007E0000   --linux rootfs1，但是没有用到
+0x007E0000   --   0x00530000   --config
+
+
+修改后的地址分配是：
+原来保存镜像的flash地址分配是：
+
+0x00000000   --   0x00006000   --boot
+0x00006000   --   0x00010000   --cfg,比如MAC，IP address
+0x00010000   --   0x00030000   --webpages 
+0x00030000   --   0x00130000   --linux kernel
+0x00130000   --   0x003E0000   --linux rootfs
+0x003E0000   --   0x00400000   --nvram
+0x00400000   --   0x00404000   --cfg2,比如bootflag等
+0x00404000   --   0x00530000   --linux kernel1
+0x00530000   --   0x007E0000   --linux rootfs1
+0x007E0000   --   0x00530000   --config
+
+
+在boot下升级时，需要升级fw.bin文件，才能在升级完成后自动重启时，从linux kernel1 或者 linux kernel起来
+
+修改函数主要有：
+checkAutoFlashing  --增加变量使用 int bootflag = 0,fl_size = 0;
+
+在monitor.c文件中，增加两个命令：fl 0x400000 / fw 0x400000 1/ fw 0x400000 0   可以手动改变启动分区fl --flash read, fw---flash write
+
+
+
+[kernel改动]
+
+的文件是：/opt/workspace/rtl8198/rtl819x/linux-2.6.30/drivers/mtd/maps/rtl819x_flash.c
+增加分区：
+
+
+#define EOC_CFG_EXT_NAME    "cfg-ext"
+#define EOC_CFG_EXT_SIZE    CONFIG_CFG_EXT_SIZE 
+#define EOC_CFG_EXT_OFFSET  (EOC_NVRAM0_OFFSET + EOC_NVRAM0_SIZE)
+
+
+rtl8198/rtl819x/linux-2.6.30/include/linux/autoconf.h :
+#define CONFIG_CFG_EXT_SIZE 0x4000 
+#define CONFIG_CFG_BOOTFLAG 0 // 4 bytes
+
+
+在rtl8198/rtl819x/linux-2.6.30/drivers/mtd/mtdcore.c:
+增加函数：
+mtd_flash_read(unsigned char * src, unsigned int addr, unsigned int cnt)
+mtd_flash_write (unsigned char *src, unsigned int addr, unsigned int cnt)  --以后读取cfg-ext分区里面的数据，可以使用这两个函数，
+
+static int bf_read_proc(char *page, char **start, off_t off,int count, int *eof, void *data)
+static int bf_write_proc(struct file *file, const char *buffer,unsigned long count, void *data)
+
+这两个函数使用了 CONFIG_CFG_BOOTFLAG 定义，后面如果需要增加保存在Flash的变量，可以在这后面增加定义
+
+在rtl8198/rtl8198x/linux-2.6.30/arch/rlx/kernel/setup.c中arch_mem_init函数内增加：(-----------这里的功能是修改启动时mount文件系统选择-----------)
+    fl_size = (((*((unsigned int *)(0xb8001204)))>>21) & 0x7);
+    /*
+        fl_size = 0,  -----   128kbyte flash
+        fl_size = 1,  -----   256kbyte flash
+        fl_size = 2,  -----   512kbyte flash
+        fl_size = 3,  -----   1Mbyte flash
+        fl_size = 4,  -----   2Mbyte flash
+        fl_size = 5,  -----   4Mbyte flash
+        fl_size = 6,  -----   8Mbyte flash
+        fl_size = 7,  -----   16Mbyte flash
+      */
+
+    if(fl_size >= 6){
+        bootflag = *((unsigned int *)(0xbd000000+CONFIG_CFG_EXT_START));
+    }
+    
+    if(bootflag == 1){
+        strlcpy(arcs_cmdline,CONFIG_CMDLINE2,sizeof(arcs_cmdline));
+    }else{
+        strlcpy(arcs_cmdline,CONFIG_CMDLINE,sizeof(arcs_cmdline));
+    }
+    
+    pr_info("Raise from rootfs %d(flash size is %s)\n",bootflag,fsize[fl_size]);
+
+
+
+
+[应用代码]：
+
+app/master/sys/mtd_utils.h:
+
+#define MTD_KERNEL_OFFSET_OP2 0x404000
+#define MTD_KERNEL_SIZE_OP2  (0x530000 - MTD_KERNEL_OFFSET_OP2)
+
+mtd_write_start函数内，根据rtl8198_get_bootflag()的结果来写入flash块
+
+
+boot启动时，有打印：Boot raise from 1/0
+
+kernel启动时，有打印：Raise from rootfs 1/0(flash size is ??byte)
+
+可以挂一片4M或者一片8M的flash芯片
+
+
+在cmd_system.c文件中，config节点下增加两个命令：show bootflag/ bootflag <0-1>可用于手动改变启动分区
+
+***************************************************修改记录 <2> **************************************************
+
+<2>  XXXXXXX
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -121,7 +121,7 @@ config menuconfig:
 #
 .PHONY: users bins
 users bins:
-	$(MAKE) -C $(DIR_LINUX) dep > /dev/null
+	$(MAKE) -C $(DIR_LINUX) dep #> /dev/null
 	$(MAKE) -C $(DIR_USERS) || exit $$?
 
 #

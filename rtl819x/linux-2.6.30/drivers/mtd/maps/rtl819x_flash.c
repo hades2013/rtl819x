@@ -52,9 +52,13 @@
 #define EOC_NVRAM0_SIZE    0x20000 
 #define EOC_NVRAM0_OFFSET  (CONFIG_RTL_ROOT_IMAGE_OFFSET + EOC_ROOTFS0_SIZE)
 
+#define EOC_CFG_EXT_NAME    "cfg-ext"
+#define EOC_CFG_EXT_SIZE    CONFIG_CFG_EXT_SIZE 
+#define EOC_CFG_EXT_OFFSET  (EOC_NVRAM0_OFFSET + EOC_NVRAM0_SIZE)
+
 #define EOC_LINUX1_NAME    "linux1"
-#define EOC_LINUX1_SIZE    0x130000 
-#define EOC_LINUX1_OFFSET  (EOC_NVRAM0_OFFSET + EOC_NVRAM0_SIZE)
+#define EOC_LINUX1_SIZE    0x12C000 // (0x130000-0x4000) 
+#define EOC_LINUX1_OFFSET  (EOC_CFG_EXT_OFFSET + EOC_CFG_EXT_SIZE)
 
 #define EOC_ROOTFS1_NAME    "rootfs1"
 #define EOC_ROOTFS1_SIZE    0x2B0000 
@@ -212,6 +216,11 @@ static struct mtd_partition rtl8196_parts1[] = {
                 name:  EOC_NVRAM0_NAME,
                 size:  EOC_NVRAM0_SIZE,
                 offset:  EOC_NVRAM0_OFFSET,
+        },
+        {
+                name:  EOC_CFG_EXT_NAME,
+                size:  EOC_CFG_EXT_SIZE,
+                offset:  EOC_CFG_EXT_OFFSET,
         },
         {
                 name:  EOC_LINUX1_NAME,

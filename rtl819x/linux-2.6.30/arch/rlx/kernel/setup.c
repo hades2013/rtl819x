@@ -458,6 +458,9 @@ early_param("mem", early_parse_mem);
 static void __init arch_mem_init(char **cmdline_p)
 {
 	extern void bsp_setup(void);
+    int bootflag = 0;
+    int fl_size = 0;//flash size
+    char fsize[][20]={"128kbyte","256kbyte","512kbyte","1Mbyte","2Mbyte","4Mbyte","8Mbyte","16Mbyte"};
 
 	/* call board setup routine */
 	bsp_setup();
@@ -465,6 +468,31 @@ static void __init arch_mem_init(char **cmdline_p)
 	pr_info("Determined physical RAM map:\n");
 	print_memory_map();
 
+    /*read bootflag and set arcs_cmdline*/
+    fl_size = (((*((unsigned int *)(0xb8001204)))>>21) & 0x7);
+    /*
+        fl_size = 0,  -----   128kbyte flash
+        fl_size = 1,  -----   256kbyte flash
+        fl_size = 2,  -----   512kbyte flash
+        fl_size = 3,  -----   1Mbyte flash
+        fl_size = 4,  -----   2Mbyte flash
+        fl_size = 5,  -----   4Mbyte flash
+        fl_size = 6,  -----   8Mbyte flash
+        fl_size = 7,  -----   16Mbyte flash
+      */
+
+    if(fl_size >= 6){
+        bootflag = *((unsigned int *)(0xbd000000+CONFIG_CFG_EXT_START));
+    }
+    
+    if(bootflag == 1){
+        strlcpy(arcs_cmdline,CONFIG_CMDLINE2,sizeof(arcs_cmdline));
+    }else{
+        strlcpy(arcs_cmdline,CONFIG_CMDLINE,sizeof(arcs_cmdline));
+    }
+    
+    pr_info("Raise from rootfs %d(flash size is %s)\n",bootflag,fsize[fl_size]);
+    
 	strlcpy(command_line, arcs_cmdline, sizeof(command_line));
 	strlcpy(boot_command_line, command_line, COMMAND_LINE_SIZE);
 

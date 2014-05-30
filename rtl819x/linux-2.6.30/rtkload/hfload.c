@@ -86,7 +86,7 @@ int main(unsigned long stack_start_addr)
 #endif
 
 #ifndef __DO_QUIET__
-	printf("decompressing kernel:\n");
+	printf("decompressing kernel[0x%x]:\n",stack_start_addr);
 #endif
 
 #ifdef CONFIG_RTL8197B_PANA

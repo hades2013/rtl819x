@@ -602,6 +602,212 @@ done:
 /*====================================================================*/
 /* Init code */
 
+int mtd_flash_read(unsigned char * src, unsigned int addr, unsigned int cnt)
+{
+
+    size_t retLen;
+    size_t readLen;
+    loff_t from;
+    int rc = 1;
+
+    struct mtd_info *pstMtd = NULL;
+
+    if (NULL == src)
+    {
+        printk( "drv_flash_read src null\n");
+        return 1;
+    }
+
+    retLen = cnt;
+    readLen = cnt;
+    from = addr;
+
+    pstMtd = get_mtd_device_nm("cfg-ext");
+
+    if (IS_ERR(pstMtd))
+    {
+        printk( "drv_flash_read get_mtd_device_nm ERROR\n");
+        return 1;
+    }
+
+    if(pstMtd->read)
+        rc = pstMtd->read(pstMtd, from, readLen, &retLen, (u_char *)src);
+
+    return rc;
+
+}
+/* addr: 0~8M
+*/
+int
+mtd_flash_write (unsigned char *src, unsigned int addr, unsigned int cnt)
+{
+    size_t retLen;
+    size_t readLen;
+    loff_t from;
+    int rc = 1;
+
+    struct mtd_info *pstMtd = NULL;
+
+    if (NULL == src)
+    {
+        printk( "mtd_flash_write src null\n");
+        return 1;
+    }
+
+    retLen = cnt;
+    readLen = cnt;
+    from = addr;
+
+    pstMtd = get_mtd_device_nm("cfg-ext");
+
+    if (IS_ERR(pstMtd))
+    {
+        printk( "mtd_flash_write get_mtd_device_nm ERROR\n");
+        return 1;
+    }
+
+    //printk( "pstMtd->write %x\n", pstMtd->write);
+    //printk( "from %llx readLen %x retLen %x\n", from, readLen, retLen);
+    if(pstMtd->write)
+        rc = pstMtd->write(pstMtd, from, readLen, &retLen, (u_char *)src);
+
+    return rc;
+
+}
+int 
+mtd_flash_sect_erase (unsigned int addr_first, unsigned int addr_last)
+{
+
+    int rc = 1;
+    unsigned int uiLen;
+    struct erase_info stEraseInof;
+    struct mtd_info *pstMtd = NULL;
+
+    if (addr_last < addr_first)
+    {
+        printk( "mtd_flash_sect_erase src null\n");
+        return 1;
+    }
+
+    memset(&stEraseInof, 0, sizeof(stEraseInof));
+
+    uiLen = addr_last - addr_first;
+    uiLen = uiLen + 1;
+
+    pstMtd = get_mtd_device_nm("cfg-ext");
+    
+    stEraseInof.addr = addr_first;
+    stEraseInof.len = uiLen;
+    stEraseInof.callback = NULL;
+    stEraseInof.mtd = pstMtd;
+    
+    if (IS_ERR(pstMtd))
+    {
+        printk( "mtd_flash_sect_erase get_mtd_device_nm ERROR\n");
+        return 1;
+    }
+    
+    if(pstMtd->erase)
+        rc = pstMtd->erase(pstMtd, &stEraseInof);
+
+    return rc;
+
+}
+
+
+static struct proc_dir_entry *proc_bootflag;
+DEFINE_MUTEX(bootflag_mutex);
+EXPORT_SYMBOL_GPL(bootflag_mutex);
+
+static int bf_read_proc(char *page, char **start, off_t off,
+				int count, int *eof, void *data)
+{
+	int len;
+    int bootflag = 0,fl_size;//flash size
+    int rc = 0;
+
+    mutex_lock(&bootflag_mutex);
+
+    fl_size = (((*((unsigned int *)(0xb8001204)))>>21) & 0x7);
+    
+    /*
+            fl_size = 0,  -----   128kbyte flash
+            fl_size = 1,  -----   256kbyte flash
+            fl_size = 2,  -----   512kbyte flash
+            fl_size = 3,  -----   1Mbyte flash
+            fl_size = 4,  -----   2Mbyte flash
+            fl_size = 5,  -----   4Mbyte flash
+            fl_size = 6,  -----   8Mbyte flash
+            fl_size = 7,  -----   16Mbyte flash
+       */
+
+    if(fl_size >= 6){
+    
+        rc = mtd_flash_read((unsigned char *)&bootflag,CONFIG_CFG_BOOTFLAG,4);//first 4 bytes is bootflag
+    	if (rc != 0) {
+            printk("bf_read_proc env get erroor\n");
+            return false;
+    	}
+    }
+
+    mutex_unlock(&bootflag_mutex);
+    
+	len = sprintf(page, "%d\n", bootflag);
+	if (len <= off+count) *eof = 1;
+	  *start = page + off;
+	len -= off;
+	if (len>count) len = count;
+	if (len<0) len = 0;
+	  return len;
+    return 1;
+}
+
+static int bf_write_proc(struct file *file, const char *buffer,
+				unsigned long count, void *data)
+{
+    unsigned char bootflag = '1';
+    unsigned int *env = NULL;
+    int rc = 1,fl_size;
+    
+	if (count < 2)
+		return -EFAULT;
+	if (buffer && !copy_from_user(&bootflag, buffer, 1)) {
+        
+        mutex_lock(&bootflag_mutex);
+
+        fl_size = (((*((unsigned int *)(0xb8001204)))>>21) & 0x7);
+
+        if(fl_size >= 6){
+
+            env = (unsigned int *)kmalloc(CONFIG_CFG_EXT_SIZE, GFP_KERNEL);
+            if(env == NULL){
+                printk("bf_write_proc no memory\n");
+                mutex_unlock(&bootflag_mutex);
+                return 0;
+            }
+            
+            rc = mtd_flash_read((unsigned char *)env,0,CONFIG_CFG_EXT_SIZE);//first 4 bytes is bootflag
+            if (rc != 0) {
+                printk("bf_write_proc env get erroor\n");
+                kfree(env);
+                mutex_unlock(&bootflag_mutex);
+                return false;
+            }
+            
+            env[CONFIG_CFG_BOOTFLAG] = (bootflag == '1') ? 1 : 0;
+
+            mtd_flash_sect_erase(0,CONFIG_CFG_EXT_SIZE-1);
+            
+            mtd_flash_write((unsigned char*)env,0,CONFIG_CFG_EXT_SIZE);//the first 4 bytes is bootflag
+        }
+
+        mutex_unlock(&bootflag_mutex);
+        
+		return count;
+	}
+    return count;
+}
+
 static int __init init_mtd(void)
 {
 	mtd_class = class_create(THIS_MODULE, "mtd");
@@ -614,15 +820,26 @@ static int __init init_mtd(void)
 	if ((proc_mtd = create_proc_entry( "mtd", 0, NULL )))
 		proc_mtd->read_proc = mtd_read_proc;
 #endif /* CONFIG_PROC_FS */
+
+    proc_bootflag = create_proc_entry("bootflag", 0, NULL);
+    if (proc_bootflag) {
+        proc_bootflag->read_proc = bf_read_proc;
+        proc_bootflag->write_proc = bf_write_proc;
+    }
+
 	return 0;
 }
 
 static void __exit cleanup_mtd(void)
 {
 #ifdef CONFIG_PROC_FS
-        if (proc_mtd)
-		remove_proc_entry( "mtd", NULL);
+    if (proc_mtd)
+	remove_proc_entry( "mtd", NULL);
 #endif /* CONFIG_PROC_FS */
+
+    if(proc_bootflag){
+        remove_proc_entry( "bootflag",NULL);
+    }
 	class_destroy(mtd_class);
 }
 

@@ -1,7 +1,7 @@
 /*
  * Automatically generated C config: don't edit
  * Linux kernel version: 2.6.30.9
- * Fri Aug 30 11:28:09 2013
+ * Mon May 26 15:10:02 2014
  */
 #define AUTOCONF_INCLUDED
 #define CONFIG_SQUASHFS_LZMA 1
@@ -196,4 +196,11 @@
 #define CONFIG_RTL_MLD_SNOOPING 1
 #define CONFIG_LOG_BUF_SHIFT 12
 #define CONFIG_CMDLINE "console=ttyS0,38400 root=/dev/mtdblock1"
+#define CONFIG_CMDLINE2 "console=ttyS0,38400 root=/dev/mtdblock5"
 #define CONFIG_ARCH_POPULATES_NODE_MAP 1
+
+
+#define CONFIG_CFG_EXT_START 0x400000 
+#define CONFIG_CFG_EXT_SIZE 0x4000 
+#define CONFIG_CFG_BOOTFLAG 0 // 4 bytes
+

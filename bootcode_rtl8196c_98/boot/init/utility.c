@@ -120,7 +120,7 @@ int check_system_image(unsigned long addr,IMG_HEADER_Tp pHeader,SETTING_HEADER_T
 	for (i=0; i<sizeof(IMG_HEADER_T); i+=2, word_ptr++)
 		*word_ptr = rtl_inw(addr + i);	
 
-    prom_printf("check_system_image, signature=%s len=%d\n",pHeader->signature,pHeader->len);
+    //prom_printf("check_system_image, signature=%s len=%d\n",pHeader->signature,pHeader->len);
 
 	memcpy(image_sig, FW_SIGNATURE, SIG_LEN);
 	memcpy(image_sig_root, FW_SIGNATURE_WITH_ROOT, SIG_LEN);
@@ -189,15 +189,16 @@ int check_rootfs_image(unsigned long addr)
 	for (i=0; i<16; i+=2, word_ptr++)
 		*word_ptr = rtl_inw(addr + i);
 
+    //prom_printf("rootfs-%x\n",addr-FLASH_BASE);
+    
 	if ( memcmp(tmpbuf, SQSH_SIGNATURE, SIG_LEN) && memcmp(tmpbuf, SQSH_SIGNATURE_LE, SIG_LEN)) {
 		prom_printf("no rootfs signature at %X!\n",addr-FLASH_BASE);
 		return 0;
 	}
 
 	length = *(((unsigned long *)tmpbuf) + OFFSET_OF_LEN) + SIZE_OF_SQFS_SUPER_BLOCK + SIZE_OF_CHECKSUM;
-
-    //prom_printf("check_rootfs_image %s,length=%d\n",tmpbuf,length);
-
+    //prom_printf("len-%d\n",length);
+    
 	for (i=0; i<length; i+=2) {
 #if 1  //slowly
 			gCHKKEY_CNT++;
@@ -230,24 +231,46 @@ static int check_image_header(IMG_HEADER_Tp pHeader,SETTING_HEADER_Tp psetting_h
 {
 	int i,ret=0;
     int bootflag = 0;
+    int fl_size = 0;//flash size
 
-    unsigned long linux_start = 0;
-    unsigned long linux_end = 0;
-    unsigned long rootfs_start = 0;
-    unsigned long rootfs_end = 0;
+    unsigned long linux_start = CODE_IMAGE_OFFSET;
+    unsigned long linux_end = CONFIG_LINUX_IMAGE_OFFSET_END;
+    unsigned long rootfs_start = CONFIG_ROOT_IMAGE_OFFSET_START;
+    unsigned long rootfs_end = CONFIG_ROOT_IMAGE_OFFSET_END;
     
-    flashread((unsigned long)&bootflag, CONFIG_BOOTFLAG, 4);
-    prom_printf("bootflag=%d\n",bootflag);
-    if(bootflag != 1 && bootflag != 0){
-        bootflag = 0;
-        flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);
+    #if defined(RTL8198)
+
+    fl_size = (((*((unsigned int *)0xb8001204))>>21) & 0x7);
+    
+    /*
+        fl_size = 0,  -----   128kbyte flash
+        fl_size = 1,  -----   256kbyte flash
+        fl_size = 2,  -----   512kbyte flash
+        fl_size = 3,  -----   1Mbyte flash
+        fl_size = 4,  -----   2Mbyte flash
+        fl_size = 5,  -----   4Mbyte flash
+        fl_size = 6,  -----   8Mbyte flash
+        fl_size = 7,  -----   16Mbyte flash
+      */
+
+    if(fl_size >= 6){
+        
+        flashread((unsigned long)&bootflag, CONFIG_BOOTFLAG, 4);
+        
+        if(bootflag != 1 && bootflag != 0){
+            bootflag = 0;
+            flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);
+        }
+        
+        linux_start = bootflag ? CONFIG_LINUX_IMAGE2_OFFSET_START : CODE_IMAGE_OFFSET;
+        linux_end = bootflag ? CONFIG_LINUX_IMAGE2_OFFSET_END : CONFIG_LINUX_IMAGE_OFFSET_END;
+        
+        rootfs_start = bootflag ? CONFIG_ROOT_IMAGE2_OFFSET_START : CONFIG_ROOT_IMAGE_OFFSET_START;
+        rootfs_end = bootflag ? CONFIG_ROOT_IMAGE2_OFFSET_END : CONFIG_ROOT_IMAGE_OFFSET_END;
     }
+    #endif
     
-    linux_start = bootflag ? CONFIG_LINUX_IMAGE2_OFFSET_START : CODE_IMAGE_OFFSET;
-    linux_end = bootflag ? CONFIG_LINUX_IMAGE2_OFFSET_END : CONFIG_LINUX_IMAGE_OFFSET_END;
-    
-    rootfs_start = bootflag ? CONFIG_ROOT_IMAGE2_OFFSET_START : CONFIG_ROOT_IMAGE_OFFSET_START;
-    rootfs_end = bootflag ? CONFIG_ROOT_IMAGE2_OFFSET_END : CONFIG_ROOT_IMAGE_OFFSET_END;
+    prom_printf("Boot raise from %d\n",bootflag);
 
     //flash mapping
     return_addr = (unsigned long)FLASH_BASE+linux_start+bank_offset;
