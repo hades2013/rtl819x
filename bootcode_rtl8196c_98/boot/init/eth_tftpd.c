@@ -777,7 +777,7 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 		}
 		//prom_printf("checksum Ok !\n");
 		
-		//prom_printf("burn Addr =0x%x! srcAddr=0x%x len =0x%x \n", Header.burnAddr, srcAddr, burnLen);
+		prom_printf("burn Addr =0x%x! srcAddr=0x%x len =0x%x \n", Header.burnAddr, srcAddr, burnLen);
 
         #ifdef CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE				
 		if(!memcmp(Header.signature, FW_SIGNATURE, SIG_LEN) || !memcmp(Header.signature, FW_SIGNATURE_WITH_ROOT, SIG_LEN))

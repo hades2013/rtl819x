@@ -23,7 +23,7 @@ include .config
 #
 DIR_ROOT = $(shell pwd)
 DIR_RSDK = $(DIR_ROOT)/$(CONFIG_RSDKDIR)
-
+DIR_BOOT = $(DIR_ROOT)/../bootcode_rtl8196c_98
 DIR_BOARD = $(DIR_ROOT)/target
 DIR_ROMFS = $(DIR_ROOT)/target/romfs
 DIR_TMPFS = $(DIR_ROOT)/target/tmpfs
@@ -189,10 +189,12 @@ image:
 
 .PHONY: version
 version:
+	$(MAKE) -C $(DIR_BOOT)
 	$(MAKE) -C $(DIR_USERS)/goahead-2.1.1/LINUX release
 
 .PHONY: clean
 clean:
+	$(MAKE) -C $(DIR_BOOT) clean
 	$(MAKE) -C $(DIR_USERS) clean
 	$(MAKE) -C $(DIR_LINUX) clean
 	rm -rf $(DIR_ROMFS)

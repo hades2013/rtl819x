@@ -71,10 +71,10 @@ include $(LINUX_CONFIG)
 
 export PATH
 ifeq ($(CONFIG_RTL8196C),y)
-PATH:= $(shell pwd)/../rlxlinux-v2.2/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/bin:$(PATH)
+PATH:= $(shell pwd)/../rtl819x/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/bin:$(PATH)
 endif
 ifeq ($(CONFIG_RTL8198),y)
-PATH:= $(shell pwd)/../rlxlinux-v2.2/toolchain/rsdk-1.3.6-5281-EB-2.6.30-0.9.30/bin:$(PATH)
+PATH:= $(shell pwd)/../rtl819x/toolchain/rsdk-1.3.6-5281-EB-2.6.30-0.9.30/bin:$(PATH)
 endif
 
 export CONFIG_SPI_STD_MODE
@@ -95,6 +95,7 @@ all:
 	make -C boot boot JUMP_ADDR=$(DEFAULT_JUMP) $(ARCH)
 	make -C btcode $(ARCH)
 	make -C boot wboot $(ARCH)
+	cp boot/Output/boot.bin ../rtl819x/boot.bin
 
 else # else of ifeq (.config,$(wildcard .config))
 all: config_error

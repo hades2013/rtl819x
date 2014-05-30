@@ -748,6 +748,8 @@ static int bf_read_proc(char *page, char **start, off_t off,
             printk("bf_read_proc env get erroor\n");
             return false;
     	}
+
+        bootflag = (bootflag == 1) ? 1 : 0;
     }
 
     mutex_unlock(&bootflag_mutex);
