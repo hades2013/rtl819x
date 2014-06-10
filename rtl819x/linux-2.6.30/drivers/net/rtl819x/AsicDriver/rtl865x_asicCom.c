@@ -1442,7 +1442,21 @@ uint64 rtl865xC_returnAsicCounter64(uint32 offset)
 {
 	if ( offset & 0x3 )
 		return 0;
-	return ( READ_MEM32( MIB_COUNTER_BASE + offset ) + ( ( uint64 ) READ_MEM32( MIB_COUNTER_BASE + offset + 4 ) << 32 ) );
+#if 0    
+    if (offset == OFFSET_IFOUTOCTETS_P0 + MIB_ADDROFFSETBYPORT)
+    {
+        uint32 bh, bl;
+
+        bh = READ_MEM32( MIB_COUNTER_BASE + offset + 4 );
+        bl = READ_MEM32( MIB_COUNTER_BASE + offset );
+
+        printk("==>High:%08X, Low:%08X\n", bh, bl);        
+        return ((uint64)bh << 22) + (bl & 0x3fffffff);
+    }
+#endif 
+    /* BUG: when low 32bit was 003FF FFFF , then overflow to set high bit 1, but the high bit shift operation should be 22,  changed by Einsn Liu , 20140509 */
+//	return ( READ_MEM32( MIB_COUNTER_BASE + offset ) + ( ( uint64 ) READ_MEM32( MIB_COUNTER_BASE + offset + 4 ) << 32 ) );
+	return ( READ_MEM32( MIB_COUNTER_BASE + offset ) + ( ( uint64 ) READ_MEM32( MIB_COUNTER_BASE + offset + 4 ) << 22 ) );
 }
 
 int32 rtl8651_clearAsicCounter(void) 
