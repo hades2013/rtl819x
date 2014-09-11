@@ -71,6 +71,29 @@
 #endif 
 /* End */
 
+/*
+* double system defines:
+*/
+#ifndef CONFIG_CMDLINE2
+#define CONFIG_CMDLINE2 "console=ttyS0,38400 root=/dev/mtdblock5"
+#endif
+
+#ifndef CONFIG_CFG_EXT_START
+#define CONFIG_CFG_EXT_START 0x400000
+#endif
+
+#ifndef CONFIG_CFG_BOOTFLAG
+#define CONFIG_CFG_EXT_SIZE 0x4000
+#endif
+
+#ifndef CONFIG_CFG_BOOTFLAG
+#define CONFIG_CFG_BOOTFLAG 0
+#endif
+
+/*
+* double system defines end
+*/
+
 
 static struct mtd_info *rtl8196_mtd;
 
