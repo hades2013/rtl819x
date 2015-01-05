@@ -96,6 +96,7 @@ all:
 	make -C btcode $(ARCH)
 	make -C boot wboot $(ARCH)
 	cp boot/Output/boot.bin ../rtl819x/boot.bin
+	cp boot/Output/boot.img ../rtl819x/boot.img
 
 else # else of ifeq (.config,$(wildcard .config))
 all: config_error
