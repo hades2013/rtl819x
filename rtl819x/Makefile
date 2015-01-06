@@ -190,6 +190,7 @@ image:
 .PHONY: version
 version:
 	$(MAKE) -C $(DIR_BOOT)
+	../empty_folder.sh
 	$(MAKE) -C $(DIR_USERS)/goahead-2.1.1/LINUX release
 
 .PHONY: clean
