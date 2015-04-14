@@ -178,7 +178,7 @@ asmlinkage void do_IRQ(int irqnr, struct pt_regs *regs)
     }
 	else
 	{    
-		prom_printf("you got irq=%X\n", irqnr);
+	//	prom_printf("you got irq=%X\n", irqnr);
 		for(;;);
 	}			
 }	

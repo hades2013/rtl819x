@@ -49,7 +49,7 @@ int strnicmp(const char *s1, const char *s2, size_t len)
 
 char * ___strtok;
 
-#if 1
+#if 0
 char * strcpy(char * dest,const char *src)
 {
 	char *tmp = dest;
@@ -173,6 +173,8 @@ size_t strnlen(const char * s, size_t count)
 		/* nothing */;
 	return sc - s;
 }
+#endif
+#if 1
 
 size_t strspn(const char *s, const char *accept)
 {
@@ -225,7 +227,8 @@ char * strtok(char * s,const char * ct)
 	___strtok = send;
 	return (sbegin);
 }
-
+#endif
+#if 0
 char * strsep(char **s, const char * ct)
 {
 	char *sbegin=*s;
@@ -272,6 +275,7 @@ void * memcpy(void * dest,const void *src,size_t count)
 
 	return dest;
 }
+
 #if 0
 void * memmove(void * dest,const void *src,size_t count)
 {

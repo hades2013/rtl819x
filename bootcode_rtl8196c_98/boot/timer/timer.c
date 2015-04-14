@@ -60,10 +60,10 @@ void timer_interrupt(int irq, void *dev_id, struct pt_regs *regs)
 
 //	prom_printf("in timer interrupt\n");
 	
-	prom_printf("IRQ=%x\n",irq);
+	//prom_printf("IRQ=%x\n",irq);
 	if (irq != 8)
 	{
-		prom_printf("in timer irq, irq!=0\n");
+	//	prom_printf("in timer irq, irq!=0\n");
 		for(;;);
 	}	
 	status = rtl_inl(TCIR);
@@ -93,7 +93,7 @@ void timer_interrupt(int irq, void *dev_id, struct pt_regs *regs)
 
 		if(Jiffies>1000)
 		{
-		prom_printf("----\n");
+	//	prom_printf("----\n");
 		Jiffies=0;
 		}
 
@@ -146,8 +146,8 @@ void  timer_pos(void)
 		
 		val = rtl_inl(timerreg[i].offset);
 		if (val != timerreg[i].val)
-			prom_printf("READ(%s) %X != EXPECTED %X for timer pos\n", 
-						timerreg[i].regname, val, timerreg[i].val);
+		//	prom_printf("READ(%s) %X != EXPECTED %X for timer pos\n", 
+		//				timerreg[i].regname, val, timerreg[i].val);
 	}						
 }     
              
@@ -193,7 +193,7 @@ void time_init_2(void)
 
         
 void request_timer(unsigned long time){
-	prom_printf("%d!!!!!!\n",time);
+//	prom_printf("%d!!!!!!\n",time);
 	time1_init(time);
 	//	time1_init(time);
 	}

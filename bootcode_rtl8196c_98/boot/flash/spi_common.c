@@ -584,7 +584,7 @@ unsigned int CheckDramFreq(void)                       //JSW:For 8196C
 #endif
 	usFreqBit = (0x00001C00 & (*(unsigned int*)0xb8000008)) >> 10 ;
 	LDEBUG("CheckDramFreq:usFreqVal=%dMHZ; usFreqBit=%x; B8000008=%x;\n", usFreqVal[usFreqBit], usFreqBit, (*(unsigned int*)0xb8000008));
-	NDEBUG("SDRAM CLOCK:%dMHZ\n", usFreqVal[usFreqBit]);
+//	NDEBUG("SDRAM CLOCK:%dMHZ\n", usFreqVal[usFreqBit]);
 	return usFreqVal[usFreqBit];
 }
 // Set FSCR register, disable this function in kernel
@@ -664,6 +664,7 @@ unsigned char calShift(unsigned char ucCapacityId, unsigned char ucChipSize)
 // Print spi_flash_type
 void prnFlashInfo(unsigned char ucChip, struct spi_flash_type sftInfo)
 {
+#if 0
 #if (SPI_DRIVER_MODE == 1)
 	NDEBUG(" ========================= Registed SPI Flash Model ========================= \n");
 	NDEBUG("|No chipID  Sft chipSize blkSize secSize pageSize sdCk opCk      chipName    |\n");
@@ -676,6 +677,7 @@ void prnFlashInfo(unsigned char ucChip, struct spi_flash_type sftInfo)
 	NDEBUG("|%2d %6xh %2xh %7xh %6xh %6xh %7xh %4d %4d %17s|\n", ucChip, sftInfo.chip_id, sftInfo.size_shift, sftInfo.chip_size, sftInfo.block_size, sftInfo.sector_size, sftInfo.page_size, sftInfo.chipClock, sftInfo.chip_clk, sftInfo.chip_name);
 	////////1111 2222 3333 4444 5555 6666 7777 8888 9999 aaaa
 	NDEBUG(" ---------------------------------------------------------------------------- \n");
+#endif
 #endif
 }
 
@@ -987,6 +989,7 @@ unsigned int ComSrlCmd_ComWriteData(unsigned char ucChip, unsigned int uiAddr, u
 	unsigned int uiStartAddr, uiStartLen, uiSectorAddr, uiSectorCount, uiEndAddr, uiEndLen, i;
 	unsigned char* puc = pucBuffer;
 	LDEBUG("ComSrlCmd_ComWriteData:ucChip=%x; uiAddr=%x; uiLen=%x; pucBuffer=%x\n", ucChip, uiAddr, uiLen, (unsigned int)pucBuffer);
+//    printf(" pucBuffer=%x\n", (unsigned int)pucBuffer);
 	calAddr(uiAddr, uiLen, spi_flash_info[ucChip].sector_size, &uiStartAddr, &uiStartLen, &uiSectorAddr, &uiSectorCount, &uiEndAddr, &uiEndLen);
 	if((uiSectorCount == 0x00) && (uiEndLen == 0x00))	// all data in the same sector
 	{
@@ -1181,7 +1184,7 @@ unsigned int test_spi_flash(unsigned char ucChip)
 		uiStep = 1;
 	}
 	for (i = 0; i< 0x100; i++) pucSrc[i] = i;
-	NDEBUG("\nTest SPI flash: offset->0x%x, step->0x%x\n", (uiOffset - 0x80), (spi_flash_info[ucChip].sector_size * uiStep));
+//	NDEBUG("\nTest SPI flash: offset->0x%x, step->0x%x\n", (uiOffset - 0x80), (spi_flash_info[ucChip].sector_size * uiStep));
 	uiCount = 1;	// Delete
 	for (j = 0; j < uiCount; j += uiStep)
 	{
@@ -1193,7 +1196,7 @@ unsigned int test_spi_flash(unsigned char ucChip)
 		{
 			if(pucDst[i] != pucSrc[i])
 			{
-				NDEBUG("%07x-ER", uiAddr);
+			//	NDEBUG("%07x-ER", uiAddr);
 				uiRet += 1;
 				break;
 			}
@@ -1202,11 +1205,11 @@ unsigned int test_spi_flash(unsigned char ucChip)
 		uiLine++;
 		if(uiLine == 6)
 		{
-			NDEBUG("\n");
+	//		NDEBUG("\n");
 			uiLine = 0;
 		}
 	}
-	NDEBUG("\nTotal Count = 0x%x; OK Count = 0x%x; Error Count = 0x%x\n", uiCount, (uiCount - uiRet), uiRet);
+//	NDEBUG("\nTotal Count = 0x%x; OK Count = 0x%x; Error Count = 0x%x\n", uiCount, (uiCount - uiRet), uiRet);
 	return uiRet;
 }
 #endif

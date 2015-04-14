@@ -157,23 +157,57 @@ kernel启动时，有打印：Raise from rootfs 1/0(flash size is ??byte)
 
 ***************************************************修改记录 <2> **************************************************
 
-<2>  XXXXXXX
+<2>  增加产测写MAC license功能
 +==============================================================================================================+
-  标题： 2  xxxx
-+==============================================================================================================+
-  问题描述： ［如果针对某个版本的修改，必须明确指出；公有还是私有特性，问题描述简略，清楚］
-
-  修改原因：
-
-  修改方法：
-
-  修改影响： ［描述影响的功能，如：本修改后，需要重点测试VLAN逻辑］
+  问题描述： 通过uboot写MAC地址，该mac地址会跟钥匙进行验证，钥匙正确才能写入成功。
+                                                                                                           
+  修改文件及代码说明：  
   
-  使用范围： ［描述修改平台或者特定的版本，比如本次修改只正对江阴版本］
-                                                                                                               
-  修改文件及代码说明：           
+[boot修改]： 目录-->bootcode_rtl8196c_98
   
-  修改时间及作者邮箱： 2015-01-04 xxx@hexicomtech.com                                                                                            
+(1)/boot/Makefile 增加：
+
+OBJFILES += $(OUTDIR)/cmd_manufacture_set.o
+
+$(OUTDIR)/cmd_manufacture_set.o: ./init/cmd_manufacture_set.c
+	$(CC) -c $(CFLAGS) -o $(OUTDIR)/cmd_manufacture_set.o ./init/cmd_manufacture_set.c
+  
+(2)/boot/include/linux/Autoconf2.h 增加：
+  
+#define CONFIG_MACAUTH 1 ( 通过该宏可以查找到 修改过的地方 )
+#define CONFIG_AUTHCODE (CONFIG_CFG_EXT_OFFSET_START + 4) // has 32 bytes
+#define CONFIG_ETHADDR (CONFIG_CFG_EXT_OFFSET_START + 36) // has 6 bytes
+#define CONFIG_SN (CONFIG_CFG_EXT_OFFSET_START + 42) // has 32 bytes
+#define CONFIG_HAEDVERSION (CONFIG_CFG_EXT_OFFSET_START + 74) // has 6 bytes
+#define CONFIG_HAEDVERSION_LEN 6
+  
+(3)在monitor.c文件中，增加一个命令 ： MFG mac xx:xx:xx:xx:xx:xx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+#ifdef CONFIG_MACAUTH   
+    {"MFG" ,3, do_manufacture_set    , "MFG: set MAC"},
+#endif
+增加看门狗喂狗开启、关闭功能，防止在输入写mac、SN、hver时出现重启。void wdt_feed()
+
+(4)增加文件： /boot/init/Cmd_manufacture_set.c
+
+[kernel改动]
+
+(5)rtl8198/rtl819x/linux-2.6.30/include/linux/autoconf.h 文件：  增加 #define CONFIG_MACAUTH 1
+
+(6)rtl8198/rtl819x/linux-2.6.30/drivers/net/rtl819x/rtl_nic.c 增加         
+memcpy((char*)(&(vlanconfig[i].mac)),(char*)&READ_MEM32((0xbd000000+CONFIG_CFG_EXT_START+36)),ETHER_ADDR_LEN);
+
+  注意事项：编译时不能执行 make menuconfig 和 make distclean 会造成 Autoconf2.h 和 autoconf.h 文件被修改，丢失宏定义。
+
+  boot新增命令使用方法：
+		不按<Esc>时，系统正常启动；
+		按<Esc>进入<RealTek>命令行：
+		MFG mac 40:C2:45:00:00:03 EEFA759A6AAE88DE478315D5C37176F8 ( AUTHCODE为32位 )
+		MFG hver VER.B  ( ver最多6位 )
+		MFG sn SN00000001 ( sn最多32位 )
+		
+		当输入完成以上三个命令后，看门狗自动开启，系统重启。
+  
+  修改时间及作者邮箱： 2015-04-13 by lizhihui                                                                                            
 +==============================================================================================================+
 
 +==============================================================================================================+

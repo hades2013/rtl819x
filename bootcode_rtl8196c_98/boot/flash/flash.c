@@ -354,7 +354,7 @@ int flashinit()
 	mfid = rtl_inw(FLASH_BASE);
 	devid = rtl_inw(FLASH_BASE + 1*2);
 
-	prom_printf("mfid=%x devid=%x\n",mfid,devid);
+//	prom_printf("mfid=%x devid=%x\n",mfid,devid);
 	rtl_outw(FLASH_BASE, 0xf0);
 
 
@@ -858,7 +858,7 @@ void auto_nor_memtest( unsigned long dram_test_starting_addr )
 	int i, j;
 	unsigned int nor_data,nor_rseed_timer;
        static unsigned short probe_cnt=0;
-	dprintf("\n=============================\n");
+//	dprintf("\n=============================\n");
 	dprintf("\n====> NOR Device Size (MB): %d\n", table[probe_cnt].size/0X100000);
 
 	//printf("probe_cnt=%d\n",probe_cnt);
@@ -867,7 +867,7 @@ void auto_nor_memtest( unsigned long dram_test_starting_addr )
 
 	//srand2(get_ctimestamp());
 	nor_rseed_timer=nor_get_ctimestamp();
-	printf("nor_rseed_timer=0x%x\n",nor_rseed_timer);
+//	printf("nor_rseed_timer=0x%x\n",nor_rseed_timer);
 	nor_srand2(nor_rseed_timer);
 
 	#if 0
@@ -880,7 +880,7 @@ void auto_nor_memtest( unsigned long dram_test_starting_addr )
 	#endif
 	dprintf("Check NFCR(0xb8001100) =%x\n",*(volatile unsigned int *) NFCR); 
 
-	dprintf("\n=============================\n");
+//	dprintf("\n=============================\n");
 
 
 

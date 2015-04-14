@@ -109,7 +109,7 @@ int flashread (unsigned long dst, unsigned int src, unsigned long length)
 int flashwrite(unsigned long dst, unsigned long src, unsigned long length)
 {
 
-	KDEBUG("flashwrite: dst(uiAddr)=%x; src(pucBuffer)=%x; length=%x; \n", dst, src, length);
+	KDEBUG("flashwrite: dst(uiAddr)=%x; src(pucBuffer)=%x; length=%x; \n", dst, src, length);   
 	return spi_flash_info[0].pfWrite(0, dst, length, (unsigned char*)src);
 }
 
@@ -121,7 +121,7 @@ int spi_flw_image(unsigned int chip, unsigned int flash_addr_offset ,unsigned ch
 int spi_flw_image_mio_8198(unsigned int cnt, unsigned int flash_addr_offset , unsigned char *image_addr, unsigned int image_size)
 {
 	KDEBUG("spi_flw_image_mio_8198: cnt=%x; flash_addr_offset=%x; image_addr=%x; image_size=%x\n", cnt, flash_addr_offset, (unsigned int)image_addr, 	image_size);
-	prom_printf("spi: c=%x; a=%x; i=%x; s=%x\n", cnt, flash_addr_offset, (unsigned int)image_addr, 	image_size);
+//	prom_printf("spi: c=%x; a=%x; i=%x; s=%x\n", cnt, flash_addr_offset, (unsigned int)image_addr, 	image_size);
 	return spi_flash_info[cnt].pfWrite(cnt, flash_addr_offset, image_size, image_addr);
 }
 

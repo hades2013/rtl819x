@@ -182,7 +182,7 @@ static void errorDrop(void)
     if (!tftpd_is_ready)
         return;
 /*no need to change boot state*/
-prom_printf("Boot state error,%d,%d\n",bootState,bootEvent);
+//prom_printf("Boot state error,%d,%d\n",bootState,bootEvent);
 //bootState=BOOT_STATE0_INIT_ARP;
 /*error in boot state machine*/	
 }
@@ -309,7 +309,7 @@ static void setTFTP_RRQ(void)
  if( udpheader->dest==htons(TFTP_PORT) )
    {
    	
-    prom_printf("\nFile Start: %x,length=%x\n",image_address,file_length_to_client);
+ //   prom_printf("\nFile Start: %x,length=%x\n",image_address,file_length_to_client);
     /*
 	if (memcmp(arptable_tftp[TFTP_CLIENT].node,(Int8*)&(nic.packet[ETH_ALEN]),ETH_ALEN)) {
         prom_printf("###%s:update CLIENT mac address %02x%02x%02x%02x%02x%02x -> %02x%02x%02x%02x%02x%02x\n",
@@ -364,7 +364,7 @@ static void setTFTP_RRQ(void)
     */
     memcpy(arptable_tftp[TFTP_CLIENT].node,(Int8*)&(nic.packet[ETH_ALEN]), ETH_ALEN); 
    
-    prom_printf("\n**TFTP GET File %s,Size %X Byte\n",filename,file_length_to_client);                
+//    prom_printf("\n**TFTP GET File %s,Size %X Byte\n",filename,file_length_to_client);                
     /*Initialziation of RRQ file*/   
     //image_address=FILESTART; //sc_yang
     /*now we can use fiile_length_to_client, if we have meet WRQ*/
@@ -429,7 +429,7 @@ static void setTFTP_WRQ(void)
     /*memorize CLIENT IP address*/
     memcpy(&(arptable_tftp[TFTP_CLIENT].ipaddr.s_addr),(Int8*)&nic.packet[ETH_HLEN+12],4);
     /*here we can parse the file name if required.*/
-    prom_printf("\n>> TFTP Client Upload, File Name: %s\n",tftppacket->u.wrq);  
+ //   prom_printf("\n>> TFTP Client Upload, File Name: %s\n",tftppacket->u.wrq);  
 
     memset(upgrade_name,0,sizeof(upgrade_name));
     memcpy(upgrade_name,tftppacket->u.wrq,sizeof(upgrade_name)-1);
@@ -578,7 +578,7 @@ int imageFileValid(unsigned long startAddr, int len)
 						break;
 					}			
 				}
-				SprintF(message,"%s imgage checksum error at %X!\n",sign_tbl[i].comment, startAddr+head_offset);
+				SprintF(message,"%s checksum error at %X!\n",sign_tbl[i].comment, startAddr+head_offset);
 				return -1;
 			}
 
@@ -605,7 +605,7 @@ int imageFileValid(unsigned long startAddr, int len)
 						break;
 					}	
 				}
-				SprintF(message,"%s imgage checksum error at %X!\n",sign_tbl[i].comment, startAddr+head_offset);
+				SprintF(message,"%s checksum error at %X!\n",sign_tbl[i].comment, startAddr+head_offset);
 				return -1;
 			}
 		}
@@ -622,7 +622,7 @@ void autoreboot()
 	cli();
 
 	flush_cache(); 
-	prom_printf("\nreboot.......\n");
+	prom_printf("reboot\n");
 #if defined(RTL865X) || defined(RTL8196B) || defined(RTL8198)
 	/* this is to enable 865xc watch dog reset */
 	*(volatile unsigned long *)(0xB800311c)=0; 
@@ -681,7 +681,7 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 			if(!memcmp(Header.signature, BOOT_SIGNATURE, SIG_LEN)){
 				// - checksum len
 				if((Header.len-2) > CONFIG_BOOT_CODE_SIZE){	
-					prom_printf("bootcode is too big\n");
+					prom_printf("too big\n");
 					return;
 				}
 			}
@@ -697,14 +697,14 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 				burnLen = Header.len + sizeof(IMG_HEADER_T) ;
 			}	
 			reboot |= sign_tbl[i].reboot;
-			prom_printf("\n%s upgrade.\n", sign_tbl[i].comment);
+			prom_printf("%s upgrade\n", sign_tbl[i].comment);
 		}
 		else {
 			if(!memcmp(Header.signature, BOOT_SIGNATURE, SIG_LEN)){
 #ifdef CONFIG_BOOT_CODE_SIZE_CHECK
 				// - checksum len
 				if((Header.len-2) > CONFIG_BOOT_CODE_SIZE){	
-					prom_printf("bootcode is too big\n");
+					prom_printf("too big\n");
 					return;
 				}
 #endif
@@ -750,7 +750,7 @@ void checkAutoFlashing(unsigned long startAddr, int len)
     			}
     		}
 			if ( sum ) {
-				prom_printf("%s imgage checksum error at %X!\n"
+				prom_printf("%s checksum error at %X!\n"
 				, Header.signature, startAddr+head_offset);
 				return ;
 			}
@@ -770,14 +770,14 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 			for (i=0; i< Header.len; i++)
 			       sum1 += *((unsigned char *)(startAddr+ head_offset + sizeof(IMG_HEADER_T) + i));
 			if ( sum1 ) {
-				prom_printf("%s imgage checksum error at %X!\n"
+				prom_printf("%s checksum error at %X!\n"
 				, Header.signature, startAddr+head_offset);
 				return ;
 			}
 		}
 		//prom_printf("checksum Ok !\n");
 		
-		prom_printf("burn Addr =0x%x! srcAddr=0x%x len =0x%x \n", Header.burnAddr, srcAddr, burnLen);
+	//	prom_printf("burn Addr =0x%x! srcAddr=0x%x len =0x%x \n", Header.burnAddr, srcAddr, burnLen);
 
         #ifdef CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE				
 		if(!memcmp(Header.signature, FW_SIGNATURE, SIG_LEN) || !memcmp(Header.signature, FW_SIGNATURE_WITH_ROOT, SIG_LEN))
@@ -794,7 +794,7 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 		else if(!memcmp(Header.signature, ROOT_SIGNATURE, SIG_LEN))
 		{
 			burn_offset = sel_burnbank_offset();
-			prom_printf("burn_offset = %x !\n",burn_offset);
+		//	prom_printf("burn_offset = %x !\n",burn_offset);
 		}
         #endif
 
@@ -804,7 +804,7 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 		#ifdef SUPPORT_SPI_MIO_8198_8196C
             if(Header.burnAddr+burn_offset+burnLen > spi_flash_info[0].chip_size)
             {
-                prom_printf("no spaces enough!\n");
+                prom_printf("no spaces enough\n");
                 return;
                 if(spi_flw_image_mio_8198(0,Header.burnAddr+burn_offset, srcAddr, spi_flash_info[0].chip_size-(Header.burnAddr+burn_offset))&&
                     spi_flw_image_mio_8198(1,0, srcAddr+spi_flash_info[0].chip_size-(Header.burnAddr+burn_offset), Header.burnAddr+burn_offset+burnLen-spi_flash_info[0].chip_size))
@@ -835,9 +835,9 @@ void checkAutoFlashing(unsigned long startAddr, int len)
         #endif
         
 		if(trueorfaulse)
-			prom_printf("\nFlash Write Successed!\n");
+			prom_printf("\nSuccessed\n");
 		else{
-			prom_printf("\nFlash Write Failed!\n%s", "<RealTek>");
+			prom_printf("\nFailed\n%s", "<RealTek>");
 			return ;
 		}
 
@@ -893,7 +893,7 @@ static void prepareACK(void)
     if(block_received != (block_expected))
     {
      //prom_printf("line=%d: block_received=%d, block_expected=%d\n", __LINE__,  block_received,  block_expected); // for debug
-     prom_printf("TFTP #\n");
+ //    prom_printf("TFTP #\n");
      /*restore the block number*/
      tftpd_send_ack(block_expected-1);    
     }
@@ -924,7 +924,7 @@ static void prepareACK(void)
       /*remember to check if it is the last packet*/      
       if(tftpdata_length < TFTP_DEFAULTSIZE_PACKET)
       {
-         prom_printf("\n >> TFTP Client Upload File Size = %X Bytes at %X\n",file_length_to_server,image_address);          
+      //   prom_printf("\n >> TFTP Client Upload File Size = %X Bytes at %X\n",file_length_to_server,image_address);          
          /*change the boot state back to orignal, and some variables also*/
          nic.packet = eth_packet;
          nic.packetlen = 0;        
@@ -943,7 +943,7 @@ static void prepareACK(void)
          one_tftp_lock=0; 
          SERVER_port++;
          
- 	    prom_printf( "\nSuccess!\n" );
+ 	    prom_printf( "Success\n" );
  	      
 #ifdef CONFIG_NFBI
         ret = check_system_image((unsigned long)image_address,&header);
@@ -957,7 +957,7 @@ static void prepareACK(void)
 			image_address = (void *)(header.startAddr); //0x80700000
 		}
 		else {
-		    prom_printf( "ret=%d\n", ret);
+		 //   prom_printf( "ret=%d\n", ret);
 		}
 #endif  //CONFIG_NFBI
 
@@ -971,7 +971,7 @@ static void prepareACK(void)
             outl(0,GIMR0); // mask all interrupt	    
             cli();
 
-			dprintf("Jump to 0x%x\n", image_address);
+		//	dprintf("Jump to 0x%x\n", image_address);
             flush_cache(); 
             jumpF();	
         }
@@ -1015,7 +1015,7 @@ static void prepareDATA(void)
     if(block_received != (block_expected))
     {
      //prom_printf("line=%d: block_received=%d, block_expected=%d\n", __LINE__,  block_received,  block_expected); // for debug
-     prom_printf("\n**TFTP #\n");
+  //   prom_printf("\n**TFTP #\n");
      tftpd_send_data(filename,block_expected);
     }
     else 
@@ -1029,8 +1029,8 @@ static void prepareDATA(void)
           bootState=BOOT_STATE0_INIT_ARP;  
           one_tftp_lock=0; 
           //prom_printf("\n**TFTP Client Upload Success! File Size = %X Bytes\n",file_length_to_server);                        
-          prom_printf("\n*TFTP Client Download Success! File Size = %X Bytes\n",file_length_to_client);          
-          prom_printf( ".Success!\n%s", "<RealTek>" );         
+       //   prom_printf("TFTP Client Download Success! File Size = %X Bytes\n",file_length_to_client);          
+       //   prom_printf( ".Success!\n%s", "<RealTek>" );         
           nic.packet = eth_packet;
           nic.packetlen = 0;        
           block_expected =0;       

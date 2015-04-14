@@ -98,14 +98,17 @@ void serial_outc(char c)
 		sc16is7x0_serial_out_i2c( UART_MEM2REG( UART_THR ), 0x0d);
 #endif
 }
-
+extern void wdt_feed(void);
 
 char serial_inc()
 {
 	int i;
 #ifndef CONFIG_SERIAL_SC16IS7X0_CONSOLE
     while (1)
-	{
+	{   
+    	#ifdef CONFIG_MACAUTH     
+        wdt_feed();  
+        #endif
 		if 	(rtl_inb(UART_LSR) & 0x1)
 			break;		
 	}	

@@ -559,19 +559,19 @@ void ProbeP5GigaPHYChip()
 	dprintf("Read port5 phyReg0= 0x%x \r\n",tmp);
 
 	rtl8651_getAsicEthernetPHYReg( GIGA_P5_PHYID, 2, &tmp );
-	dprintf("Read port5 UPChipID= 0x%x \r\n",tmp);
+//	dprintf("Read port5 UPChipID= 0x%x \r\n",tmp);
 	uid=tmp<<16;
 	rtl8651_getAsicEthernetPHYReg( GIGA_P5_PHYID, 3, &tmp );
-	dprintf("Read port5 downChipID= 0x%x \r\n",tmp);
+//	dprintf("Read port5 downChipID= 0x%x \r\n",tmp);
 	uid=uid | tmp;
 
 	if( uid==0x001CC912 )  //0x001cc912 is 8212 two giga port , 0x001cc940 is 8214 four giga port
-	{	dprintf("Find Port5   have 8211 PHY Chip! \r\n");
+	{	dprintf("Find Port5 have 8211 PHY Chip\r\n");
 		ExtP5GigaPhyMode=1;
 		//return 1;
 	}	
 	else
-	{	dprintf("NO Find Port5 8211 PHY Chip! \r\n");
+	{	dprintf("NO Find Port5 8211 PHY Chip\r\n");
 //		ExtP5GigaPhyMode=1;
 		//return 1;
 	}	
@@ -806,7 +806,7 @@ int port;
         for(i=0; i<5; i++)
         REG32(PCRP0+i*4) &= ~(EnForceMode);
  
-        dprintf("Set GPHY Parameter OK\n");
+  //      dprintf("Set GPHY Parameter OK\n");
 }
 #endif
 
@@ -925,7 +925,7 @@ write rg15 0x0002 (¶}±Ò hardware channel to indirectly access UC memory)
 	for(i=0; i<5; i++)
 		REG32(PCRP0+i*4) &= ~(EnForceMode);
 	
-	dprintf("Set GPHY_ROM_BIST_LOOP OK\n");
+//	dprintf("Set GPHY_ROM_BIST_LOOP OK\n");
 }
 #endif
 
@@ -1000,7 +1000,7 @@ void Setting_RTL8196C_PHY_REV_B()
        } 
 #endif 
 	
-	dprintf("Set 8196C PHY Patch OK\n");
+//	dprintf("Set 8196C PHY Patch OK\n");
 
 }
 #endif

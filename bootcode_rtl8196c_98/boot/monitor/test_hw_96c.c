@@ -918,7 +918,7 @@ int RunAutoTestCmd2(const char *cmdstr, COMMAND_TABLE *pTestCmdTable, int len )
 				break;
 			}
 		}
-		if(i==len) dprintf("Unknown command !\r\n");
+		if(i==len) dprintf("Unknown command!\r\n");
 
 		return 0;
 }

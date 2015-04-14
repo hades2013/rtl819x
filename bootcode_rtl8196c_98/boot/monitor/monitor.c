@@ -193,6 +193,10 @@ extern struct arptable_t  arptable_tftp[3];
 extern int write_data(unsigned long dst, unsigned long length, unsigned char *target);
 extern int read_data (unsigned long src, unsigned long length, unsigned char *target);
 
+#define CONFIG_MACAUTH 1
+
+extern int do_manufacture_set (int argc, char *argv[]);
+
 /*Cyrus Tsai*/
 extern unsigned long file_length_to_server;
 extern unsigned long file_length_to_client;
@@ -215,10 +219,10 @@ extern unsigned long image_address;
 #define PCRP4                 (0x014+PCRAM_BASE)       /* Port Configuration Register of Port 4 */
 #define EnablePHYIf        (1<<0)                           /* Enable PHY interface.                    */
 #endif
- 
+
 COMMAND_TABLE	MainCmdTable[] =
 {
-	{ "?"	  ,0, CmdHelp			, "HELP (?)				    : Print this help message"					},
+	{ "?"	  ,0, CmdHelp			, "HELP (?)	 : Print this help message"					},
 	{ "HELP"  ,0, CmdHelp			, NULL					},		
 #if defined(CONFIG_BOOT_DEBUG_ENABLE)												
 	{ "D"	  ,2, CmdDumpWord		, "D <Address> <Len>"},    
@@ -249,11 +253,11 @@ COMMAND_TABLE	MainCmdTable[] =
 
 #if defined(CONFIG_BOOT_DEBUG_ENABLE)
 #ifdef REMOVED_UNUSED
-	{ "TFTPTX"   ,0, CmdTFTP_TX			, "TFTPTX: Start TFTP Send "					}, 	//wei add
+	{ "TFTPTX"   ,0, CmdTFTP_TX			, "TFTPTX: Start TFTP Send"					}, 	//wei add
 #endif
 #endif
 #ifdef CONFIG_RTL8198_TAROKO
-	{ "IMEMTEST"   ,0, CmdIMEM98TEST			, "IMEMTEST "					},
+	{ "IMEMTEST"   ,0, CmdIMEM98TEST			, "IMEMTEST"					},
 	{ "WBMG"	,0, CmdWBMG			, "WBMF: write buffer merge"				},
 #endif
 
@@ -292,11 +296,11 @@ COMMAND_TABLE	MainCmdTable[] =
 #endif
 
 #ifdef CONFIG_SPI_TEST
-	{ "STEST",3, CmdSTEST, "STEST <test_count><HEX_DRAM_test_starting_addr><spi_clock_div_num>: Auto test SPI and DRAM "},	//JSW
+	{ "STEST",3, CmdSTEST, "STEST <test_count><HEX_DRAM_test_starting_addr><spi_clock_div_num>: Auto test SPI and DRAM"},	//JSW
 #endif
 
 #ifdef CONFIG_CPUsleep_PowerManagement_TEST
-  { "SLEEP"   ,0, CmdCPUSleep          , "Sleep  : Test CPU sleep "                 },
+  { "SLEEP"   ,0, CmdCPUSleep          , "Sleep: Test CPU sleep"                 },
 #endif
 
 #if defined(CONFIG_PCIE_MODULE) 
@@ -311,11 +315,14 @@ COMMAND_TABLE	MainCmdTable[] =
   { "PHYW",3, CmdPHYregW, "PHYW: PHYW <PHYID><reg><data>"},
 #endif
 #ifdef RTL8198
-	{ "EEE"   ,1, CmdEEEPatch			, "EEE :Set EEE Pathch "}, 
+	{ "EEE"   ,1, CmdEEEPatch			, "EEE: Set EEE Pathch"}, 
 	
 #if CONFIG_FLASH_DEBUG == 1
     { "FL"    ,1, CmdFlashLoad          , "FL <src>: Read from flash"},
     { "FW"    ,2, CmdFlashWrite         , "FW <src><value>: Write to flash"},
+#endif
+#ifdef CONFIG_MACAUTH   
+    {"MFG" ,3, do_manufacture_set    , "MFG: set MAC"},
 #endif
 
 #endif 
@@ -506,24 +513,81 @@ int check_cpu_speed(void)
 ;				Monitor
 ---------------------------------------------------------------------------
 */
+
+
 extern char** GetArgv(const char* string);
 
+#ifdef CONFIG_MACAUTH
+
+#define RTL_GPIO_MUX1 0xB8000044
+#define RTL_GPIO_MUX1_DATA  (3 << 13) | (3 << 16) // SET LED_P0 LED_P1 as GPIO  mode
+#define WDTEN_PIN_IOBASE  PABCDCNR_REG
+#define WDTEN_PIN_DIRBASE  PABCDDIR_REG
+#define WDTEN_PIN_DATABASE PABCDDAT_REG
+#define WDTEN_PIN_NO 16 /*number of the ABCD*/    
+
+// GPIO C1
+//#define WDTI_PIN_IOBASE  PABCDCNR_REG
+//#define WDTI_PIN_DIRBASE  PABCDDIR_REG
+//#define WDTI_PIN_DATABASE PABCDDAT_REG
+//#define WDTI_PIN_NO 17 /*number of the ABCD*/  
+
+unsigned int wdt_dis = 0;
+
+void wdt_init()
+{
+    /* WDT ext IO set to output mode.Add by Alan Lee,at 2015-04-13 */
+    WRITE_MEM32(RTL_GPIO_MUX1, (READ_MEM32(RTL_GPIO_MUX1) | RTL_GPIO_MUX1_DATA)); 
+    
+    WRITE_MEM32(WDTEN_PIN_IOBASE, (READ_MEM32(WDTEN_PIN_IOBASE) | (~(1 << WDTEN_PIN_NO))));
+	//WRITE_MEM32(WDTI_PIN_IOBASE, (READ_MEM32(WDTI_PIN_IOBASE) | (~(1 << WDTI_PIN_NO))));
+
+    // set as output
+	WRITE_MEM32(WDTEN_PIN_DIRBASE, (READ_MEM32(WDTEN_PIN_DIRBASE) | ((1 << WDTEN_PIN_NO))));
+   // WRITE_MEM32(WDTI_PIN_DIRBASE, (READ_MEM32(WDTI_PIN_DIRBASE) | ((1 << WDTI_PIN_NO))));
+}
+
+void wdt_disable()
+{
+    wdt_dis = 1;
+}
+
+void wdt_enable()
+{
+    wdt_dis = 0;
+}
+
+void wdt_feed()
+{
+    if (wdt_dis)
+    {
+        WRITE_MEM32(WDTEN_PIN_DATABASE, (READ_MEM32(WDTEN_PIN_DATABASE) | (1 << WDTEN_PIN_NO)));  
+    }else{
+        WRITE_MEM32(WDTEN_PIN_DATABASE, (READ_MEM32(WDTEN_PIN_DATABASE) & (~(1 << WDTEN_PIN_NO)))); 
+    } 
+}
+#endif
 void monitor(void)
 {
 	char		buffer[ MAX_MONITOR_BUFFER +1 ];
 	int		argc ;
 	char**		argv ;
 	int		i, retval ;
-	
+//    int wdt_feed = 0;
+	int tickStart = 0;
 //	i = &_end;
 //	i = (i & (~4095)) + 4096;
 	//printf("Free Mem Start=%X\n", i);
+
+    wdt_init();
+    wdt_disable(); 
+
 	while(1)
 	{	
 		printf( "%s", MAIN_PROMPT );
 		memset( buffer, 0, MAX_MONITOR_BUFFER );
 		GetLine( buffer, MAX_MONITOR_BUFFER,1);
-		printf( "\n" );
+		printf( "\n" );       
 		argc = GetArgc( (const char *)buffer );
 		argv = GetArgv( (const char *)buffer );
 		if( argc < 1 ) continue ;
@@ -544,8 +608,10 @@ void monitor(void)
 				break;
 			}
 		}
-		if(i==sizeof(MainCmdTable) / sizeof(COMMAND_TABLE)) printf("Unknown command !\r\n");
+       
+		if(i==sizeof(MainCmdTable) / sizeof(COMMAND_TABLE)) printf("Unknown CMD\r\n");                      
 	}
+    
 }
 
 
@@ -567,15 +633,15 @@ int CmdWB(int argc, char* argv[])
 	   
 	unsigned int length = end - start;
 	
-	printf("Flash wille write %X length of embedded boot code at %X to %X\n", length, start, end);
-	printf("(Y)es, (N)o->");
+	printf("Flash will write %X length of boot code at %X to %X\n", length, start, end);
+	printf("(Y)es,(N)o->");
 	if (YesOrNo())
 		if (flashwrite(0, (unsigned long)start, length))
-			printf("Flash Write Successed!\n");
+			printf("Write Successed\n");
 		else
-			printf("Flash Write Failed!\n");
+			printf("Write Failed\n");
 	else
-		printf("Abort!\n");
+		printf("Abort\n");
 
 }
 #endif
@@ -591,8 +657,8 @@ int CmdSWB(int argc, char* argv[])
 	char* start = &_bootimg_start;
 	char* end  = &_bootimg_end;	   
 	unsigned int length = end - start;		
-	printf("SPI Flash #%d will write 0x%X length of embedded boot code from 0x%X to 0x%X\n", cnt+1,length, start, end);
-	printf("(Y)es, (N)o->");
+	printf("SPI Flash #%d will write 0x%X length of boot code from 0x%X to 0x%X\n", cnt+1,length, start, end);
+	printf("(Y)es,(N)o->");
 	if (YesOrNo())
 	{
 		spi_pio_init();
@@ -601,11 +667,11 @@ int CmdSWB(int argc, char* argv[])
 	  	#else			
 			spi_flw_image(cnt, 0, (unsigned char*)start , length);
 		#endif
-		printf("SPI Flash Burn OK!\n");
+		printf("Flash Burn OK\n");
 	}	
 	else 
 	{
-        	printf("Abort!\n");	
+        	printf("Abort\n");	
 	}	
   }
 
@@ -633,12 +699,12 @@ int CmdCfn(int argc, char* argv[])
 	{
 		if(!Hex2Val( argv[0], &Address ))
 		{
-			printf(" Invalid Address(HEX) value.\n");
+			printf("Invalid Addr(HEX)\n");
 			return FALSE ;
 		}
 	}
 
-	dprintf("---Jump to address=%X\n",Address);
+//	dprintf("Jump to address=%X\n",Address);
 	jump = (void *)(Address);
 	outl(0,GIMR0); // mask all interrupt
 	cli(); 
@@ -729,11 +795,11 @@ int CmdIp(int argc, char* argv[])
 	int  ip[4];
 	if (argc==0)
 	{	
-		printf(" Target Address=%d.%d.%d.%d\n",
+		printf("Target Addr=%d.%d.%d.%d\n",
 		arptable_tftp[TFTP_SERVER].ipaddr.ip[0], arptable_tftp[TFTP_SERVER].ipaddr.ip[1], 
 		arptable_tftp[TFTP_SERVER].ipaddr.ip[2], arptable_tftp[TFTP_SERVER].ipaddr.ip[3]);
 #ifdef HTTP_SERVER
-		printf("   Http Address=%d.%d.%d.%d\n",
+		printf("Http Addr=%d.%d.%d.%d\n",
 		arptable_tftp[HTTPD_ARPENTRY].ipaddr.ip[0], arptable_tftp[HTTPD_ARPENTRY].ipaddr.ip[1], 
 		arptable_tftp[HTTPD_ARPENTRY].ipaddr.ip[2], arptable_tftp[HTTPD_ARPENTRY].ipaddr.ip[3]);
 #endif
@@ -763,7 +829,7 @@ int CmdIp(int argc, char* argv[])
 	arptable_tftp[TFTP_SERVER].node[2]=eth0_mac[2];
 	arptable_tftp[TFTP_SERVER].node[1]=eth0_mac[1];
 	arptable_tftp[TFTP_SERVER].node[0]=eth0_mac[0];
-	prom_printf("Now your Target IP is %d.%d.%d.%d\n", ip[0],ip[1],ip[2],ip[3]);
+	prom_printf("Now Target IP %d.%d.%d.%d\n", ip[0],ip[1],ip[2],ip[3]);
 #if 0	
 	ptr = argv[1];
 	//prom_printf("You want to setup Host new ip as %s \n", ptr);	
@@ -789,7 +855,7 @@ int CmdDumpWord( int argc, char* argv[] )
 	unsigned int len,i;
 
 	if(argc<1)
-	{	dprintf("Wrong argument number!\r\n");
+	{	dprintf("Wrong number\n");
 		return;
 	}
 	
@@ -799,7 +865,7 @@ int CmdDumpWord( int argc, char* argv[] )
 			src|=0x80000000;
 	}
 	else
-	{	dprintf("Wrong argument number!\r\n");
+	{	dprintf("Wrong number\n");
 		return;		
 	}
 				
@@ -812,7 +878,7 @@ int CmdDumpWord( int argc, char* argv[] )
 
 	for(i=0; i< len ; i+=4,src+=16)
 	{	
-		dprintf("%08X:	%08X	%08X	%08X	%08X\n",
+		dprintf("%08X: %08X %08X %08X %08X\n",
 		src, *(unsigned long *)(src), *(unsigned long *)(src+4), 
 		*(unsigned long *)(src+8), *(unsigned long *)(src+12));
 	}
@@ -827,7 +893,7 @@ int CmdDumpByte( int argc, char* argv[] )
 	unsigned int len,i;
 
 	if(argc<1)
-	{	dprintf("Wrong argument number!\r\n");
+	{	dprintf("Wrong argument number\r\n");
 		return;
 	}
 	
@@ -927,7 +993,7 @@ int CmdCmp(int argc, char* argv[])
 	unsigned long error;
 
 	if(argc < 3) {
-		printf("Parameters not enough!\n");
+		printf("Parameters not enough\n");
 		return 1;
 	}
 	dst = strtoul((const char*)(argv[0]), (char **)NULL, 16);
@@ -984,11 +1050,11 @@ int CmdFlashLoad(int argc, char* argv[])
     if(argc==1){
         src = strtoul((const char*)(argv[0]), (char **)NULL, 0);
     }else{
-        printf("argc error!\n");
+        printf("argc error\n");
         return 0;
     }
     flashread(&ret,src,4);
-    printf("0x%08x==0x%x\n",src,ret);
+    printf("0x%08x==0x%x\n",src,ret);   
     return 1;
 }
 
@@ -1000,15 +1066,15 @@ int CmdFlashWrite(int argc, char* argv[])
         ret = strtoul((const char*)(argv[1]), (char **)NULL, 0);
 
         if(src < CONFIG_CFG_EXT_OFFSET_START || src >= CONFIG_CFG_EXT_OFFSET_END){
-            printf("address not in range(%x-%x)!\n",CONFIG_CFG_EXT_OFFSET_START,CONFIG_CFG_EXT_OFFSET_END-4);
+            printf("address not in range(%x-%x)\n",CONFIG_CFG_EXT_OFFSET_START,CONFIG_CFG_EXT_OFFSET_END-4);
             return 0;
         }
     }else{
-        printf("argc error!\n");
+        printf("argc error\n");
         return 0;
     }
     flashwrite(src,&ret,4);
-    printf("0x%08x==0x%x\n",src,ret);
+    printf("0x%08x==0x%x\n",src,ret);   
     return 1;
 }
 
@@ -1040,8 +1106,8 @@ int CmdFlr(int argc, char* argv[])
 file_length_to_client=length;
 /*Cyrus Tsai*/
 
-	printf("Flash read from %X to %X with %X bytes	?\n",src,dst,length);
-	printf("(Y)es , (N)o ? --> ");
+	printf("Flash read from %X to %X with %X bytes\n",src,dst,length);
+	printf("(Y)es,(N)o?->");
 
 	if (YesOrNo())
 	        //for(i=0;i<length;i++)
@@ -1052,11 +1118,11 @@ file_length_to_client=length;
 		//	printf("Flash Read Failed!\n");
 		//  }	
 		    if (flashread(dst, src, length))
-			printf("Flash Read Successed!\n");
+			printf("Read Successed\n");
 		    else
-			printf("Flash Read Failed!\n");
+			printf("Read Failed\n");
 	else
-		printf("Abort!\n");
+		printf("Abort\n");
 //#undef	FLASH_READ_BYTE		4096
 
 }
@@ -1087,15 +1153,15 @@ int CmdFlw(int argc, char* argv[])
 /*Cyrus Tsai*/
 
 	
-	printf("Flash Program from %X to %X with %X bytes	?\n",src,dst,length);
-	printf("(Y)es, (N)o->");
+	printf("Flash Program from %X to %X with %X bytes\n",src,dst,length);
+	printf("(Y)es,(N)o->");
 	if (YesOrNo())
 		if (flashwrite(dst, src, length))
-			printf("Flash Write Successed!\n");
+			printf("Write Successed\n");
 		else
-			printf("Flash Write Failed!\n");
+			printf("Write Failed\n");
 	else
-		printf("Abort!\n");
+		printf("Abort\n");
 #undef FLASH_WRITE_BYTE //4096
 
         //---------------------------------------------------------------------------
@@ -1208,11 +1274,11 @@ int CmdTFTP_TX(int argc, char* argv[])  //wei add
 
 
 	
-	dprintf("My MAC= %x : %x : %x : %x : %x : %x \n", eth0_mac[0]&0xff, eth0_mac[1]&0xff,eth0_mac[2]&0xff,
-											eth0_mac[3]&0xff,eth0_mac[4]&0xff,eth0_mac[5]&0xff);
+//	dprintf("My MAC= %x : %x : %x : %x : %x : %x \n", eth0_mac[0]&0xff, eth0_mac[1]&0xff,eth0_mac[2]&0xff,
+//											eth0_mac[3]&0xff,eth0_mac[4]&0xff,eth0_mac[5]&0xff);
 
 	if(argc < 1) 
-	{	dprintf("Usage: TFTP pattern number \n");
+	{	dprintf("Usage:TFTP pattern number\n");
 		return 0;		
 	}
 
@@ -1236,7 +1302,7 @@ int CmdTFTP_TX(int argc, char* argv[])  //wei add
 		unsigned int checksum=0; 
 		for(i=0;i<60;i++)
 			checksum+=tx_buffer[i];
-		dprintf("checksum=%x \n", checksum);
+	//	dprintf("checksum=%x \n", checksum);
 		//tx_buffer[60]
 	
 		swNic_send(tx_buffer,60);//42+4);//strlen(tx_buffer));
@@ -1295,7 +1361,7 @@ int CmdHelp( int argc, char* argv[] )
 {
 	int	i, LineCount ;
 
-    printf("----------------- COMMAND MODE HELP ------------------\n");
+    printf("----------- COMMAND MODE HELP -----------\n");
 	for( i=0, LineCount = 0 ; i < (sizeof(MainCmdTable) / sizeof(COMMAND_TABLE)) ; i++ )
 	{
 		if( MainCmdTable[i].msg )
@@ -1306,7 +1372,7 @@ int CmdHelp( int argc, char* argv[] )
 			{
 				printf("[Hit any key]\r");
 				WaitKey();
-				printf("	     \r");
+				printf(" \r");
 				LineCount = 0 ;
 			}
 		}
@@ -1345,8 +1411,8 @@ int CmdSFlw(int argc, char* argv[])
 	unsigned int  src_RAM_addr=strtoul((const char*)(argv[1]), (char **)NULL, 16);
 	unsigned int  length=strtoul((const char*)(argv[2]), (char **)NULL, 16);
 	unsigned int  end_of_RAM_addr=src_RAM_addr+length;	
-	printf("Write 0x%x Bytes to SPI flash#%d, offset 0x%x<0x%x>, from RAM 0x%x to 0x%x\n" ,length,cnt2+1,dst_flash_addr_offset,dst_flash_addr_offset+0xbd000000,src_RAM_addr,end_of_RAM_addr);
-	printf("(Y)es, (N)o->");
+	printf("Write 0x%x Bytes to SPI flash#%d,offset 0x%x<0x%x>,from RAM 0x%x to 0x%x\n" ,length,cnt2+1,dst_flash_addr_offset,dst_flash_addr_offset+0xbd000000,src_RAM_addr,end_of_RAM_addr);
+	printf("(Y)es,(N)o->");
 	if (YesOrNo())
 	{
 		spi_pio_init();
@@ -1357,7 +1423,7 @@ int CmdSFlw(int argc, char* argv[])
 		 #endif
 	}//end if YES
 	else
-		printf("Abort!\n");
+		printf("Abort\n");
 }
 #endif
 //---------------------------------------------------------------------------
@@ -1370,7 +1436,7 @@ int CmdNFlr(int argc, char* argv[])
 	unsigned int length;
 
 	if(argc < 3) {
-		printf("Parameters not enough!\n");
+		printf("Parameters not enough\n");
 		return 1;
 	}
 
@@ -1380,16 +1446,16 @@ int CmdNFlr(int argc, char* argv[])
 
 	file_length_to_client=length;
 
-	printf("Read NAND Flash from %X to %X with %X bytes	?\n",src,dst,length);
-	printf("(Y)es , (N)o ? --> ");
+	printf("Read NAND Flash from %X to %X with %X bytes?\n",src,dst,length);
+	printf("(Y)es,(N)o?->");
 
 	if (YesOrNo())
 		    if (read_data(src,length,(unsigned char *)dst))
-			printf("Read NAND Flash Successed!\n");
+			printf("Read NAND Successed\n");
 		    else
-			printf("Read NAND Flash Failed!\n");
+			printf("Read NAND Failed\n");
 	else
-		printf("Abort!\n");
+		printf("Abort\n");
 
 }
 //---------------------------------------------------------------------------
@@ -1400,28 +1466,28 @@ int CmdNFlw(int argc, char* argv[])
 
 
 	if(argc < 3) {
-		printf("Parameters not enough!\n");
+		printf("Parameters not enough\n");
 		return 1;
 	}
 	dst = strtoul((const char*)(argv[0]), (char **)NULL, 16);		
 	src = strtoul((const char*)(argv[1]), (char **)NULL, 16);		
 	length= strtoul((const char*)(argv[2]), (char **)NULL, 16);		
 
-	printf("Program NAND flash from %X to %X with %X bytes	?\n",src,dst,length);
-	printf("(Y)es, (N)o->");
+	printf("Program NAND flash from %X to %X with %X bytes?\n",src,dst,length);
+	printf("(Y)es,(N)o->");
 	if (YesOrNo())
 		if (write_data(dst, length, src))
-			printf("Write Nand Flash Successed!\n");
+			printf("Write Nand Successed\n");
 		else
-			printf("Write Nand Flash Failed!\n");
+			printf("Write Nand Failed\n");
 	else
-		printf("Abort!\n");
+		printf("Abort\n");
 				
 }
 #endif
 
 //---------------------------------------------------------------------------
-
+#if 0
 void RunMonitor(char *PROMOPT, COMMAND_TABLE *TestCmdTable, int len)
 {
 	char		buffer[ MAX_MONITOR_BUFFER +1 ];
@@ -1433,10 +1499,10 @@ void RunMonitor(char *PROMOPT, COMMAND_TABLE *TestCmdTable, int len)
 	while(1)
 	{	
 		//printf( "%s", TEST_PROMPT );
-		dprintf( "%s", PROMOPT );
+	//	dprintf( "%s", PROMOPT );
 		memset( buffer, 0, MAX_MONITOR_BUFFER );
 		GetLine( buffer, MAX_MONITOR_BUFFER,1);
-		dprintf( "\n" );
+	//	dprintf( "\n" );
 		argc = GetArgc( (const char *)buffer );
 		argv = GetArgv( (const char *)buffer );
 		if( argc < 1 ) continue ;
@@ -1458,10 +1524,10 @@ void RunMonitor(char *PROMOPT, COMMAND_TABLE *TestCmdTable, int len)
 			}
 		}
 		//if(i==sizeof(TestCmdTable) / sizeof(COMMAND_TABLE)) printf("Unknown command !\r\n");
-		if(i==len) printf("Unknown command !\r\n");
+		if(i==len) printf("Unknown command\r\n");
 	}
 }
-
+#endif
 //---------------------------------------------------------------------------
 
 #if defined(CONFIG_PCIE_MODULE) 
@@ -1673,7 +1739,7 @@ void Dram_test(int argc, char* argv[])
 #if 1
             if (samples % 100 == 0)
             {
-                printf("\nSamples: %d", samples);
+        //        printf("\nSamples: %d", samples);
 		  
 		
 		 
@@ -1681,7 +1747,7 @@ void Dram_test(int argc, char* argv[])
 		 	if(enable_delay)
 		 	{
 			     delay_time=rand2() % ((unsigned int) 1000*1000);
-			     prom_printf("  delay_time=%d\n",delay_time);
+			//     prom_printf("  delay_time=%d\n",delay_time);
 			     for(k=0;k<=delay_time;k++); //delay_loop				     
 		 	}
 
@@ -1706,7 +1772,7 @@ void Dram_test(int argc, char* argv[])
 			            break;
 
 			        case 2:
-			            dprintf("\nDRAM : Self Refresh mode\n");
+			            dprintf("\nDRAM:Self Refresh mode\n");
 				     REG32(MPMR_REG)= 0x3FFFFFFF ;
 				     delay_ms(100);
 			            REG32(MPMR_REG)|= (0x2 <<30) ;
@@ -1717,14 +1783,14 @@ void Dram_test(int argc, char* argv[])
 			            break;
 
 			        case 3:
-			            dprintf("\nReserved!\n");
+			            dprintf("\nReserved\n");
 			            //REG32(MPMR_REG)= READ_MEM32(MPMR_REG)|(0x3 <<30) ;
 			            REG32(MPMR_REG)= 0x3FFFFFFF ;
 				     //return 0;
 			            break;
 				#ifdef CONFIG_CPUsleep_PowerManagement_TEST
 				case 4:
-			            dprintf("\nCPUSleep + Self Refresh in IMEM!\n");
+			            dprintf("\nCPUSleep+Self Refresh in IMEM\n");
 				     CmdCPUSleepIMEM();
 			            //return 0;
 			            break;
@@ -1806,16 +1872,16 @@ void Dram_test(int argc, char* argv[])
 
                 if (rdata != wdata_array[i])
                 {
-                    printf("\nWrite Data Array: 0x%X", wdata_array[i]);
+                    printf("\nWrite Data Array:0x%X", wdata_array[i]);
 
                     if (cache_type)
-                        printf("\n==> Uncached Access Address: 0x%X, Type: %d bit, Burst: %d",
+                        printf("\n=>Uncached Access Address:0x%X, Type: %d bit, Burst: %d",
                             addr, (access_type == 0) ? 8 : (access_type == 1) ? 16 : 32, burst);
                     else
-                        printf("\n==>   Cached Access Address: 0x%X, Type: %d bit, Burst: %d",
+                        printf("\n=>Cached Access Address:0x%X, Type: %d bit, Burst: %d",
                             addr, (access_type == 0) ? 8 : (access_type == 1) ? 16 : 32, burst);
 
-                    printf("\n====> Verify Error! Addr: 0x%X = 0x%X, expected to be 0x%X\n", j, rdata, wdata_array[i]);
+                    printf("\n=>Verify Error! Addr: 0x%X = 0x%X, expected to be 0x%X\n", j, rdata, wdata_array[i]);
 
         //HaltLoop:
         //goto HaltLoop;
@@ -1989,7 +2055,7 @@ void CmdCPUSleepIMEM()
 
       //JSW: Just make sure CPU do sleep and below won't be printed
      delay_ms(1000);                        
-     dprintf("Counter Trigger interrupt,CPI Leave Sleep...\n");
+     dprintf("Counter Trigger interrupt,CPI Leave Sleep\n");
 
 }
 
@@ -2504,13 +2570,13 @@ int Testmdcmdio( int argc, char* argv[] )
 		else
 			{
 			dprintf("port%d Read phyReg%d = 0x%x FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL \r\n",phyid,reg,uid);
-			dprintf("port%d %d's Fail  \r\n",phyid,rd-1);
+			dprintf("port%d %d's Fail\r\n",phyid,rd-1);
 		return 0;
 			}
 		}
 		}
 		}
-	dprintf("port%d PASS %d'S \r\n",phyid,rd-1);
+	dprintf("port%d PASS %d'S\r\n",phyid,rd-1);
 }	
 #endif
 
@@ -2811,7 +2877,7 @@ for(i=0; i<=5; i++)
 			}
 		else
 			{
-			dprintf("Enter length error. \r\n");
+			dprintf("Enter length error.\r\n");
 			return 0;
 			}
 		
@@ -4021,7 +4087,7 @@ unsigned int p[]={
 	int port;
 	int i;
 
-	dprintf("Writing EEE pattern %08d records \n", len/2);
+//	dprintf("Writing EEE pattern %08d records \n", len/2);
 	for(port=0; port<5; port++)
 	{
 		for(i=0;i<len/2;i++)
@@ -4032,5 +4098,4 @@ unsigned int p[]={
 };
 #endif
 //-----------------------------------------------------------------------------------------------
-
 
