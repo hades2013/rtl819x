@@ -55,7 +55,6 @@
 
 #define CONFIG_BOOTFLAG (CONFIG_CFG_EXT_OFFSET_START + 0) // bootflag has 4 bytes
 
-#define CONFIG_MACAUTH 1
 #define CONFIG_AUTHCODE (CONFIG_CFG_EXT_OFFSET_START + 4) // has 32 bytes
 #define CONFIG_ETHADDR (CONFIG_CFG_EXT_OFFSET_START + 36) // has 6 bytes
 #define CONFIG_SN (CONFIG_CFG_EXT_OFFSET_START + 42) // has 32 bytes
@@ -80,3 +79,4 @@
 #undef  CONFIG_NFBI
 #undef  CONFIG_USING_JTAG
 
+#define  CONFIG_MACAUTH 1

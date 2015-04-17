@@ -478,10 +478,9 @@ int do_manufacture_set (int argc, char *argv[])
 #endif                                    
                 flashwrite(CONFIG_ETHADDR,(unsigned long)mac,6); 
 
-                macfinish |= (1<<MACFINISH_MAC);
-                macfinish_do();
-
+                macfinish |= (1<<MACFINISH_MAC);                
                 printf("OK\n");
+             //   macfinish_do();
             }
             else
             {
@@ -500,7 +499,7 @@ int do_manufacture_set (int argc, char *argv[])
         len = strlen(argv[1]);
         flashwrite(CONFIG_SN,(unsigned long)argv[1],len > size_SerNum ? size_SerNum : len);     
         macfinish |= (1<<MACFINISH_SN);
-        macfinish_do();
+       // macfinish_do();
         printf("OK\n");
     }
       else if ((argc == 2) && (0 == strcmp("hver", argv[0])))
@@ -509,7 +508,7 @@ int do_manufacture_set (int argc, char *argv[])
       flashwrite(CONFIG_HAEDVERSION,(unsigned long)argv[1], 
         len > CONFIG_HAEDVERSION_LEN ? CONFIG_HAEDVERSION_LEN : len); 
       macfinish |= (1<<MACFINISH_HVER);
-      macfinish_do();
+     // macfinish_do();
         printf("OK\n");
       //flashread((unsigned long)tmp,CONFIG_HAEDVERSION,strlen(argv[1]));
       //tmp[7] = 0;
@@ -523,6 +522,7 @@ int do_manufacture_set (int argc, char *argv[])
         printf("error cmd\n");
         return 0; 
     }
+    macfinish_do();
 
 	return 1;
     

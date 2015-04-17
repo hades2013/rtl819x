@@ -193,10 +193,10 @@ extern struct arptable_t  arptable_tftp[3];
 extern int write_data(unsigned long dst, unsigned long length, unsigned char *target);
 extern int read_data (unsigned long src, unsigned long length, unsigned char *target);
 
-#define CONFIG_MACAUTH 1
-
+#ifdef CONFIG_MACAUTH 
 extern int do_manufacture_set (int argc, char *argv[]);
-
+extern void wdt_enable();
+#endif
 /*Cyrus Tsai*/
 extern unsigned long file_length_to_server;
 extern unsigned long file_length_to_client;
@@ -321,7 +321,7 @@ COMMAND_TABLE	MainCmdTable[] =
     { "FL"    ,1, CmdFlashLoad          , "FL <src>: Read from flash"},
     { "FW"    ,2, CmdFlashWrite         , "FW <src><value>: Write to flash"},
 #endif
-#ifdef CONFIG_MACAUTH   
+#ifdef CONFIG_MACAUTH
     {"MFG" ,3, do_manufacture_set    , "MFG: set MAC"},
 #endif
 
@@ -539,7 +539,7 @@ void wdt_init()
     /* WDT ext IO set to output mode.Add by Alan Lee,at 2015-04-13 */
     WRITE_MEM32(RTL_GPIO_MUX1, (READ_MEM32(RTL_GPIO_MUX1) | RTL_GPIO_MUX1_DATA)); 
     
-    WRITE_MEM32(WDTEN_PIN_IOBASE, (READ_MEM32(WDTEN_PIN_IOBASE) | (~(1 << WDTEN_PIN_NO))));
+    //WRITE_MEM32(WDTEN_PIN_IOBASE, (READ_MEM32(WDTEN_PIN_IOBASE) | (~(1 << WDTEN_PIN_NO))));
 	//WRITE_MEM32(WDTI_PIN_IOBASE, (READ_MEM32(WDTI_PIN_IOBASE) | (~(1 << WDTI_PIN_NO))));
 
     // set as output
@@ -573,15 +573,16 @@ void monitor(void)
 	int		argc ;
 	char**		argv ;
 	int		i, retval ;
-//    int wdt_feed = 0;
-	int tickStart = 0;
+
 //	i = &_end;
 //	i = (i & (~4095)) + 4096;
 	//printf("Free Mem Start=%X\n", i);
+	
+#ifdef CONFIG_MACAUTH
 
     wdt_init();
     wdt_disable(); 
-
+#endif
 	while(1)
 	{	
 		printf( "%s", MAIN_PROMPT );

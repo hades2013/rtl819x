@@ -254,12 +254,11 @@ static int check_image_header(IMG_HEADER_Tp pHeader,SETTING_HEADER_Tp psetting_h
       */
 
     if(fl_size >= 6){
-        
         flashread((unsigned long)&bootflag, CONFIG_BOOTFLAG, 4);
-        
         if(bootflag != 1 && bootflag != 0){
             bootflag = 0;
-            flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);
+            printf("b-%x\n",CONFIG_BOOTFLAG);
+            flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);       
         }
         
         linux_start = bootflag ? CONFIG_LINUX_IMAGE2_OFFSET_START : CODE_IMAGE_OFFSET;
@@ -654,7 +653,6 @@ int check_dualbank_setting(int in_mode)
 	/*TFTP MODE no need to checksum*/
 	if(IN_TFTP_MODE == in_mode)
 		return (ret1 || ret2);
-	
 	ret = check_image_header(pHeader, psetting_header, bank_offset);
 
 	if(0 == ret) {
@@ -1222,7 +1220,6 @@ void console_init(unsigned long lexea_clock)
 	//dprintf("\nUART1 output test ok\n");
 }
 //-------------------------------------------------------
-extern char eth0_mac[6];
 
 void goToDownMode()
 {

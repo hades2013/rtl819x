@@ -98,8 +98,10 @@ void serial_outc(char c)
 		sc16is7x0_serial_out_i2c( UART_MEM2REG( UART_THR ), 0x0d);
 #endif
 }
-extern void wdt_feed(void);
 
+#ifdef CONFIG_MACAUTH  
+extern void wdt_feed(void);
+#endif
 char serial_inc()
 {
 	int i;

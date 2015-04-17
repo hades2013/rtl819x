@@ -64,5 +64,8 @@ typedef struct {
 
 extern int dprintf(char *fmt, ...);
 
+#ifdef CONFIG_MACAUTH 
+extern void wdt_enable();
+#endif
 
 #endif

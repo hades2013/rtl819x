@@ -87,9 +87,6 @@
 #define CONFIG_CFG_EXT_START 0x400000
 #endif
 
-#ifndef CONFIG_MACAUTH
-#define CONFIG_MACAUTH 1
-#endif
 /*l4*/
 #ifdef	CONFIG_RTL865X_ROMEPERF
 #include "romeperf.h"

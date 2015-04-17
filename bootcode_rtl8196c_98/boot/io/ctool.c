@@ -203,7 +203,7 @@ void GetLine( char * buffer, const unsigned int size, int EchoFlag )
 			strcpy(buffer, history_cmd[hist_see_idx]);
 			n= strlen(buffer);
 			p=buffer+n;
-		//	dprintf("%s", buffer);
+			dprintf("%s", buffer);
 			
 		}
 #endif
