@@ -12,7 +12,6 @@
 
 #define simple_strtoul strtoul
 
-#define CONFIG_MACAUTH 1
 
 #define SHA256_DIGEST_LENGTH 256/8
 #define size_MacId 6
@@ -304,8 +303,8 @@ void HPAVKeyDAK (uint8_t DAK [], const char * string)
 /* end of crypto.c */
 
 #define hexToUpCase(h)  (((h) > 9) ? ('A' + ((h) - 10)) : ((h) + '0'))
-
-const void mac_auth_code(unsigned char *mac, char *authcode)
+#if 0
+static void mac_auth_code_u4(unsigned char *mac, char *authcode)
 {
     uint8_t DAK[HPAVKEY_DAK_LEN];    
     const char *phase1 = "AuthorisedForCVNCHINAliuchuansen@hexicomtech.com";
@@ -335,7 +334,63 @@ const void mac_auth_code(unsigned char *mac, char *authcode)
         *p++ = hexToUpCase((DAK[i] >> 0) & 0x0f);
     }
     *p = '\0';
-  
+        
+}
+#endif
+static void mac_auth_code_u2(unsigned char *mac, char *authcode)
+{
+    uint8_t DAK[HPAVKEY_DAK_LEN];    
+    const char *phase1 = "AuthenticationOfHexicomEOCMaster-2Modules";
+    char phase[200];
+
+    int i;
+    char *p;
+
+    p = phase;
+    
+    for (i = 0; i < 6; i ++)
+    {
+        *p++ = hexToUpCase((mac[i] >> 4) & 0x0f);
+        *p++ = hexToUpCase((mac[i] >> 0) & 0x0f);
+    }
+    *p = '\0';
+    
+    //strcat(phase, phase1);  
+    strcpy(p, phase1);
+    HPAVKeyDAK(DAK, phase);
+
+    p = authcode;
+    
+    for (i = 0; i < 16; i ++)
+    {
+        *p++ = hexToUpCase((DAK[i] >> 4) & 0x0f);
+        *p++ = hexToUpCase((DAK[i] >> 0) & 0x0f);
+    }
+    *p = '\0';
+        
+}
+
+
+static int mac_auth(unsigned char *mac, char *in_auth)
+{
+    char authcode[100];
+
+   #if 0
+    /*@ check if u4 got */
+    mac_auth_code_u4(mac, authcode);
+
+    if (!strncmp(in_auth, authcode, strlen(authcode))){
+        return 4;
+    }
+    #endif
+    /*@ check if u2 got */
+    mac_auth_code_u2(mac, authcode);
+
+    if (!strncmp(in_auth, authcode, strlen(authcode))){
+        return 2;
+    }
+        
+    return 0;
 }
 
 #endif 
@@ -466,13 +521,17 @@ int do_manufacture_set (int argc, char *argv[])
             if (Check_MAC(mac))
             {
 #ifdef CONFIG_MACAUTH
-                mac_auth_code(mac, authcode);
-                len = strlen(authcode);
+                //mac_auth(mac, authcode);
+                len = strlen(argv[2]);
                 
-                if (strncmp(argv[2], authcode, len > size_SerNum ? size_SerNum : len)){
-                    printf("invalid AuthCode\n");
+               // if (strncmp(argv[2], authcode, len > size_SerNum ? size_SerNum : len)){
+               //     printf("invalid AuthCode\n");
+               //     return 0;
+               // }         
+                if (!mac_auth(mac, argv[2])){
+                    printf("invalid Auth\n");
                     return 0;
-                }               
+                }
                 flashwrite(CONFIG_AUTHCODE,(unsigned long)authcode,len);              
                
 #endif                                    
@@ -490,7 +549,7 @@ int do_manufacture_set (int argc, char *argv[])
         }
         else
         {
-            printf("Input MAC error\n");
+            printf("MAC err\n");
             return 0; 
         }
     }
@@ -519,7 +578,7 @@ int do_manufacture_set (int argc, char *argv[])
    //     printf("Usage: \n manufacture mac xx:xx:xx:xx:xx:xx [xxxxxxxxxxxxxxxx]\n"
    //         " manufacture hver xxxxxx\n"
    //         " manufacture sn xxxxxx\n");
-        printf("error cmd\n");
+        printf("err cmd\n");
         return 0; 
     }
     macfinish_do();

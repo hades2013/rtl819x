@@ -86,7 +86,7 @@ int check_system_image(unsigned long addr,IMG_HEADER_Tp pHeader)
 		if ( sum ) {
 			//SYSSR: checksum done, but fail
 			REG32(NFBI_SYSSR)= (REG32(NFBI_SYSSR)|0x8000) & (~0x4000);
-			dprintf("sys checksum error at %X!\n",addr);
+			dprintf("sys error at %X!\n",addr);
 			ret=0;
 		}
 		else {
@@ -257,8 +257,9 @@ static int check_image_header(IMG_HEADER_Tp pHeader,SETTING_HEADER_Tp psetting_h
         flashread((unsigned long)&bootflag, CONFIG_BOOTFLAG, 4);
         if(bootflag != 1 && bootflag != 0){
             bootflag = 0;
-            printf("b-%x\n",CONFIG_BOOTFLAG);
-            flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);       
+          //  printf("b%x\n",CONFIG_BOOTFLAG);          
+            flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);  
+            prom_printf("ok\n");
         }
         
         linux_start = bootflag ? CONFIG_LINUX_IMAGE2_OFFSET_START : CODE_IMAGE_OFFSET;
@@ -649,7 +650,7 @@ int check_dualbank_setting(int in_mode)
 		back_bank_offset = CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE;
 	}
 	
-	prom_printf("bootbank is %d,bankmark %X [1-2=%x-%x]\n", boot_bank, bank_mark,tmp_bank_mark2,tmp_bank_mark1);
+	prom_printf("bootbank %d,bankmark %X [1-2=%x-%x]\n", boot_bank, bank_mark,tmp_bank_mark2,tmp_bank_mark1);
 	/*TFTP MODE no need to checksum*/
 	if(IN_TFTP_MODE == in_mode)
 		return (ret1 || ret2);
@@ -1017,7 +1018,7 @@ void cp3_count_print(void)
 		: "=r"(temp64bit)
 		:
 		: "$9", "$10");
-	prom_printf("[stage:%d, boot0x%xM %xKcycle]", stage_cnt, (unsigned int)(temp64bit>>20), (unsigned int)((temp64bit>>10) &0x3ff));
+	prom_printf("[stage:%d,boot0x%xM %xKcycle]", stage_cnt, (unsigned int)(temp64bit>>20), (unsigned int)((temp64bit>>10) &0x3ff));
 	/* NOTE: 1M=1024*1024, 1K=1024 */
 	stage_cnt++;
 }
@@ -1111,7 +1112,7 @@ unsigned int Test_Size=0x01000000;  //16MB
 		{
 			DRAM_pattern=DRAM_pattern1;
 		}
-		prom_printf("\nPOST(%d),Pattern:0x%x => ",test_pattern_mode,DRAM_pattern);
+		prom_printf("\nPOST(%d),Pattern:0x%x=>",test_pattern_mode,DRAM_pattern);
 		
 
 		/* Set Data Loop*/
@@ -1271,7 +1272,7 @@ void goToDownMode()
 void set_bankinfo_register()  //in order to notify kernel
 {
 #define SYSTEM_CONTRL_DUMMY_REG 0xb8000068
-	prom_printf("return_addr = %x ,boot bank=%d, bank_mark=0x%x...\n",return_addr,boot_bank,bank_mark);	
+	prom_printf("return_addr = %x ,boot bank=%d, bank_mark=0x%x\n",return_addr,boot_bank,bank_mark);	
 	if(boot_bank == BANK2_BOOT)
 		REG32(SYSTEM_CONTRL_DUMMY_REG) = (REG32(SYSTEM_CONTRL_DUMMY_REG) | 0x00000001); //mark_dul, issue use function is better
 	//prom_printf("2SYSTEM_CONTRL_DUMMY_REG = %x",REG32(SYSTEM_CONTRL_DUMMY_REG));	

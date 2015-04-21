@@ -21,7 +21,7 @@ static unsigned int do_spi_read(unsigned int from, unsigned int to, unsigned int
 {
 	unsigned int uiRet;
 	uiRet = spi_flash_info[uiChip].pfRead(uiChip, from, size, (unsigned char*)to);
-	KDEBUG("do_spi_read: from=%x; to=%x; size=%x; uiRet=%x\n", from, to, size, uiRet);
+	KDEBUG("do_spi_read:from=%x;to=%x;size=%x;uiRet=%x\n", from, to, size, uiRet);
 	return 0;
 }
 /*
@@ -39,7 +39,7 @@ static unsigned int do_spi_write(unsigned int from, unsigned int to, unsigned in
 {
 	unsigned int uiStartAddr, uiStartLen, uiPageAddr, uiPageCount, uiEndAddr, uiEndLen, i, uiRet;
 	unsigned char* puc = (unsigned char*)from;
-	KDEBUG("do_spi_write:from=%x; to=%x; size=%x;\n", from, to, size);
+	KDEBUG("do_spi_write:from=%x;to=%x;size=%x;\n", from, to, size);
 	calAddr(to, size, spi_flash_info[uiChip].page_size, &uiStartAddr, &uiStartLen, &uiPageAddr, &uiPageCount, &uiEndAddr, &uiEndLen);
 	if((uiPageCount == 0x00) && (uiEndLen == 0x00))	// all data in the same page
 	{
@@ -71,7 +71,7 @@ static int do_spi_erase(unsigned int  addr, unsigned int uiChip)
 {
 	unsigned int uiRet;
 	uiRet = spi_flash_info[uiChip].pfErase(uiChip, addr);
-	KDEBUG("do_spi_erase: addr=%x;\n", addr);
+	KDEBUG("do_spi_erase:addr=%x;\n", addr);
 	return 0;
 }
 // SPI flash destroy

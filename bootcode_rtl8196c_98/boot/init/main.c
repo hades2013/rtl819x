@@ -80,7 +80,7 @@ void showBoardInfo(void)
     #ifdef CONFIG_RTL89xxC
 //	prom_printf("\n---RealTek(RTL89xxC)at %s %s [%s](%dMHz)\n",  BOOT_CODE_TIME,B_VERSION, "16bit", cpu_speed);
     #else
-	prom_printf("\n RealTek(RTL8198)at %s %s [%s](%dMHz)\n",		BOOT_CODE_TIME,B_VERSION, "16bit", cpu_speed);	
+	prom_printf("\n RealTek(RTL8198)at%s%s[%s](%dMHz)\n",		BOOT_CODE_TIME,B_VERSION, "16bit", cpu_speed);	
     #endif
 #elif defined( RTL8196C)
 //	prom_printf("\n---RealTek(RTL8196B)at %s %s [%s](%dMHz)\n",	BOOT_CODE_TIME,B_VERSION, (IS_32BIT ? "32bit" : "16bit"), cpu_speed);	

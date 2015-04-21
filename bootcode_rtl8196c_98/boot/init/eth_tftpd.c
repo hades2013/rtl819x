@@ -467,12 +467,12 @@ static void setTFTP_WRQ(void)
 #if 1
 SIGN_T sign_tbl[]={ //  sigature, name, skip_header, max_len, reboot
         {FW_SIGNATURE, "Linux kernel", SIG_LEN, 0, 0x2C0000 ,1},
-        {FW_SIGNATURE_WITH_ROOT, "Linux kernel (root-fs)", SIG_LEN, 0, 0x2C0000 ,1},
+        {FW_SIGNATURE_WITH_ROOT, "Linux kernel(root-fs)", SIG_LEN, 0, 0x2C0000 ,1},
         {WEB_SIGNATURE, "Webpages", 3, 0, 0x20000, 0},
         {ROOT_SIGNATURE, "Root filesystem", SIG_LEN, 1, 0x100000, 0},
         {BOOT_SIGNATURE, "Boot code", SIG_LEN, 1, 0x10000, 1},
         {ALL1_SIGNATURE, "Total Image", SIG_LEN, 1, 0x200000, 1},
-        {ALL2_SIGNATURE, "Total Image (no check)", SIG_LEN, 1, 0x200000, 1}
+        {ALL2_SIGNATURE, "Total Image(no check)", SIG_LEN, 1, 0x200000, 1}
 };
 #else
 SIGN_T sign_tbl[]={ //  sigature, name, skip_header, max_len, reboot
@@ -578,7 +578,7 @@ int imageFileValid(unsigned long startAddr, int len)
 						break;
 					}			
 				}
-				SprintF(message,"%s checksum error at %X!\n",sign_tbl[i].comment, startAddr+head_offset);
+				SprintF(message,"%s error at %X\n",sign_tbl[i].comment, startAddr+head_offset);
 				return -1;
 			}
 
@@ -605,7 +605,7 @@ int imageFileValid(unsigned long startAddr, int len)
 						break;
 					}	
 				}
-				SprintF(message,"%s checksum error at %X!\n",sign_tbl[i].comment, startAddr+head_offset);
+				SprintF(message,"%s error at %X\n",sign_tbl[i].comment, startAddr+head_offset);
 				return -1;
 			}
 		}
@@ -750,7 +750,7 @@ void checkAutoFlashing(unsigned long startAddr, int len)
     			}
     		}
 			if ( sum ) {
-				prom_printf("%s checksum error at %X!\n"
+				prom_printf("%s error at %X\n"
 				, Header.signature, startAddr+head_offset);
 				return ;
 			}
@@ -770,7 +770,7 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 			for (i=0; i< Header.len; i++)
 			       sum1 += *((unsigned char *)(startAddr+ head_offset + sizeof(IMG_HEADER_T) + i));
 			if ( sum1 ) {
-				prom_printf("%s checksum error at %X!\n"
+				prom_printf("%s error at %X\n"
 				, Header.signature, startAddr+head_offset);
 				return ;
 			}
@@ -785,7 +785,7 @@ void checkAutoFlashing(unsigned long startAddr, int len)
 			IMG_HEADER_T header_t, *header_p;
 			header_p = &header_t;
 			burn_offset = sel_burnbank_offset();
-			prom_printf("burn_offset = %x !\n",burn_offset);
+			prom_printf("burn_offset=%x\n",burn_offset);
 			memcpy(header_p, ((char *)srcAddr), sizeof(IMG_HEADER_T));			
 			header_p->burnAddr = get_next_bank_mark();
 			//prom_printf("2 header_p->burn = 0x%x \n", header_p->burnAddr);

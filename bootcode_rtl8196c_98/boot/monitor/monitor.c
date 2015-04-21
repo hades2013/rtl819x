@@ -222,7 +222,7 @@ extern unsigned long image_address;
 
 COMMAND_TABLE	MainCmdTable[] =
 {
-	{ "?"	  ,0, CmdHelp			, "HELP (?)	 : Print this help message"					},
+	{ "?"	  ,0, CmdHelp			, "HELP(?): Print this help message"					},
 	{ "HELP"  ,0, CmdHelp			, NULL					},		
 #if defined(CONFIG_BOOT_DEBUG_ENABLE)												
 	{ "D"	  ,2, CmdDumpWord		, "D <Address> <Len>"},    
@@ -315,11 +315,11 @@ COMMAND_TABLE	MainCmdTable[] =
   { "PHYW",3, CmdPHYregW, "PHYW: PHYW <PHYID><reg><data>"},
 #endif
 #ifdef RTL8198
-	{ "EEE"   ,1, CmdEEEPatch			, "EEE: Set EEE Pathch"}, 
+	{ "EEE"   ,1, CmdEEEPatch			, "EEE:Set EEE Pathch"}, 
 	
 #if CONFIG_FLASH_DEBUG == 1
-    { "FL"    ,1, CmdFlashLoad          , "FL <src>: Read from flash"},
-    { "FW"    ,2, CmdFlashWrite         , "FW <src><value>: Write to flash"},
+    { "FL"    ,1, CmdFlashLoad          , "FL <src>:Read from flash"},
+    { "FW"    ,2, CmdFlashWrite         , "FW <src><value>:Write to flash"},
 #endif
 #ifdef CONFIG_MACAUTH
     {"MFG" ,3, do_manufacture_set    , "MFG: set MAC"},
@@ -638,9 +638,9 @@ int CmdWB(int argc, char* argv[])
 	printf("(Y)es,(N)o->");
 	if (YesOrNo())
 		if (flashwrite(0, (unsigned long)start, length))
-			printf("Write Successed\n");
+			printf("Successed\n");
 		else
-			printf("Write Failed\n");
+			printf("Failed\n");
 	else
 		printf("Abort\n");
 
@@ -668,7 +668,7 @@ int CmdSWB(int argc, char* argv[])
 	  	#else			
 			spi_flw_image(cnt, 0, (unsigned char*)start , length);
 		#endif
-		printf("Flash Burn OK\n");
+		printf("OK\n");
 	}	
 	else 
 	{
@@ -700,7 +700,7 @@ int CmdCfn(int argc, char* argv[])
 	{
 		if(!Hex2Val( argv[0], &Address ))
 		{
-			printf("Invalid Addr(HEX)\n");
+			printf("Invalid Addr\n");
 			return FALSE ;
 		}
 	}
@@ -856,7 +856,7 @@ int CmdDumpWord( int argc, char* argv[] )
 	unsigned int len,i;
 
 	if(argc<1)
-	{	dprintf("Wrong number\n");
+	{	dprintf("Wrong\n");
 		return;
 	}
 	
@@ -866,7 +866,7 @@ int CmdDumpWord( int argc, char* argv[] )
 			src|=0x80000000;
 	}
 	else
-	{	dprintf("Wrong number\n");
+	{	dprintf("Wrong\n");
 		return;		
 	}
 				
@@ -894,7 +894,7 @@ int CmdDumpByte( int argc, char* argv[] )
 	unsigned int len,i;
 
 	if(argc<1)
-	{	dprintf("Wrong argument number\r\n");
+	{	dprintf("Wrong\r\n");
 		return;
 	}
 	
@@ -1051,7 +1051,7 @@ int CmdFlashLoad(int argc, char* argv[])
     if(argc==1){
         src = strtoul((const char*)(argv[0]), (char **)NULL, 0);
     }else{
-        printf("argc error\n");
+        printf("error\n");
         return 0;
     }
     flashread(&ret,src,4);
@@ -1071,7 +1071,7 @@ int CmdFlashWrite(int argc, char* argv[])
             return 0;
         }
     }else{
-        printf("argc error\n");
+        printf("error\n");
         return 0;
     }
     flashwrite(src,&ret,4);
@@ -1119,9 +1119,9 @@ file_length_to_client=length;
 		//	printf("Flash Read Failed!\n");
 		//  }	
 		    if (flashread(dst, src, length))
-			printf("Read Successed\n");
+			printf("Successed\n");
 		    else
-			printf("Read Failed\n");
+			printf("Failed\n");
 	else
 		printf("Abort\n");
 //#undef	FLASH_READ_BYTE		4096
@@ -1158,9 +1158,9 @@ int CmdFlw(int argc, char* argv[])
 	printf("(Y)es,(N)o->");
 	if (YesOrNo())
 		if (flashwrite(dst, src, length))
-			printf("Write Successed\n");
+			printf("Successed\n");
 		else
-			printf("Write Failed\n");
+			printf("Failed\n");
 	else
 		printf("Abort\n");
 #undef FLASH_WRITE_BYTE //4096
@@ -1373,7 +1373,7 @@ int CmdHelp( int argc, char* argv[] )
 			{
 				printf("[Hit any key]\r");
 				WaitKey();
-				printf(" \r");
+				printf("\r");
 				LineCount = 0 ;
 			}
 		}
@@ -1447,14 +1447,14 @@ int CmdNFlr(int argc, char* argv[])
 
 	file_length_to_client=length;
 
-	printf("Read NAND Flash from %X to %X with %X bytes?\n",src,dst,length);
+	printf("Read NAND Flash from %X to %X with %X bytes\n",src,dst,length);
 	printf("(Y)es,(N)o?->");
 
 	if (YesOrNo())
 		    if (read_data(src,length,(unsigned char *)dst))
-			printf("Read NAND Successed\n");
+			printf("Successed\n");
 		    else
-			printf("Read NAND Failed\n");
+			printf("Failed\n");
 	else
 		printf("Abort\n");
 
@@ -1478,9 +1478,9 @@ int CmdNFlw(int argc, char* argv[])
 	printf("(Y)es,(N)o->");
 	if (YesOrNo())
 		if (write_data(dst, length, src))
-			printf("Write Nand Successed\n");
+			printf("Successed\n");
 		else
-			printf("Write Nand Failed\n");
+			printf("Failed\n");
 	else
 		printf("Abort\n");
 				
