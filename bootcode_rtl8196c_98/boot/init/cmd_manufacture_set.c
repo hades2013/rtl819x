@@ -303,45 +303,12 @@ void HPAVKeyDAK (uint8_t DAK [], const char * string)
 /* end of crypto.c */
 
 #define hexToUpCase(h)  (((h) > 9) ? ('A' + ((h) - 10)) : ((h) + '0'))
-#if 0
-static void mac_auth_code_u4(unsigned char *mac, char *authcode)
-{
-    uint8_t DAK[HPAVKEY_DAK_LEN];    
-    const char *phase1 = "AuthorisedForCVNCHINAliuchuansen@hexicomtech.com";
-    char phase[200];
 
-    int i;
-    char *p;
-
-    p = phase;
-    
-    for (i = 0; i < 6; i ++)
-    {
-        *p++ = hexToUpCase((mac[i] >> 4) & 0x0f);
-        *p++ = hexToUpCase((mac[i] >> 0) & 0x0f);
-    }
-    *p = '\0';
-    
-    //strcat(phase, phase1);  
-    strcpy(p, phase1);
-    HPAVKeyDAK(DAK, phase);
-
-    p = authcode;
-    
-    for (i = 0; i < 16; i ++)
-    {
-        *p++ = hexToUpCase((DAK[i] >> 4) & 0x0f);
-        *p++ = hexToUpCase((DAK[i] >> 0) & 0x0f);
-    }
-    *p = '\0';
-        
-}
-#endif
 static void mac_auth_code_u2(unsigned char *mac, char *authcode)
 {
     uint8_t DAK[HPAVKEY_DAK_LEN];    
     const char *phase1 = "AuthenticationOfHexicomEOCMaster-2Modules";
-    char phase[200];
+    char phase[200] = {0};
 
     int i;
     char *p;
@@ -373,24 +340,31 @@ static void mac_auth_code_u2(unsigned char *mac, char *authcode)
 
 static int mac_auth(unsigned char *mac, char *in_auth)
 {
-    char authcode[100];
+    int i;
+    char authcode[100] = {0};
 
-   #if 0
-    /*@ check if u4 got */
-    mac_auth_code_u4(mac, authcode);
-
-    if (!strncmp(in_auth, authcode, strlen(authcode))){
-        return 4;
-    }
-    #endif
     /*@ check if u2 got */
     mac_auth_code_u2(mac, authcode);
 
-    if (!strncmp(in_auth, authcode, strlen(authcode))){
-        return 2;
+    if (in_auth == NULL || in_auth[0] == 0)
+    {
+        return 0;
     }
-        
-    return 0;
+
+    for (i = 0; ; i ++)
+    {
+        if (in_auth[i] != authcode[i])
+        {
+            return 0;
+        }
+
+        if (!in_auth[i])
+        {
+            break;
+        }
+    }
+
+    return 2;
 }
 
 #endif 
@@ -505,7 +479,7 @@ int do_manufacture_set (int argc, char *argv[])
 {    
     int len=0;
     unsigned char mac[size_MacId] = {0};
-    char authcode[100];
+    char authcode[100] = {0};
     char  SerialNoGet[size_SerNum+1]={0};
    unsigned char tmp[26] = {0};
     if (
@@ -522,20 +496,21 @@ int do_manufacture_set (int argc, char *argv[])
             {
 #ifdef CONFIG_MACAUTH
                 //mac_auth(mac, authcode);
-                len = strlen(argv[2]);
+               // len = strlen(argv[2]);
                 
                // if (strncmp(argv[2], authcode, len > size_SerNum ? size_SerNum : len)){
                //     printf("invalid AuthCode\n");
                //     return 0;
                // }         
+               
                 if (!mac_auth(mac, argv[2])){
                     printf("invalid Auth\n");
                     return 0;
                 }
-                flashwrite(CONFIG_AUTHCODE,(unsigned long)authcode,len);              
+                flashwrite(CONFIG_AUTHCODE,(unsigned long)authcode,size_SerNum);              
                
 #endif                                    
-                flashwrite(CONFIG_ETHADDR,(unsigned long)mac,6); 
+                flashwrite(CONFIG_ETHADDR,(unsigned long)mac,size_MacId); 
 
                 macfinish |= (1<<MACFINISH_MAC);                
                 printf("OK\n");
@@ -543,13 +518,13 @@ int do_manufacture_set (int argc, char *argv[])
             }
             else
             {
-                printf("not allowed\n");
+         //       printf("not allowed\n");
                 return 0; 
             }
         }
         else
         {
-            printf("MAC err\n");
+       //     printf("MAC err\n");
             return 0; 
         }
     }

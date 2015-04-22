@@ -255,11 +255,11 @@ static int check_image_header(IMG_HEADER_Tp pHeader,SETTING_HEADER_Tp psetting_h
 
     if(fl_size >= 6){
         flashread((unsigned long)&bootflag, CONFIG_BOOTFLAG, 4);
+        prom_printf("bf%x\n",bootflag);
         if(bootflag != 1 && bootflag != 0){
             bootflag = 0;
-          //  printf("b%x\n",CONFIG_BOOTFLAG);          
-            flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);  
-            prom_printf("ok\n");
+            flashwrite(CONFIG_BOOTFLAG,(unsigned long *)&bootflag,4);  
+            //prom_printf("ok\n");
         }
         
         linux_start = bootflag ? CONFIG_LINUX_IMAGE2_OFFSET_START : CODE_IMAGE_OFFSET;
