@@ -609,7 +609,7 @@ get_next:
 #endif
 		info->pid=pPkthdr->ph_portlist;
 
-//        printk("rx: pid:%d, vid:%d\n", info->pid, info->vid);
+        //printk("  %s(%d) rx: pid:%d, vid:%d\n", __FUNCTION__, __LINE__, info->pid, info->vid);
 
 		if (buf) 
 		{
@@ -712,7 +712,6 @@ __IRAM_FWD  inline int32 _swNic_send(void *skb, void * output, uint32 len,rtl_ni
 	pPkthdr->ph_txPriority = nicTx->priority;
 #endif
 
-
 /* Modified by Einsn for EOC features 20130415 */
 #ifdef RTL_EOC_SUPPORT
     pPkthdr->ph_txCVlanTagAutoAdd = nicTx->addtagports;
@@ -729,10 +728,17 @@ __IRAM_FWD  inline int32 _swNic_send(void *skb, void * output, uint32 len,rtl_ni
 	txPkthdrRing[nicTx->txIdx][ret] |= DESC_SWCORE_OWNED;
 
 #if 0
-	memDump((void*)output, 64, "TX");
+	//memDump((void*)output, 64, "TX");
+	printk("%s(%d) memdump: ", __FUNCTION__,__LINE__);
+
+	for (i=0; i<20; i++)
+    {
+        printk("%02x, ", ((unsigned char *)output)[i]);
+    }   
+	printk("\n");
 	printk("index %d address 0x%p, 0x%x 0x%p.\n", ret, &txPkthdrRing[nicTx->txIdx][ret], (*(volatile uint32 *)&txPkthdrRing[nicTx->txIdx][ret]), pPkthdr);
-	printk("Flags 0x%x proto 0x%x portlist 0x%x vid %d extPort %d srcExtPort %d len %d.\n", 
-		pPkthdr->ph_flags, pPkthdr->ph_proto, pPkthdr->ph_portlist, pPkthdr->ph_vlanId, 
+	printk("Flags 0x%x proto 0x%x portlist 0x%x vid %d vidtxpri %d extPort %d srcExtPort %d len %d.\n", 
+		pPkthdr->ph_flags, pPkthdr->ph_proto, pPkthdr->ph_portlist, pPkthdr->ph_vlanId, pPkthdr->ph_txPriority,
 		pPkthdr->ph_extPortList, pPkthdr->ph_srcExtPortNum, pPkthdr->ph_len);
 #endif
 

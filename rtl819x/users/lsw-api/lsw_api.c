@@ -717,7 +717,7 @@ int rtl8198_get_cable_mask(uint32_t *cable_mask)
     return (ret == 0) ? req.ret : ret;   
 }
 
-int rtl8198_set_mgmt_vlan(uint32_t vlan_mode, uint32_t mgmt_vlan, uint32_t mgmt_ports)
+int rtl8198_set_mgmt_vlan(uint32_t vlan_mode, uint32_t mgmt_vlan, uint32_t mgmt_pri, uint32_t mgmt_ports)
 {
     int ret;
     struct ext_req req;
@@ -725,6 +725,7 @@ int rtl8198_set_mgmt_vlan(uint32_t vlan_mode, uint32_t mgmt_vlan, uint32_t mgmt_
     req.cmd = EXT_CMD_SET_MGMT_VLAN;
     req.data.mgmt_vlan.mode = vlan_mode;
     req.data.mgmt_vlan.vlan = mgmt_vlan;
+    req.data.mgmt_vlan.pri = mgmt_pri;
     req.data.mgmt_vlan.port_mask = mgmt_ports;
     
     ret = rtl8198_ext_ioctl(local_ifname, &req);    
@@ -733,7 +734,7 @@ int rtl8198_set_mgmt_vlan(uint32_t vlan_mode, uint32_t mgmt_vlan, uint32_t mgmt_
     return (ret == 0) ? req.ret : ret;   
 }
 
-int rtl8198_get_mgmt_vlan(uint32_t *vlan_mode, uint32_t *mgmt_vlan, uint32_t *mgmt_ports)
+int rtl8198_get_mgmt_vlan(uint32_t *vlan_mode, uint32_t *mgmt_vlan, uint32_t *mgmt_pri, uint32_t *mgmt_ports)
 {
     int ret;
     struct ext_req req;
@@ -746,6 +747,7 @@ int rtl8198_get_mgmt_vlan(uint32_t *vlan_mode, uint32_t *mgmt_vlan, uint32_t *mg
     if (!ret && !req.ret){
         if (vlan_mode) *vlan_mode = req.data.mgmt_vlan.mode;
         if (mgmt_vlan) *mgmt_vlan = req.data.mgmt_vlan.vlan;
+        if (mgmt_pri) *mgmt_pri = req.data.mgmt_vlan.pri;
         if (mgmt_ports) *mgmt_ports = req.data.mgmt_vlan.port_mask;    
     }
     

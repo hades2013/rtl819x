@@ -7304,6 +7304,7 @@ int32 rtl8651_setAsicPortAcceptFrameType(uint32 port, uint32 type)
     regValue |= type << offset;
 
 	WRITE_MEM32(VCR0,regValue);
+
 	return SUCCESS;
 }
 
@@ -7322,6 +7323,7 @@ int32 rtl8651_getAsicPortAcceptFrameType(uint32 port, uint32 *type)
 }
 
 
+extern int rtk_vlan_support_enable;
 
 int32 rtl8651_setAsicVLAN1QTagIgnore(uint32 enable)
 {
@@ -7333,6 +7335,8 @@ int32 rtl8651_setAsicVLAN1QTagIgnore(uint32 enable)
         regValue = READ_MEM32(VCR0) & (~EN_1QTAGVIDIGNORE);
     }
 	WRITE_MEM32(VCR0, regValue);
+
+    rtk_vlan_support_enable = enable ? 0 : 1;
     
 	return SUCCESS;
 }
