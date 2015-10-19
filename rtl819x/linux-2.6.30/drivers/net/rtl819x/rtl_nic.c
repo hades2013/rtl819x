@@ -2430,7 +2430,7 @@ static inline void rtl_processRxToProtcolStack(struct sk_buff *skb, struct dev_p
 {
 	skb->protocol = eth_type_trans(skb, skb->dev);
 	skb->ip_summed = CHECKSUM_NONE;
-	//printk("  [%s][%d]-skb->dev[%s],proto(0x%x)\n", __FUNCTION__, __LINE__, skb->dev->name,skb->protocol);
+	//printk(" LRC123 [%s][%d]-skb->dev[%s],proto(0x%x)\n", __FUNCTION__, __LINE__, skb->dev->name,skb->protocol);
 
 #if defined(RX_TASKLET)
 	#if defined(CONFIG_RTL_LOCAL_PUBLIC)
@@ -2624,7 +2624,7 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
 	{   
 	    #if 0
         int i;
-        printk("rtl_processRxFrame : \n");
+        printk(" LRC123 rtl_processRxFrame : \n");
         for(i=0; i<30; i++)
         {
             printk("%.2x, ", skb->data[i]);
@@ -2637,7 +2637,7 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
             && (*((uint16*)(skb->data+(ETH_ALEN<<1) + VLAN_HLEN)) == __constant_htons(0x88E1)))
             || (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(0x88E1)))
         {
-            //printk(" %s(%d) ->pkt mme\n", __FUNCTION__, __LINE__);
+            //printk(" %s(%d) ->pkt mme flag = %d\n", __FUNCTION__, __LINE__, (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)));
 
             // if vlan tag, remove 
             if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)){
@@ -2647,7 +2647,9 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
             // add cpu tag
             skb_put_rtk_tag(skb, info->vid, info->pid);
         }else {
-            if (0){//if (eoc_cable_mask && (eoc_cable_mask & (1 << info->pid))){
+            //printk(" LRC123 ... (mask = %x, mg = %d, pid = %d): \n", eoc_cable_mask, (eoc_cable_mask & (1 << info->pid)), info->pid);
+            if (eoc_cable_mask && (eoc_cable_mask & (1 << info->pid)))
+            {
                 //printk(" %s(%d) skb->data=%.4x\n", __FUNCTION__, __LINE__, *((uint16*)(skb->data+(ETH_ALEN<<1))));
                 //printk(" %s(%d) skb->data 2=%.4x\n", __FUNCTION__, __LINE__, *((uint16*)(skb->data+(ETH_ALEN<<1) + VLAN_HLEN)));
                 //printk(" %s(%d) ->pkt drop by cable mask eoc_cable_mask=%x\n", __FUNCTION__, __LINE__, eoc_cable_mask); 
@@ -2655,6 +2657,17 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
                 dev_kfree_skb_any(skb);
                 return;            
             }
+
+            else if (((*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q))
+                && (*((uint16*)(skb->data+(ETH_ALEN<<1) + VLAN_HLEN)) == __constant_htons(0x8899)))
+                || (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(0x8899)))
+            {
+                //printk(" %s(%d) ->pkt drop 8899 \n", __FUNCTION__, __LINE__); 
+                cp_this->net_stats.rx_dropped++;
+                dev_kfree_skb_any(skb);
+                return; 
+            }
+            
     /* 
       in transparent mode, 
          if pkts from mgmt ports and not vlan tag in pkt or vlan tag = mvlan, remove tag if exist, submit to kernel, otherwise drop.
@@ -4291,6 +4304,15 @@ static inline int rtl_process_rtk_vlan_tx(rtl_nicTx_info *txInfo)
             #ifdef RTL_EOC_SUPPORT
             cp->vlan_setting.id = eoc_mgmt_vlan.vlan;
             cp->vlan_setting.pri = eoc_mgmt_vlan.pri;
+
+            if (((*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q))
+                && (*((uint16*)(skb->data+(ETH_ALEN<<1) + VLAN_HLEN)) == __constant_htons(0x88e1)))
+                || (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(0x88e1)))
+            {
+                //mme packets
+                cp->vlan_setting.id = 1;
+            }
+            //printk(" LRC123 %s(%d): vlan_setting.id=%d\n", __FUNCTION__, __LINE__, cp->vlan_setting.id);
             #endif
             //add end
             
@@ -4443,7 +4465,7 @@ static inline int rtl_fill_txInfo(rtl_nicTx_info *txInfo)
     
 /* Modified by Einsn for EOC features 20130415 */    
 #ifdef RTL_EOC_SUPPORT
-    txInfo->vid = eoc_mgmt_vlan.mode == VLAN_8021Q ? eoc_mgmt_vlan.vlan : 0;
+    txInfo->vid = (eoc_mgmt_vlan.mode == VLAN_8021Q) ? eoc_mgmt_vlan.vlan : 0;
 #else
 	txInfo->vid = cp->id;
 #endif /* End */
@@ -4461,12 +4483,13 @@ static inline int rtl_fill_txInfo(rtl_nicTx_info *txInfo)
         && (*((uint16*)(skb->data+(ETH_ALEN<<1) + VLAN_HLEN)) == __constant_htons(0x88E1)))
         || (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(0x88E1)))
     {
-        #if 0
+        #if 1
         if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)){
-            memmove(data + VLAN_HLEN, data, VLAN_ETH_ALEN<<1);
+            memmove(skb->data + VLAN_HLEN, skb->data, VLAN_ETH_ALEN<<1);
             skb_pull(skb, VLAN_HLEN);        
         }
         #endif
+        //printk(" LRC123 %s(%d) send mme\n", __FUNCTION__,__LINE__);
         txInfo->vid = 1;
         portlist = eoc_cable_mask;
         rtl_direct_txInfo(portlist, txInfo);     
@@ -4538,7 +4561,6 @@ static int re865x_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	nicTx.out_skb = skb;
 	retval = rtl_preProcess_xmit(&nicTx);
 
-    //printk(" %s(%d) retval=%d, FAILED=%d\n", __FUNCTION__,__LINE__, retval, FAILED);
 
 	if(FAILED == retval)
 		return 0;
@@ -4546,6 +4568,7 @@ static int re865x_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	tx_skb = nicTx.out_skb;
 	cp = tx_skb->dev->priv;
 
+    //printk(" LRC123 %s(%d) cp->id=%x, cp->portmask=%x\n", __FUNCTION__,__LINE__,cp->id, cp->portmask);
 	if((cp->id==0) || (cp->portmask ==0)) {
 		dev_kfree_skb_any(tx_skb);
 		return 0;
@@ -4554,7 +4577,7 @@ static int re865x_start_xmit(struct sk_buff *skb, struct net_device *dev)
 //#if defined (CONFIG_RTL_IGMP_SNOOPING)
 #if 1 // always do this is fine, einsn added 20130830
 	retval = rtl_fill_txInfo(&nicTx);
-    //printk(" %s(%d) retval=%d, FAILED=%d\n", __FUNCTION__,__LINE__, retval, FAILED);
+    //printk(" LRC123 %s(%d) retval=%d, FAILED=%d\n", __FUNCTION__,__LINE__, retval, FAILED);
 	if(FAILED == retval)
 		return 0;
 
