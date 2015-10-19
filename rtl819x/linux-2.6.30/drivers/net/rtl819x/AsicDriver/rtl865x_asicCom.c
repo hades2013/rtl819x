@@ -50,6 +50,7 @@ int32 rtl8651_setAsicVlan(uint16 vid, rtl865x_tblAsicDrv_vlanParam_t *vlanp)
 	entry.memberPort = vlanp->memberPortMask & RTL8651_PHYSICALPORTMASK;
 	entry.egressUntag = vlanp->untagPortMask & RTL8651_PHYSICALPORTMASK;
 	entry.fid=vlanp->fid;
+
 	_rtl8651_forceAddAsicEntry(TYPE_VLAN_TABLE, vid, &entry);
 	
 	return SUCCESS;

@@ -413,9 +413,9 @@ struct sk_buff {
 	__u16			srcVlanId:12;
 #endif
 
-#if	defined(CONFIG_RTL_QOS_8021P_SUPPORT)
+//#if	defined(CONFIG_RTL_QOS_8021P_SUPPORT)
 	__u16			srcVlanPriority:3;
-#endif
+//#endif
 
 /* #if defined(CONFIG_NETFILTER_XT_MATCH_PHYPORT)|| defined(CONFIG_RTL_FAST_FILTER) */
 	__u8			srcPhyPort;		// 0~4

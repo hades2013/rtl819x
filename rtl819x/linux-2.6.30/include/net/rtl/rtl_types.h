@@ -585,6 +585,11 @@ typedef struct ether_addr_s {
 #define RTL_EOC_SUPPORT 1
 /* End */
 
+/* Modified by Lrc for EOC features 20151010 */
+#define CONFIG_RTL_QOS_8021P_SUPPORT 1
+/* End */
+
+
 #endif 
 /* End */
 
@@ -599,6 +604,7 @@ enum{
 typedef struct {
     uint32 mode; // 0 - 1Q mode, 1 - Transparent mode
     uint32 vlan;
+    uint32 pri;//vlan priority, 0~7
     uint32 port_mask;
 }eoc_mgmt_vlan_t;
 

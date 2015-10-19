@@ -20,14 +20,16 @@
 #if 0
 #define DEBUG_ERR(format, args...) panic_printk("%s [%s]: "format, __FUNCTION__, dev->name, ## args)
 #else
-#define DEBUG_ERR(format, args...)
+//#define DEBUG_ERR(format, args...) printk("%s [%s]: "format, __FUNCTION__, dev->name, ## args)
+#define DEBUG_ERR(format, args...) 
 #endif
 
 
 #if 0
 #define DEBUG_TRACE(format, args...) panic_printk("%s [%s]: "format, __FUNCTION__, dev->name, ## args)
 #else
-#define DEBUG_TRACE(format, args...)
+//#define DEBUG_TRACE(format, args...) printk("%s [%s]: "format, __FUNCTION__, dev->name, ## args)
+#define DEBUG_TRACE(format, args...) 
 #endif
 
 
@@ -58,7 +60,7 @@ int  rx_vlan_process(struct net_device *dev, struct vlan_info *info, struct sk_b
 	struct vlan_tag tag;
 	unsigned short vid;
 
-	DEBUG_TRACE("==> Process Rx packet\n");
+	DEBUG_TRACE("==> Process Rx packet info->vlan=%d\n", info->vlan);
 
 	if (!info->global_vlan) {
 		DEBUG_TRACE("<== Return w/o change due to gvlan not enabled\n");
@@ -79,7 +81,7 @@ int  rx_vlan_process(struct net_device *dev, struct vlan_info *info, struct sk_b
 	}
 
 	// Drop all no-tag packet if port-tag is enabled
-	#if 1
+	#if 0 //close here by luoruncai@hexicomtech 20151012
 	if (info->tag && tag.f.tpid != htons(ETH_P_8021Q)) {
 		DEBUG_ERR("<Drop> due to packet w/o tag but port-tag is enabled!\n");
 		return 1;
@@ -91,13 +93,15 @@ int  rx_vlan_process(struct net_device *dev, struct vlan_info *info, struct sk_b
 			// Drop all tag packets if VID is not matched
 			vid = ntohs(tag.f.pci & 0xfff);
 			if (vid != (unsigned short)info->id) {
-				DEBUG_ERR("<Drop> due to VID not matched!\n");
-				return 1;			
+				//DEBUG_ERR("<Drop> due to VID not matched!  id=%d, vid=%d\n", info->id, vid);
+				//return 1;	//delete by luoruncai@hexicomtech.com 20151012	
 			}		
 		}
 		memcpy(&skb->tag, &tag, sizeof(struct vlan_tag));
 		STRIP_TAG(skb);
 		#if	defined(CONFIG_RTL_QOS_8021P_SUPPORT)
+        tag.f.pci = (tag.f.pci & (~(0x7 << 13))) | ((info->pri & 0x07) << 13);
+        //skb->srcVlanPriority = ntohs(info->pri);
 		skb->srcVlanPriority = ntohs(tag.f.pci>>13)&0x7;
 		#endif
 		DEBUG_ERR("<==%s(%d)   Tag [%x, vid=%d] existed in Rx packet, strip it and pass up\n", __FUNCTION__,__LINE__,
@@ -146,8 +150,8 @@ int  tx_vlan_process(struct net_device *dev, struct vlan_info *info, struct sk_b
 		
 		// Discard packet if its vid not matched, except it come from protocol stack or lan
 		if (info->is_lan && ntohs(skb->tag.f.pci&0xfff) != ((unsigned short)info->id)) {
-			DEBUG_ERR("<Drop> due to VID is not matched!\n");	
-			return 1;			
+			//DEBUG_ERR("<Drop> due to VID is not matched! pci=%d, id=%d\n", ntohs(skb->tag.f.pci&0xfff), info->id);	
+			//return 1;	//delete by luoruncai@hexicomtech.com 20151012	
 		}	
 	}
 
@@ -156,13 +160,13 @@ int  tx_vlan_process(struct net_device *dev, struct vlan_info *info, struct sk_b
 #endif
 		if (!info->tag)
 		{
-			DEBUG_TRACE("<== Return w/o tagging\n");
 			if (wlan_pri) {
 				if (!info->is_lan &&  skb->tag.f.tpid == htons(ETH_P_8021Q)) 
 					skb->cb[0] = (unsigned char)((ntohs(skb->tag.f.pci)>>13)&0x7);
 				else 
 					skb->cb[0] = (unsigned char)info->pri;		
 			}		
+			DEBUG_TRACE("<== Return w/o tagging wlan_pri=%d, skb->cb[0]=%d\n", wlan_pri, skb->cb[0]);
 			return 0;		
 		}
 	
@@ -194,7 +198,7 @@ int  tx_vlan_process(struct net_device *dev, struct vlan_info *info, struct sk_b
 
 	if (!adding_tag)	{ // add self-tag
 		COPY_TAG(tag, info);
-		adding_tag = &tag;		
+		adding_tag = &tag;	
 	}
 
 	memcpy(skb->data+ETH_ALEN*2, adding_tag, VLAN_HLEN);

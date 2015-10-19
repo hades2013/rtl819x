@@ -350,7 +350,7 @@ static struct rtl865x_vlanConfig vlanconfig[] = {
 	{	RTL_DRV_LAN_P3_NETIF_NAME,	0,	IF_ETHER,	RTL_LANVLANID,		RTL_LAN_FID, 	RTL_LANPORT_MASK_1,		RTL_LANPORT_MASK_1,		1500,	{ { 0x00, 0x12, 0x34, 0x56, 0x78, 0x90 } }, 0	},
 #else	/*CONFIG_RTL_MULTI_LAN_DEV*/
 #if defined(CONFIG_RTK_VLAN_SUPPORT)
-	{ 	RTL_DRV_LAN_NETIF_NAME,	 0,   IF_ETHER, 	RTL_LANVLANID, 	   	RTL_LAN_FID, 	RTL_LANPORT_MASK_4, 	RTL_LANPORT_MASK_4,		1500, 	{ { 0x00, 0x12, 0x34, 0x56, 0x78, 0x90 } }, 0	},
+	{ 	RTL_DRV_LAN_NETIF_NAME,	 0,   IF_ETHER, 	RTL_LANVLANID, 	   	RTL_LAN_FID, 	RTL_LANPORT_MASK, 	RTL_LANPORT_MASK,		1500, 	{ { 0x00, 0x12, 0x34, 0x56, 0x78, 0x90 } }, 0	},
 #else
 	{ 	RTL_DRV_LAN_NETIF_NAME,	 0,   IF_ETHER, 	RTL_LANVLANID, 	   	RTL_LAN_FID, 	RTL_LANPORT_MASK, 		RTL_LANPORT_MASK,		1500, 	{ { 0x00, 0x12, 0x34, 0x56, 0x78, 0x90 } }, 0	},
 #endif
@@ -365,6 +365,7 @@ static struct rtl865x_vlanConfig vlanconfig[] = {
 #endif
 /* End */
 #endif
+/* delete by luoruncai@hexicomtech.com for simplify the lan driver 20151010
 #if defined(CONFIG_RTK_VLAN_SUPPORT)
 	{	RTL_DRV_LAN_P1_NETIF_NAME,	0,   IF_ETHER, 	RTL_LANVLANID,	RTL_LAN_FID, 	RTL_LANPORT_MASK_3, 	RTL_LANPORT_MASK_3,		1500, 	{ { 0x00, 0x12, 0x34, 0x56, 0x78, 0x92 } }, 0	},
 	{	RTL_DRV_LAN_P2_NETIF_NAME, 	0,   IF_ETHER, 	RTL_LANVLANID,	RTL_LAN_FID, 	RTL_LANPORT_MASK_2, 	RTL_LANPORT_MASK_2,		1500, 	{ { 0x00, 0x12, 0x34, 0x56, 0x78, 0x93 } }, 0	},
@@ -373,6 +374,7 @@ static struct rtl865x_vlanConfig vlanconfig[] = {
 	{	RTL_DRV_LAN_P5_NETIF_NAME, 	0,	 IF_ETHER,	RTL_LANVLANID,	RTL_LAN_FID,		RTL_LANPORT_MASK_5, 	RTL_LANPORT_MASK_5, 	1500,	{ { 0x00, 0x12, 0x34, 0x56, 0x78, 0x95 } }, 0	},
 #endif //CONFIG_8198_PORT5_GMII
 #endif
+*/
 #endif
 #else	/*CONFIG_BRIDGE*/
 #if defined (CONFIG_RTL_MULTI_LAN_DEV)
@@ -466,7 +468,7 @@ static int write_proc_vlan(struct file *file, const char *buffer,unsigned long c
 static int32 rtk_vlan_support_read( char *page, char **start, off_t off, int count, int *eof, void *data );
 static int32 rtk_vlan_support_write( struct file *filp, const char *buff,unsigned long len, void *data );
 //__DRAM_FWD int rtk_vlan_support_enable;
-int rtk_vlan_support_enable;
+int rtk_vlan_support_enable = 1; //luoruncai@hexicomtech set to 1 20151010
 #if defined(CONFIG_819X_PHY_RW) //#if defined(CONFIG_RTK_VLAN_FOR_CABLE_MODEM)
 static int32 rtl_phy_status_read( char *page, char **start, off_t off, int count, int *eof, void *data );
 static int32 rtl_phy_status_write( struct file *filp, const char *buff,unsigned long len, void *data );
@@ -2149,54 +2151,54 @@ static inline int32 rtl_processReceivedInfo(rtl_nicRx_info *info, int nicRxRet)
 	switch(nicRxRet)
 	{
 		case RTL_NICRX_OK:
+		{
+			if (highestPriority<info->priority)
 			{
-				if (highestPriority<info->priority)
-				{
-					highestPriority = info->priority;
-					cpuQosHoldLow = highestPriority;
-				}
-
-				if (info->priority==(RTL865X_SWNIC_RXRING_MAX_PKTDESC-1))
-				{
-					ret = RTL_RX_PROCESS_RETURN_SUCCESS;
-				}
-				else	if (rtl_enqueueSkb(info) == SUCCESS)
-				{
-					rtl_dequeueSkb(info);
-					ret = RTL_RX_PROCESS_RETURN_SUCCESS;
-				}
-				else
-					ret = RTL_RX_PROCESS_RETURN_CONTINUE;
-
-				break;
+				highestPriority = info->priority;
+				cpuQosHoldLow = highestPriority;
 			}
+
+			if (info->priority==(RTL865X_SWNIC_RXRING_MAX_PKTDESC-1))
+			{
+				ret = RTL_RX_PROCESS_RETURN_SUCCESS;
+			}
+			else	if (rtl_enqueueSkb(info) == SUCCESS)
+			{
+				rtl_dequeueSkb(info);
+				ret = RTL_RX_PROCESS_RETURN_SUCCESS;
+			}
+			else
+				ret = RTL_RX_PROCESS_RETURN_CONTINUE;
+
+			break;
+		}
 		case RTL_NICRX_NULL:
+		{
+			info->priority = cpuQosHoldLow;
+			if (rtl_dequeueSkb(info)==SUCCESS)
 			{
-				info->priority = cpuQosHoldLow;
-				if (rtl_dequeueSkb(info)==SUCCESS)
-				{
-					ret = RTL_RX_PROCESS_RETURN_SUCCESS;
-				}
-				else if((highestPriority>0) && ((--highPrioRxTryCnt)<0))
-				{
-					//Only for using rxring 0 and rxring 5
-					highPrioRxTryCnt=MAX_HIGH_PRIO_TRY;
-					highestPriority=0;
-					cpuQosHoldLow=highestPriority;
-					ret = RTL_RX_PROCESS_RETURN_CONTINUE;
-				}
-				else if(highestPriority==0)
-				{
-					/* highestPriority=0 */
-					if (cpuQosHoldLow>0)
-					{
-						swNic_flushRxRingByPriority(cpuQosHoldLow);
-					}
-					ret = RTL_RX_PROCESS_RETURN_BREAK;
-				}
-
-				break;
+				ret = RTL_RX_PROCESS_RETURN_SUCCESS;
 			}
+			else if((highestPriority>0) && ((--highPrioRxTryCnt)<0))
+			{
+				//Only for using rxring 0 and rxring 5
+				highPrioRxTryCnt=MAX_HIGH_PRIO_TRY;
+				highestPriority=0;
+				cpuQosHoldLow=highestPriority;
+				ret = RTL_RX_PROCESS_RETURN_CONTINUE;
+			}
+			else if(highestPriority==0)
+			{
+				/* highestPriority=0 */
+				if (cpuQosHoldLow>0)
+				{
+					swNic_flushRxRingByPriority(cpuQosHoldLow);
+				}
+				ret = RTL_RX_PROCESS_RETURN_BREAK;
+			}
+
+			break;
+		}
 		case RTL_NICRX_REPEAT:
 			ret = RTL_RX_PROCESS_RETURN_BREAK;
 			break;
@@ -2230,7 +2232,7 @@ __MIPS16
 __IRAM_FWD
 static inline int32 rtl_decideRxDevice(rtl_nicRx_info *info)
 {
-	struct dev_priv	*cp;
+	struct dev_priv	*cp = NULL;
 	int32			pid, i, ret;
 	struct sk_buff 	*skb;
 	uint8*			data;
@@ -2269,13 +2271,17 @@ static inline int32 rtl_decideRxDevice(rtl_nicRx_info *info)
 		//mac based decision
 		for(i = 0; i < ETH_INTF_NUM; i++)
 		{
-                        cp = ((struct dev_priv *)_rtl86xx_dev.dev[i]->priv);
-                        if(cp && cp->opened && memcmp(skb->data,cp->dev->dev_addr,6) == 0)
-                        {
-                                info->priv = cp;
-                                goto out;
-                        }
-              }
+		    if (_rtl86xx_dev.dev[i] == NULL)
+            {
+                continue;
+            }
+            cp = ((struct dev_priv *)_rtl86xx_dev.dev[i]->priv);
+            if(cp && cp->opened && memcmp(skb->data,cp->dev->dev_addr,6) == 0)
+            {
+                info->priv = cp;
+                goto out;
+            }
+        }
 		//rtl_multiWan_config
 		if(rtl_multiWan_net_dev)
 		{
@@ -2290,8 +2296,13 @@ static inline int32 rtl_decideRxDevice(rtl_nicRx_info *info)
 
 		for(i = 0; i < ETH_INTF_NUM; i++)
 		{
+		    if (_rtl86xx_dev.dev[i] == NULL)
+            {
+                continue;
+            }
 			cp = ((struct dev_priv *)_rtl86xx_dev.dev[i]->priv);
-//			printk("=========%s(%d),cp(%s),i(%d)\n",__FUNCTION__,__LINE__,cp->dev->name,i);
+			//printk("========= %s(%d),cp(%s),i(%d)\n",__FUNCTION__,__LINE__,cp->dev->name,i);
+			//printk("========= %s(%d),opened(%d),portmask(%x),pid(%d)\n",__FUNCTION__,__LINE__,cp->opened, cp->portmask, pid);
 			if(cp && cp->opened && (cp->portmask & (1<<pid)))
 			{
 				info->priv = cp;
@@ -2299,7 +2310,7 @@ static inline int32 rtl_decideRxDevice(rtl_nicRx_info *info)
 			}
 		}
 
-//		printk("====%s(%d),dev(%s),i(%d)\n",__FUNCTION__,__LINE__,cp->dev->name,i);
+		//printk("==== %s(%d),dev(%s),i(%d),ETH_INTF_NUM(%d)\n",__FUNCTION__,__LINE__,cp->dev->name,i, ETH_INTF_NUM);
 		if(ETH_INTF_NUM==i)
 		{
 			info->priv = NULL;
@@ -2423,7 +2434,7 @@ static inline void rtl_processRxToProtcolStack(struct sk_buff *skb, struct dev_p
 {
 	skb->protocol = eth_type_trans(skb, skb->dev);
 	skb->ip_summed = CHECKSUM_NONE;
-	//printk("[%s][%d]-skb->dev[%s],proto(0x%x)\n", __FUNCTION__, __LINE__, skb->dev->name,skb->protocol);
+	//printk("  [%s][%d]-skb->dev[%s],proto(0x%x)\n", __FUNCTION__, __LINE__, skb->dev->name,skb->protocol);
 
 #if defined(RX_TASKLET)
 	#if defined(CONFIG_RTL_LOCAL_PUBLIC)
@@ -2532,13 +2543,14 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
 	len = info->len;
 	skb->len = 0;
 	skb_put(skb, len);
-	skb->dev=info->isPdev?_rtl86xx_dev.pdev:info->priv->dev;
+	skb->dev=info->isPdev ? _rtl86xx_dev.pdev : info->priv->dev;
 	//skb->dev=cp_this->dev;
 
 #if defined(CONFIG_NETFILTER_XT_MATCH_PHYPORT) || defined(CONFIG_RTL_FAST_FILTER) || defined(CONFIG_RTL_QOS_PATCH)
 	skb->srcPhyPort=(uint8)pid;
 #endif
-	//printk("=======%s(%d),cp_this(%s)\n",__FUNCTION__,__LINE__,cp_this->dev->name);
+	//printk("======= %s(%d),cp_this(%s)\n",__FUNCTION__,__LINE__,cp_this->dev->name);
+	//printk("======= %s(%d),vlan_enable(%d), global_vlan(%d)\n",__FUNCTION__,__LINE__,rtk_vlan_support_enable, cp_this->vlan_setting.global_vlan);
 	/*	vlan process (including strip vlan tag)	*/
 	#if defined(CONFIG_RTK_VLAN_SUPPORT)
 	if (rtk_vlan_support_enable && cp_this->vlan_setting.global_vlan)
@@ -2610,16 +2622,27 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
  if not mme packets and from cable port, drop it
 */
     if ((0==(data[0]&0x01)) 
-	|| (
-	(data[0] == 0xff) && (data[1] == 0xff)
-	&& (data[2] == 0xff) && (data[3] == 0xff)
-	&& (data[4] == 0xff) && (data[5] == 0xff)
-		)) {//  only unicast pkts
+    	|| ((data[0] == 0xff) && (data[1] == 0xff)
+        	&& (data[2] == 0xff) && (data[3] == 0xff)
+        	&& (data[4] == 0xff) && (data[5] == 0xff)))
+	{   
+	    #if 0
+        int i;
+        printk("rtl_processRxFrame : \n");
+        for(i=0; i<30; i++)
+        {
+            printk("%.2x, ", skb->data[i]);
+        }
+        printk("\n\n");
+        #endif
+
+	    //  only unicast pkts
         if (((*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q))
             && (*((uint16*)(skb->data+(ETH_ALEN<<1) + VLAN_HLEN)) == __constant_htons(0x88E1)))
             || (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(0x88E1)))
         {
-            //printk("->pkt mme\n");
+            //printk(" %s(%d) ->pkt mme\n", __FUNCTION__, __LINE__);
+
             // if vlan tag, remove 
             if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)){
                 memmove(data + VLAN_HLEN, data, VLAN_ETH_ALEN<<1);
@@ -2628,8 +2651,10 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
             // add cpu tag
             skb_put_rtk_tag(skb, info->vid, info->pid);
         }else {
-            if (eoc_cable_mask && (eoc_cable_mask & (1 << info->pid))){
-                //printk("->pkt drop by cable mask\n"); 
+            if (0){//if (eoc_cable_mask && (eoc_cable_mask & (1 << info->pid))){
+                //printk(" %s(%d) skb->data=%.4x\n", __FUNCTION__, __LINE__, *((uint16*)(skb->data+(ETH_ALEN<<1))));
+                //printk(" %s(%d) skb->data 2=%.4x\n", __FUNCTION__, __LINE__, *((uint16*)(skb->data+(ETH_ALEN<<1) + VLAN_HLEN)));
+                //printk(" %s(%d) ->pkt drop by cable mask eoc_cable_mask=%x\n", __FUNCTION__, __LINE__, eoc_cable_mask); 
     			cp_this->net_stats.rx_dropped++;
                 dev_kfree_skb_any(skb);
                 return;            
@@ -2639,7 +2664,7 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
          if pkts from mgmt ports and not vlan tag in pkt or vlan tag = mvlan, remove tag if exist, submit to kernel, otherwise drop.
          if pkts from non-mgmt ports and with vlan tag = mvlan, remove its tag and submit to kernel, otherwise drop. 
     */
-            if (eoc_mgmt_vlan.mode == VLAN_TRANSARENT){
+            if (0){//if (eoc_mgmt_vlan.mode == VLAN_TRANSARENT){
                 int tag_vlan = 0;
                 int from_mgmt = 0;
                 int vlan_matched = 0;
@@ -2656,8 +2681,8 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
                 }
                 /* if from mgmt tag_vlan = 0 or vlan_matched should be true, otherwise , vlan_matched should be true */
                 if ((from_mgmt && (tag_vlan != 0) && !vlan_matched) 
-                     || (!from_mgmt && !vlan_matched)){
-                    //printk("->pkt drop by mgmt vlan\n");             
+                     || (!from_mgmt && !vlan_matched))
+                {
         			cp_this->net_stats.rx_dropped++;
                     dev_kfree_skb_any(skb);
                     return;              
@@ -3128,6 +3153,10 @@ unsigned int rtl865x_setLinkStatusFlag(unsigned int newportmask)
 	{
 		for(i = 0; i < ETH_INTF_NUM; i++)
 		{
+		    if (_rtl86xx_dev.dev[i] == NULL)
+            {
+                continue;
+            }      
 			cp = ((struct dev_priv *)_rtl86xx_dev.dev[i]->priv);
 			if(cp &&  cp->opened && rtl_isWanDev(cp) && (cp->portmask & newportmask))
 			{
@@ -3562,6 +3591,12 @@ static void one_sec_timer(unsigned long task_priv)
 		struct dev_priv *tmp_cp;
 
 		int portnum;
+
+        if (_rtl86xx_dev.dev[i] == NULL)
+        {
+            continue;
+        }
+        
 		tmp_cp = ((struct dev_priv *)_rtl86xx_dev.dev[i]->priv);
 		if(tmp_cp && tmp_cp->portmask && tmp_cp->opened) {
 			for(portnum=0;portnum<5;portnum++)
@@ -4145,7 +4180,7 @@ struct net_device* re865x_get_netdev_by_name(const char* name)
 	int i;
 	for(i = 0; i < ETH_INTF_NUM; i++)
 	{
-		if(strcmp(_rtl86xx_dev.dev[i]->name,name) == 0)
+		if(_rtl86xx_dev.dev[i] && strcmp(_rtl86xx_dev.dev[i]->name,name) == 0)
 			return _rtl86xx_dev.dev[i];
 	}
 	return NULL;
@@ -4256,7 +4291,13 @@ static inline int rtl_process_rtk_vlan_tx(rtl_nicTx_info *txInfo)
 				skb = newskb;
 				txInfo->out_skb = skb;
 			}
-
+            //add by luoruncai@hexicomtech for simple vlan
+            #ifdef RTL_EOC_SUPPORT
+            cp->vlan_setting.id = eoc_mgmt_vlan.vlan;
+            cp->vlan_setting.pri = eoc_mgmt_vlan.pri;
+            #endif
+            //add end
+            
 			if (tx_vlan_process(dev, &cp->vlan_setting, skb, 0))
 			{
 				cp->net_stats.tx_dropped++;
@@ -4406,7 +4447,7 @@ static inline int rtl_fill_txInfo(rtl_nicTx_info *txInfo)
     
 /* Modified by Einsn for EOC features 20130415 */    
 #ifdef RTL_EOC_SUPPORT
-    txInfo->vid = eoc_mgmt_vlan.vlan;
+    txInfo->vid = eoc_mgmt_vlan.mode == VLAN_8021Q ? eoc_mgmt_vlan.vlan : 0;
 #else
 	txInfo->vid = cp->id;
 #endif /* End */
@@ -4436,6 +4477,9 @@ static inline int rtl_fill_txInfo(rtl_nicTx_info *txInfo)
         txInfo->addtagports = 0;          
     } else 
     
+    //printk(" %s(%d) eoc_mgmt_vlan.mode=%d\n", __FUNCTION__,__LINE__, eoc_mgmt_vlan.mode);
+    //printk(" %s(%d) txInfo->portlist=%x\n", __FUNCTION__,__LINE__, txInfo->portlist);
+    
     if (eoc_mgmt_vlan.mode == VLAN_TRANSARENT){
         if (get_fdb_portlist(skb->data, &portlist) == FAILED){
             portlist = cp->portmask;
@@ -4448,7 +4492,8 @@ static inline int rtl_fill_txInfo(rtl_nicTx_info *txInfo)
         rtl_hwLookup_txInfo(txInfo);
     }
     txInfo->portlist = portlist;    
-#else 
+    //printk(" %s(%d) txInfo->portlist=%x\n", __FUNCTION__,__LINE__, txInfo->portlist);
+#else /* end of  RTL_EOC_SUPPORT */
 	if((skb->data[0]&0x01)==0)
 	{
 		if(rtl_isHwlookup(skb, cp, &portlist) == TRUE)
@@ -4497,6 +4542,8 @@ static int re865x_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	nicTx.out_skb = skb;
 	retval = rtl_preProcess_xmit(&nicTx);
 
+    //printk(" %s(%d) retval=%d, FAILED=%d\n", __FUNCTION__,__LINE__, retval, FAILED);
+
 	if(FAILED == retval)
 		return 0;
 
@@ -4511,6 +4558,7 @@ static int re865x_start_xmit(struct sk_buff *skb, struct net_device *dev)
 //#if defined (CONFIG_RTL_IGMP_SNOOPING)
 #if 1 // always do this is fine, einsn added 20130830
 	retval = rtl_fill_txInfo(&nicTx);
+    //printk(" %s(%d) retval=%d, FAILED=%d\n", __FUNCTION__,__LINE__, retval, FAILED);
 	if(FAILED == retval)
 		return 0;
 
@@ -5211,7 +5259,7 @@ int re865x_ioctl (struct net_device *dev, struct ifreq *rq, int cmd)
 					totalVlans=((sizeof(vlanconfig))/(sizeof(struct rtl865x_vlanConfig)))-1;
 					for(i=0;i<totalVlans;i++)
 					{
-						if(vlanconfig[i].isWan==TRUE)
+						if(vlanconfig[i].isWan==TRUE && _rtl86xx_dev.dev[i])
 						{
 							cp = _rtl86xx_dev.dev[i]->priv;
 							break;
@@ -6061,6 +6109,8 @@ int  __init re865x_probe (void)
 #endif
 /* End */
 
+    memset(_rtl86xx_dev.dev, 0, sizeof(_rtl86xx_dev.dev));
+
 	for(i=0;i<totalVlans;i++)
 	{
 		struct net_device *dev;
@@ -6090,6 +6140,14 @@ int  __init re865x_probe (void)
 		dp->portnum  = 0;
 		#if defined(CONFIG_RTK_VLAN_SUPPORT)
 		dp->vlan_setting.is_lan = (dp->id!=RTL_WANVLANID);
+
+        //add by luoruncai@hexicomtech 20151012
+		dp->vlan_setting.global_vlan = 1;
+		dp->vlan_setting.vlan = 1;
+		dp->vlan_setting.id = dp->id;
+		dp->vlan_setting.tag = 1;
+        dp->vlan_setting.pri = 3;
+        //add end
 		#endif
 		for(j=0;j<RTL8651_AGGREGATOR_NUMBER;j++){
 			if(dp->portmask & (1<<j))
@@ -6285,6 +6343,7 @@ int  __init re865x_probe (void)
 #endif 
 /* End */
 
+
 #if defined(CONFIG_RTL_ETH_PRIV_SKB)
 	init_priv_eth_skb_buf();
 #endif
@@ -6310,7 +6369,7 @@ int  __init re865x_probe (void)
 
 #if defined(CONFIG_RTK_VLAN_SUPPORT)
 
-	rtk_vlan_support_enable= 0;
+	rtk_vlan_support_enable = 1;
 	rtk_vlan_support_entry=create_proc_entry("rtk_vlan_support",0,NULL);
 	if (rtk_vlan_support_entry)
 	{
@@ -7092,6 +7151,9 @@ static int rtl_config_perport_perdev_vlanconfig(int mode)
 	((struct dev_priv *)_rtl86xx_dev.dev[0]->priv)->id = RTL_LANVLANID_1; //eth0
 	((struct dev_priv *)_rtl86xx_dev.dev[0]->priv)->portnum = 1;
 
+    // add for simple lan by luoruncai@hexicomtech.com
+    #ifndef RTL_SIMPLE_LAN
+
 	if((mode == BRIDGE_MODE) || (mode== WISP_MODE))
 	{
 		vlanconfig[1] .vid = RTL_LANVLANID;
@@ -7137,6 +7199,10 @@ static int rtl_config_perport_perdev_vlanconfig(int mode)
 	((struct dev_priv *)_rtl86xx_dev.dev[5]->priv)->id = RTL_LANVLANID_5; //eth5
 	((struct dev_priv *)_rtl86xx_dev.dev[5]->priv)->portnum = 1;
 	#endif
+
+    // add end
+    #endif // end of RTL_SIMPLE_LAN
+    
 	return SUCCESS;
 }
 #endif
@@ -7657,6 +7723,7 @@ static int32 rtk_vlan_support_write( struct file *filp, const char *buff,unsigne
 		{
 			rtk_vlan_support_enable = 1;
 
+
 			rtl_config_rtkVlan_vlanconfig(rtl865x_curOpMode);
 			re865x_packVlanConfig(vlanconfig, packedVlanConfig);
 			rtl_reinit_hw_table();
@@ -7691,6 +7758,10 @@ static int32 rtk_vlan_support_write( struct file *filp, const char *buff,unsigne
 			}
 
 			dev=_rtl86xx_dev.dev[i];
+            if (dev == NULL)
+            {
+                continue;
+            }
 			dp = dev->priv;
 			dp->portnum  = 0;
 			for(j=0;j<RTL8651_AGGREGATOR_NUMBER;j++)
@@ -8213,8 +8284,13 @@ static int custom_createPseudoDevForPassThru(void)
 
 		wanDev = NULL;
 		/*	find wan device first	*/
+        
 		for(i=0;i<ETH_INTF_NUM;i++)
 		{
+		    if (_rtl86xx_dev.dev[i] == NULL)
+            {
+                continue;
+            }      
 			dp = _rtl86xx_dev.dev[i]->priv;
 			if (rtl_isWanDev(dp)==TRUE)
 			{
@@ -8369,6 +8445,7 @@ static int32 rtl8651_customPassthru_init(void)
 		res->write_proc = custom_Passthru_write_proc;
 	}
 	rtl8651_defineProtocolBasedVLAN( IP6_PASSTHRU_RULEID, 0x0, __constant_htons(ETH_P_IPV6) );
+
 	#if defined(CONFIG_RTL_CUSTOM_PASSTHRU_PPPOE)
 	rtl8651_defineProtocolBasedVLAN( PPPOE_PASSTHRU_RULEID1, 0x0, __constant_htons(ETH_P_PPP_SES) );
 	rtl8651_defineProtocolBasedVLAN( PPPOE_PASSTHRU_RULEID2, 0x0, __constant_htons(ETH_P_PPP_DISC) );
@@ -9141,6 +9218,10 @@ static int rtl_port_used_by_device(uint32 portMask)
 
 	for(i = 0; i < ETH_INTF_NUM; i++)
 	{
+	    if (_rtl86xx_dev.dev[i] == NULL)
+        {
+            continue;
+        }
 		cp = ((struct dev_priv *)_rtl86xx_dev.dev[i]->priv);
 		if(cp && cp->opened && (cp->portmask & portMask))
 		{

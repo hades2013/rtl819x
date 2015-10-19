@@ -2287,15 +2287,21 @@ int netif_receive_skb(struct sk_buff *skb)
 
 	#if	defined(CONFIG_RTL_819X)
 	if (rtl_netif_receive_skb_hooks(skb)==RTL_PS_HOOKS_RETURN)
+    {   
 		return NET_RX_SUCCESS;
+    }
 	#endif
 
 	if (skb->vlan_tci && vlan_hwaccel_do_receive(skb))
+    {   
 		return NET_RX_SUCCESS;
+    }
 
 	/* if we've gotten here through NAPI, check netpoll */
 	if (netpoll_receive_skb(skb))
+    {   
 		return NET_RX_DROP;
+    }
 
 	if (!skb->tstamp.tv64)
 		net_timestamp(skb);
@@ -2358,6 +2364,7 @@ ncls:
 		if (ptype->type == type &&
 		    (ptype->dev == null_or_orig || ptype->dev == skb->dev ||
 		     ptype->dev == orig_dev)) {
+		     
 			if (pt_prev)
 				ret = deliver_skb(skb, pt_prev, orig_dev);
 			pt_prev = ptype;
