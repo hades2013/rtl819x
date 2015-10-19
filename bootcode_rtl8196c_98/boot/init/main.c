@@ -52,8 +52,9 @@ void start_kernel(void)
 
 	return_addr=0;
 	ret=check_image	(&header,&setting_header);
+   // prom_printf("start[%d]\n",ret);
 
-    prom_printf("start kernel at flash [%x]\n",return_addr-FLASH_BASE);
+ //   prom_printf("start kernel at flash [%x]\n",return_addr-FLASH_BASE);
 
 #if defined(CONFIG_POST_ENABLE)
 	int post_test_result=1;
@@ -68,20 +69,20 @@ void showBoardInfo(void)
 {
 	volatile int cpu_speed = 0;
 	cpu_speed = check_cpu_speed();	
-	prom_printf("%s",((*(volatile unsigned int *)(0xb8000008)) & (0x1<<23))?"Reboot by Watchdog Timeout!\n":" ");
+//	prom_printf("%s",((*(volatile unsigned int *)(0xb8000008)) & (0x1<<23))?"\nReboot by Watchdog Timeout\n":" ");
 	
 #if defined(CONFIG_BOOT_TIME_MEASURE)
 	cp3_count_print(); 
 #endif
 #if defined(RTL8196B)
-	prom_printf("\n---RealTek(RTL8196C)at %s %s [%s](%dMHz)\n",	BOOT_CODE_TIME,B_VERSION, "16bit", cpu_speed);	
+//	prom_printf("\n---RealTek(RTL8196C)at %s %s [%s](%dMHz)\n",	BOOT_CODE_TIME,B_VERSION, "16bit", cpu_speed);	
 #elif defined(RTL8198)
     #ifdef CONFIG_RTL89xxC
-	prom_printf("\n---RealTek(RTL89xxC)at %s %s [%s](%dMHz)\n",  BOOT_CODE_TIME,B_VERSION, "16bit", cpu_speed);
+//	prom_printf("\n---RealTek(RTL89xxC)at %s %s [%s](%dMHz)\n",  BOOT_CODE_TIME,B_VERSION, "16bit", cpu_speed);
     #else
-	prom_printf("\n---RealTek(RTL8198)at %s %s [%s](%dMHz)\n",		BOOT_CODE_TIME,B_VERSION, "16bit", cpu_speed);	
+	prom_printf("\n RealTek(RTL8198)at%s%s[%s](%dMHz)\n",		BOOT_CODE_TIME,B_VERSION, "16bit", cpu_speed);	
     #endif
 #elif defined( RTL8196C)
-	prom_printf("\n---RealTek(RTL8196B)at %s %s [%s](%dMHz)\n",	BOOT_CODE_TIME,B_VERSION, (IS_32BIT ? "32bit" : "16bit"), cpu_speed);	
+//	prom_printf("\n---RealTek(RTL8196B)at %s %s [%s](%dMHz)\n",	BOOT_CODE_TIME,B_VERSION, (IS_32BIT ? "32bit" : "16bit"), cpu_speed);	
 #endif
 }

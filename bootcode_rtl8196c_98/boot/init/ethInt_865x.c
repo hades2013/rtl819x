@@ -235,12 +235,14 @@ void getmacandip(unsigned char *mac,unsigned char *ip)
 				if(memcmp(mac,"\x0\x0\x0\x0\x0\x0", 6) && !(mac[0] & 0x1))
 				{
 					/*normal mac*/
+                 //  printf("\n mac: %x-%x-%x-%x-%x-%x __%u\n",*mac,*(mac+1),*(mac+2),*(mac+3),*(mac+4),*(mac+5),__LINE__);
 
 				}
 				else
 				{
 					/*bad mac. user hw setting mac*/
 					gethwmac(mac);
+                  //   printf("\n mac: %x-%x-%x-%x-%x-%x __%u\n",*mac,*(mac+1),*(mac+2),*(mac+3),*(mac+4),*(mac+5),__LINE__);
 				}
 				
 				if(memcmp(ip,"\xC0\xA8\x0\x1",4) !=0)
@@ -257,6 +259,7 @@ void getmacandip(unsigned char *mac,unsigned char *ip)
 				{
 					/* same ip with 192.168.0.1, so use the same mac */
 					gethwmac(eth0_mac);
+                //    printf("MAC=%02X%02X%02X%02X%02X%02X,%d\n",eth0_mac[0],eth0_mac[1],eth0_mac[2],eth0_mac[3],eth0_mac[4],eth0_mac[5],__LINE__);
 				}
 			}
 			else
@@ -284,7 +287,7 @@ void eth_startup(int etherport)
 #endif
 
 	if (swCore_init()) {  	
-		dprintf("\nSwitch core initialization failed!\n");        
+	//	dprintf("\nSwitch core initialization failed!\n");        
 		return;
 	}
 
@@ -294,7 +297,7 @@ void eth_startup(int etherport)
 
 	/* Initialize NIC module */
 	if (swNic_init(rx, 4, tx, MBUF_LEN)) {
-		dprintf("\nSwitch nic initialization failed!\n");            
+	//	dprintf("\nSwitch nic initialization failed!\n");            
 		return;
 	}
 
@@ -312,13 +315,13 @@ void eth_startup(int etherport)
 	np.inAclStart = 0;
 	np.outAclEnd = 0;
 	np.outAclStart = 0;
-	memcpy(&np.gMac, &eth0_mac[0], 6);
+	memcpy(&np.gMac, &eth0_mac[0], 6);   
 
 	np.macAddrNumber = 1;
 	np.mtu = 1500;
 	ret = swCore_netifCreate(0, &np);
 	if (ret != 0) {
-		printf( "Creating intif fails:%d\n", ret );
+	//	printf( "Creating intif fails:%d\n", ret );
 		return;
 	}
 
@@ -328,7 +331,7 @@ void eth_startup(int etherport)
 	vp.memberPort = ALL_PORT_MASK;
 	ret = swCore_vlanCreate(8, &vp);
 	if (ret != 0) {       
-		printf( "Creating vlan fails:%d\n", ret );
+	//	printf( "Creating vlan fails:%d\n", ret );
        return;
 	}
 

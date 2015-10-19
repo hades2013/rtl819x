@@ -189,6 +189,7 @@ image:
 
 .PHONY: version
 version:
+	./build.sh
 	./empty_folder.sh
 	$(MAKE) -C $(DIR_BOOT)
 	$(MAKE) -C $(DIR_USERS)/goahead-2.1.1/LINUX release

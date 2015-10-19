@@ -83,6 +83,10 @@
 #include <net/rtl/rtl865x_nat.h>
 #endif
 
+#ifndef CONFIG_CFG_EXT_START
+#define CONFIG_CFG_EXT_START 0x400000
+#endif
+
 /*l4*/
 #ifdef	CONFIG_RTL865X_ROMEPERF
 #include "romeperf.h"
@@ -6172,8 +6176,13 @@ int  __init re865x_probe (void)
 			if(dp->portmask & (1<<j))
 				dp->portnum++;
 		}
-
-		memcpy((char*)dev->dev_addr,(char*)(&(vlanconfig[i].mac)),ETHER_ADDR_LEN);
+        /*Add by Alan Lee, at 2015-4-11 , support write MAC license.*/  
+        #ifdef CONFIG_MACAUTH        
+        memcpy((char*)(&(vlanconfig[i].mac)),(char*)&READ_MEM32((0xbd000000+CONFIG_CFG_EXT_START+36)),ETHER_ADDR_LEN);
+        #endif
+        /*END*/
+		memcpy((char*)dev->dev_addr,(char*)(&(vlanconfig[i].mac)),ETHER_ADDR_LEN);      
+        
 #if defined(CONFIG_COMPAT_NET_DEV_OPS)
 		dev->open = re865x_open;
 		dev->stop = re865x_close;

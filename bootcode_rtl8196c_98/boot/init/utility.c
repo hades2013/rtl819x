@@ -86,7 +86,7 @@ int check_system_image(unsigned long addr,IMG_HEADER_Tp pHeader)
 		if ( sum ) {
 			//SYSSR: checksum done, but fail
 			REG32(NFBI_SYSSR)= (REG32(NFBI_SYSSR)|0x8000) & (~0x4000);
-			dprintf("sys checksum error at %X!\n",addr);
+			dprintf("sys error at %X!\n",addr);
 			ret=0;
 		}
 		else {
@@ -130,7 +130,7 @@ int check_system_image(unsigned long addr,IMG_HEADER_Tp pHeader,SETTING_HEADER_T
 	else if  (!memcmp(pHeader->signature, image_sig_root, SIG_LEN))
 		ret=2;
 	else{
-		prom_printf("no sys signature at %X!\n",addr-FLASH_BASE);
+	//	prom_printf("no sys signature at %X!\n",addr-FLASH_BASE);
 	}		
 	//prom_printf("ret=%d  sys signature at %X!\n",ret,addr-FLASH_BASE);
 	if (ret) {
@@ -192,7 +192,7 @@ int check_rootfs_image(unsigned long addr)
     //prom_printf("rootfs-%x\n",addr-FLASH_BASE);
     
 	if ( memcmp(tmpbuf, SQSH_SIGNATURE, SIG_LEN) && memcmp(tmpbuf, SQSH_SIGNATURE_LE, SIG_LEN)) {
-		prom_printf("no rootfs signature at %X!\n",addr-FLASH_BASE);
+//		prom_printf("no rootfs signature at %X!\n",addr-FLASH_BASE);
 		return 0;
 	}
 
@@ -254,12 +254,12 @@ static int check_image_header(IMG_HEADER_Tp pHeader,SETTING_HEADER_Tp psetting_h
       */
 
     if(fl_size >= 6){
-        
         flashread((unsigned long)&bootflag, CONFIG_BOOTFLAG, 4);
-        
+        prom_printf("bf%x\n",bootflag);
         if(bootflag != 1 && bootflag != 0){
             bootflag = 0;
-            flashwrite(CONFIG_BOOTFLAG,(unsigned long)&bootflag,4);
+            flashwrite(CONFIG_BOOTFLAG,(unsigned long *)&bootflag,4);  
+            //prom_printf("ok\n");
         }
         
         linux_start = bootflag ? CONFIG_LINUX_IMAGE2_OFFSET_START : CODE_IMAGE_OFFSET;
@@ -270,7 +270,7 @@ static int check_image_header(IMG_HEADER_Tp pHeader,SETTING_HEADER_Tp psetting_h
     }
     #endif
     
-    prom_printf("Boot raise from %d\n",bootflag);
+    prom_printf("Boot from %d\n",bootflag);
 
     //flash mapping
     return_addr = (unsigned long)FLASH_BASE+linux_start+bank_offset;
@@ -650,11 +650,10 @@ int check_dualbank_setting(int in_mode)
 		back_bank_offset = CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE;
 	}
 	
-	prom_printf("bootbank is %d, bankmark %X [1-2=%x-%x]\n", boot_bank, bank_mark,tmp_bank_mark2,tmp_bank_mark1);
+	prom_printf("bootbank %d,bankmark %X [1-2=%x-%x]\n", boot_bank, bank_mark,tmp_bank_mark2,tmp_bank_mark1);
 	/*TFTP MODE no need to checksum*/
 	if(IN_TFTP_MODE == in_mode)
 		return (ret1 || ret2);
-	
 	ret = check_image_header(pHeader, psetting_header, bank_offset);
 
 	if(0 == ret) {
@@ -802,7 +801,7 @@ int user_interrupt(unsigned long time)
 #endif
 	);  // 1 sec
 #if defined(UTILITY_DEBUG)
-	dprintf("timeout\r\n");
+	dprintf("timeout\n");
 #endif	
 #ifdef CONFIG_BOOT_RESET_ENABLE
 	if (button_press_detected>0)
@@ -1019,7 +1018,7 @@ void cp3_count_print(void)
 		: "=r"(temp64bit)
 		:
 		: "$9", "$10");
-	prom_printf("[stage:%d, boot0x%xM %xKcycle]", stage_cnt, (unsigned int)(temp64bit>>20), (unsigned int)((temp64bit>>10) &0x3ff));
+	prom_printf("[stage:%d,boot0x%xM %xKcycle]", stage_cnt, (unsigned int)(temp64bit>>20), (unsigned int)((temp64bit>>10) &0x3ff));
 	/* NOTE: 1M=1024*1024, 1K=1024 */
 	stage_cnt++;
 }
@@ -1041,7 +1040,7 @@ void Init_GPIO()
 	//modify for light reset led pin in output mode
 	REG32(PABCDCNR_REG) = REG32(PABCDCNR_REG)& (~(1<<RESET_LED_PIN) ); 
 	REG32(PABCDDIR_REG) = REG32(PABCDDIR_REG) | ((1<<RESET_LED_PIN) ); 
-	REG32(PABCDDAT_REG) = REG32(PABCDDAT_REG) | ((1<<RESET_LED_PIN) );  
+	REG32(PABCDDAT_REG) = REG32(PABCDDAT_REG) | ((1<<RESET_LED_PIN) );    
 #elif defined(CONFIG_RTL89xxC)
 
 	#ifdef RTK_VOIP_BOARD_V100
@@ -1113,7 +1112,7 @@ unsigned int Test_Size=0x01000000;  //16MB
 		{
 			DRAM_pattern=DRAM_pattern1;
 		}
-		prom_printf("\nPOST(%d),Pattern:0x%x => ",test_pattern_mode,DRAM_pattern);
+		prom_printf("\nPOST(%d),Pattern:0x%x=>",test_pattern_mode,DRAM_pattern);
 		
 
 		/* Set Data Loop*/
@@ -1135,7 +1134,7 @@ unsigned int Test_Size=0x01000000;  //16MB
 
 			 if (READ_MEM32(DRAM_Start_Test_ADR+test_cnt) != DRAM_pattern)//Compare FAIL
 		 	  {											
-						prom_printf("\nDRAM POST Fail at addr:0x%x!!!\n\n",(DRAM_Start_Test_ADR+test_cnt) );
+						prom_printf("\nDRAM POST Fail at addr:0x%x\n\n",(DRAM_Start_Test_ADR+test_cnt) );
 						test_result=0;
 						return 0;					
 		 	  }
@@ -1148,7 +1147,7 @@ unsigned int Test_Size=0x01000000;  //16MB
 		 
 	}//end of test_pattern_mode
 	 
-	  prom_printf("\n\n");
+	//  prom_printf("\n\n");
 	   return 1;
   }//end of POSTRW_API
 #endif
@@ -1222,6 +1221,7 @@ void console_init(unsigned long lexea_clock)
 	//dprintf("\nUART1 output test ok\n");
 }
 //-------------------------------------------------------
+
 void goToDownMode()
 {
 #ifndef CONFIG_FPGA_PLATFORM
@@ -1245,7 +1245,7 @@ void goToDownMode()
 #ifdef CONFIG_BOOT_TIME_MEASURE
 		cp3_count_print();
 #endif		
-		dprintf("\n---Ethernet init Okay!\n");
+	//	dprintf("\n---Ethernet init Okay!\n");
 		sti();
 		tftpd_entry();
 #ifdef DHCP_SERVER			
@@ -1264,6 +1264,7 @@ void goToDownMode()
 	}
 #endif
 	monitor();
+
 	return ;
 }
 
@@ -1271,7 +1272,7 @@ void goToDownMode()
 void set_bankinfo_register()  //in order to notify kernel
 {
 #define SYSTEM_CONTRL_DUMMY_REG 0xb8000068
-	prom_printf("return_addr = %x ,boot bank=%d, bank_mark=0x%x...\n",return_addr,boot_bank,bank_mark);	
+	prom_printf("return_addr = %x ,boot bank=%d, bank_mark=0x%x\n",return_addr,boot_bank,bank_mark);	
 	if(boot_bank == BANK2_BOOT)
 		REG32(SYSTEM_CONTRL_DUMMY_REG) = (REG32(SYSTEM_CONTRL_DUMMY_REG) | 0x00000001); //mark_dul, issue use function is better
 	//prom_printf("2SYSTEM_CONTRL_DUMMY_REG = %x",REG32(SYSTEM_CONTRL_DUMMY_REG));	
@@ -1305,7 +1306,7 @@ void goToLocalStartMode(unsigned long addr,IMG_HEADER_Tp pheader)
 #ifdef CONFIG_BOOT_TIME_MEASURE
 		cp3_count_print();
 #endif
-		prom_printf("Jump to 0x%x...\n", pheader->startAddr);
+		prom_printf("Jump to 0x%x\n", pheader->startAddr);
 		
 #ifdef CONFIG_RTL_FLASH_DUAL_IMAGE_ENABLE
 		set_bankinfo_register();
@@ -1348,7 +1349,7 @@ void debugGoToLocalStartMode(unsigned long addr,IMG_HEADER_Tp pheader)
 		{continue;}
 		
 		if(REG32(0xb8019004)!=0xFE)
-			prom_printf("fail debug-Jump to image start=0x%x...\n", pheader->startAddr);
+		//	prom_printf("fail debug-Jump to image start=0x%x...\n", pheader->startAddr);
 		//prom_printf("Debug-Jump to image start=0x%x...\n", pheader->startAddr);
 		jump = (void *)(pheader->startAddr);
 				
@@ -1481,7 +1482,7 @@ void doBooting(int flag, unsigned long addr, IMG_HEADER_Tp pheader)
 		    REG32(GIMR_REG)=0x0;   //add by jiawenjian
 #if defined(CONFIG_BOOT_RESET_ENABLE)
 			Set_GPIO_LED_ON();
-#endif
+#endif           
 			goToDownMode();	
 			break;
 		}/*switch case */

@@ -198,3 +198,8 @@
 #define CONFIG_LOG_BUF_SHIFT 12
 #define CONFIG_CMDLINE "console=ttyS0,38400 root=/dev/mtdblock1"
 #define CONFIG_ARCH_POPULATES_NODE_MAP 1
+
+#define CONFIG_CFG_EXT_START 0x400000 
+#define CONFIG_CFG_EXT_SIZE 0x4000 
+#define CONFIG_CFG_BOOTFLAG 0 // 4 bytes
+#undef  CONFIG_MACAUTH

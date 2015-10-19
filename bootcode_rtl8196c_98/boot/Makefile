@@ -139,9 +139,6 @@ CFLAGS += $(CFLAGS-y)
 endif
 #--------------------------------------
 
-ifeq ($(CONFIG_SPI_STD_MODE),y)
-CFLAGS += -DCONFIG_SPI_STD_MODE
-endif
 
 LDFLAGS = -nostdlib  -T./ld.script  -EB   --static
 WLDFLAGS = -nostdlib  -T./ldw.script  -EB   --static
@@ -176,6 +173,7 @@ wboot: banner $(OUTDIR)/wboot.out
 
 #all :	"$(OUTDIR)" boot.out
 boot: banner $(OUTDIR)/boot.out
+	#../build.sh
 	$(NM)	./Output/boot.out | sort > ./Output/boot.nm
 	# $(OBJCOPY) -g -Obinary ./Output/boot.out ./Output/boot.img
 	mips-linux-objcopy -g -Obinary ./Output/boot.out ./Output/boot.img
@@ -197,6 +195,11 @@ else
 OBJFILES += $(OUTDIR)/flash.o
 endif
 #--------------------------------------
+
+#ifeq ($(CONFIG_MACAUTH),y)
+ifdef CONFIG_MACAUTH
+OBJFILES += $(OUTDIR)/cmd_manufacture_set.o
+endif
 
 #--------------------------------------
 ifeq ($(CONFIG_DHCP_SERVER),y)
@@ -409,8 +412,14 @@ $(OUTDIR)/ctool.o: ./io/ctool.c
 $(OUTDIR)/misc.o: ./io/misc.c 
 	$(CC) -c $(CFLAGS) -o $(OUTDIR)/misc.o ./io/misc.c
 
-$(OUTDIR)/monitor.o: ./monitor/monitor.c 
-	$(CC) -c $(CFLAGS) -o $(OUTDIR)/monitor.o ./monitor/monitor.c
+#ifeq ($(CONFIG_MACAUTH),y)
+ifdef CONFIG_MACAUTH
+$(OUTDIR)/cmd_manufacture_set.o: ./init/cmd_manufacture_set.c
+	$(CC) -c $(CFLAGS) -o $(OUTDIR)/cmd_manufacture_set.o ./init/cmd_manufacture_set.c
+endif		
+	
+$(OUTDIR)/monitor.o: ./monitor/monitor.c
+	$(CC) -c $(CFLAGS) -o $(OUTDIR)/monitor.o ./monitor/monitor.c 
 
 $(OUTDIR)/wmonitor.o: ./monitor/monitor.c 
 	$(CC) -c $(CFLAGSW) -o $(OUTDIR)/wmonitor.o ./monitor/monitor.c

@@ -99,13 +99,18 @@ void serial_outc(char c)
 #endif
 }
 
-
+#ifdef CONFIG_MACAUTH  
+extern void wdt_feed(void);
+#endif
 char serial_inc()
 {
 	int i;
 #ifndef CONFIG_SERIAL_SC16IS7X0_CONSOLE
     while (1)
-	{
+	{   
+    	#ifdef CONFIG_MACAUTH     
+        wdt_feed();  
+        #endif
 		if 	(rtl_inb(UART_LSR) & 0x1)
 			break;		
 	}	

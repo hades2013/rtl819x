@@ -16,6 +16,7 @@
 
 #include <asm/div64.h>
 
+#if 0
 unsigned long simple_strtoul(const char *cp,char **endp,unsigned int base)
 {
 	unsigned long result = 0,value;
@@ -64,6 +65,8 @@ static int skip_atoi(const char **s)
 #define LEFT	16		/* left justified */
 #define SPECIAL	32		/* 0x */
 #define LARGE	64		/* use 'ABCDEF' instead of 'abcdef' */
+#endif
+
 #if 0
 static char * number(char * str, long long num, int base, int size, int precision, int type)
 {

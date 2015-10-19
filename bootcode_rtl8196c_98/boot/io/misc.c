@@ -7,12 +7,13 @@ MISC Support Routines
 /**************************************************************************
 STRCASECMP (not entirely correct, but this will do for our purposes)
 **************************************************************************/
+#if 0
 int strcasecmp(char *a, char *b)
 {
 	while (*a && *b && (*a & ~0x20) == (*b & ~0x20)) {a++; b++; }
 	return((*a & ~0x20) - (*b & ~0x20));
 }
-
+#endif
 /**************************************************************************
 PRINTF and friends
 
@@ -313,7 +314,7 @@ static void insert(char *s, char c) /* insert c at head of string s */
     *s = c;
 }
   
-  
+
 static void append(char *s, char c) /* append c to end of string s */
 {
     while(*s++);
@@ -321,8 +322,10 @@ static void append(char *s, char c) /* append c to end of string s */
     *s = c;
 }
 
+
 static int vis_printf(char *buf, char *fmt, va_list args)
 {
+
     int count;
     int pwidth,width,pcnt,base;
     unsigned long num;
@@ -459,6 +462,7 @@ static int vis_printf(char *buf, char *fmt, va_list args)
         continue;
     }
     return count;
+
 }
 
 int dprintf(char *fmt, ...)
@@ -483,6 +487,8 @@ va_list args;
 
 void ddump(unsigned char * pData, int len)
 {
+#if 0
+
 	unsigned char *sbuf = pData;	
 	int length=len;
 
@@ -521,7 +527,7 @@ void ddump(unsigned char * pData, int len)
 	}
 
 	//dprintf("\n\r");
-
+#endif
 
 	
 }
@@ -530,6 +536,8 @@ void ddump(unsigned char * pData, int len)
 
 void dwdump(unsigned char * pData, int count)
 {
+#if 0
+
 	unsigned int *sbuf = pData;	
 	int length=count;  //is word unit
 
@@ -551,9 +559,12 @@ void dwdump(unsigned char * pData, int count)
 		}
 		dprintf("\n\r");
 	}	
+    #endif
 }
 
 //------------------------------------------------------------------
+#if 0
+
 void dwdump_swap(unsigned char * pData, int count)
 {
 	unsigned int *sbuf = pData;
@@ -579,8 +590,10 @@ void dwdump_swap(unsigned char * pData, int count)
 			
 		}
 		dprintf("\n\r");
-	}	
+	}
+
 }
+#endif
 
 //------------------------------------------------------------------
 #if 0
@@ -633,12 +646,12 @@ int sscanf( char *src, char *format, ... )
 */     		
 //------------------------------------------------------------------		
 unsigned int rtl_seed = 0xDeadC0de;
- 
+ #if 0
 void srand( unsigned int seed )
 {
  	rtl_seed = seed;
 }
- 
+ #endif
 unsigned int random(unsigned  int range )
 {
 	 unsigned int hi32, lo32;
