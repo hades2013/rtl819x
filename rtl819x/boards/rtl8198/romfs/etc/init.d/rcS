@@ -1,0 +1,53 @@
+#!/bin/sh
+
+ifconfig lo 127.0.0.1
+
+CINIT=1
+
+#hostname ecm201a
+
+mount -t proc proc /proc
+mount -t ramfs ramfs /var
+mount -t devpts devpts /dev/pts
+
+mkdir /var/tmp
+mkdir /var/web
+mkdir /var/log
+mkdir /var/run
+mkdir /var/lock
+mkdir /var/system
+mkdir /var/dnrd
+mkdir /var/lib
+mkdir /var/lib/misc
+
+##For miniigd
+mkdir /var/linuxigd
+cp /etc/tmp/pics* /var/linuxigd 2>/dev/null
+
+if [ "$CINIT" = 1 ]; then
+startup.sh
+fi
+
+##For eoc
+mkdir -p /tmp/etc
+mkdir -p /tmp/etc/snmp
+
+echo "Preparing web pages..."
+
+mkdir -p /tmp/www
+if [ -f /www.tar ];then
+echo "Found www.tar"
+tar xf /www.tar -C /tmp/www
+elif [ -f /www.tar.gz ];then
+echo "Found www.tar.gz"
+tar xf /www.tar.gz -C /tmp/www
+fi
+
+
+
+if [ -x /usr/sbin/master ];then
+master
+fi
+
+# start web server
+#webs&
