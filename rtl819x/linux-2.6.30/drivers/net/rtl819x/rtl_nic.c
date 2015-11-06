@@ -4500,14 +4500,24 @@ static inline int rtl_fill_txInfo(rtl_nicTx_info *txInfo)
         txInfo->addtagports = 0;          
     } else 
     
-    //printk(" %s(%d) eoc_mgmt_vlan.mode=%d\n", __FUNCTION__,__LINE__, eoc_mgmt_vlan.mode);
-    //printk(" %s(%d) txInfo->portlist=%x\n", __FUNCTION__,__LINE__, txInfo->portlist);
+    //printk(" LRC123 %s(%d) eoc_mgmt_vlan.mode=%d\n", __FUNCTION__,__LINE__, eoc_mgmt_vlan.mode);
+    //printk(" LRC123 %s(%d) txInfo->portlist=%x\n", __FUNCTION__,__LINE__, txInfo->portlist);
     
     if (eoc_mgmt_vlan.mode == VLAN_TRANSARENT){
         if (get_fdb_portlist(skb->data, &portlist) == FAILED){
             portlist = cp->portmask;
         }        
         rtl_direct_txInfo(portlist, txInfo);  
+
+        // add by luoruncai@hexicomtech.com
+        //if (*((uint16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q))
+        //{
+            //int vid = (*((uint16*)(skb->data+(ETH_ALEN<<1) + 2))) & 0xfff;
+            //int untagports = rtl865x_getVlanUntaggedPortMask(vid);
+            //memmove(skb->data + VLAN_HLEN, skb->data, VLAN_ETH_ALEN<<1);
+            //skb_pull(skb, VLAN_HLEN);        
+        //}
+        // add end
    
         txInfo->addtagports = portlist & (~eoc_mgmt_vlan.port_mask);        
     }else {
@@ -4515,7 +4525,7 @@ static inline int rtl_fill_txInfo(rtl_nicTx_info *txInfo)
         rtl_hwLookup_txInfo(txInfo);
     }
     txInfo->portlist = portlist;    
-    //printk(" %s(%d) txInfo->portlist=%x\n", __FUNCTION__,__LINE__, txInfo->portlist);
+    //printk(" LRC123 %s(%d) txInfo->portlist=%x\n", __FUNCTION__,__LINE__, txInfo->portlist);
 #else /* end of  RTL_EOC_SUPPORT */
 	if((skb->data[0]&0x01)==0)
 	{

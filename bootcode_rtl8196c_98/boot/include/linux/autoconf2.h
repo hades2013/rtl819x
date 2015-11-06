@@ -79,4 +79,4 @@
 #undef  CONFIG_NFBI
 #undef  CONFIG_USING_JTAG
 
-#define  CONFIG_MACAUTH 1
+#undef  CONFIG_MACAUTH

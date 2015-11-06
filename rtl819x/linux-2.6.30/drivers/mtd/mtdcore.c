@@ -27,7 +27,7 @@
 * double system defines:
 */
 #ifndef CONFIG_CMDLINE2
-#define CONFIG_CMDLINE2 "console=ttyS0,38400 root=/dev/mtdblock5"
+#define CONFIG_CMDLINE2 "console=ttyS0,115200 root=/dev/mtdblock5"
 #endif
 
 #ifndef CONFIG_CFG_EXT_START

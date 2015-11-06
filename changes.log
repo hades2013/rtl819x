@@ -278,21 +278,44 @@ rtl819x/linux-2.6.30/include/linux/autoconf.h
 
 
 +==============================================================================================================+
-  标题： 4  xxxx
+  标题： 6  更改uart的模特率为115200
 +==============================================================================================================+
-  问题描述： ［如果针对某个版本的修改，必须明确指出；公有还是私有特性，问题描述简略，清楚］
+  问题描述： 为了增加光机的功能，更改uart的模特率为115200
 
   修改原因：
 
-  修改方法：
-
-  修改影响： ［描述影响的功能，如：本修改后，需要重点测试VLAN逻辑］
+  修改方法： 
   
-  使用范围： ［描述修改平台或者特定的版本，比如本次修改只正对江阴版本］
+           修改宏定义：
+	   
+	   bootcode_rtl8196c_98/btcode/start.h
+	   
+	   #define BAUD_RATE	  	(115200)
+	   
+	   bootcode_rtl8196c_98/boot/init/utility.h
+	   
+	   #define BAUD_RATE	  	(115200)
+	   
+	   
+	   rtl819x/boards/rtl8198/tmpfs/include/appconfig.h
+	   
+	   #define CONFIG_CMDLINE "console=ttyS0,115200 root=/dev/mtdblock1"
+	   #define CONFIG_CMDLINE2 "console=ttyS0,115200 root=/dev/mtdblock5"
+	   
+	   
+	   rtl819x/linux-2.6.30/include/linux/autoconf.h
+	   
+	   #define CONFIG_CMDLINE "console=ttyS0,115200 root=/dev/mtdblock1"
+	   
+	   所有的宏定义 ： CONFIG_CMDLINE 和 CONFIG_CMDLINE2 都改成115200，
+
+  修改影响： 只影响光机的功能
+  
+  使用范围： 需要升级all文件
                                                                                                                
   修改文件及代码说明：           
   
-  修改时间及作者邮箱： 2015-01-04 xxx@hexicomtech.com                                                                                            
+  修改时间及作者邮箱： 2015-11-06 luoruncai@hexicomtech.com                                                                                            
 +==============================================================================================================+
 
 

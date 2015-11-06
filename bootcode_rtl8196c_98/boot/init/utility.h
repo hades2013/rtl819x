@@ -17,7 +17,9 @@ typedef struct _setting_header_ {
 } SETTING_HEADER_T, *SETTING_HEADER_Tp;
 
 //------------------------------------------------------------------------------------------
-#define BAUD_RATE	  		(38400)  
+//#define BAUD_RATE	  		(38400)  
+#define BAUD_RATE	  		(115200)  
+
 #define ACCCNT_TOCHKKEY 	(128*1024)  //128K
 unsigned long return_addr;
 #define WAIT_TIME_USER_INTERRUPT	(3*CPU_CLOCK)

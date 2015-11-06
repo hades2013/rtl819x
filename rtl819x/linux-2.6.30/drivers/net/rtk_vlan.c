@@ -60,7 +60,7 @@ int  rx_vlan_process(struct net_device *dev, struct vlan_info *info, struct sk_b
 	struct vlan_tag tag;
 	unsigned short vid;
 
-	DEBUG_TRACE("==> Process Rx packet info->vlan=%d\n", info->vlan);
+	DEBUG_TRACE("==> Process Rx packet info->vlan=%d, info->id=%d\n", info->vlan, info->id);
 
 	if (!info->global_vlan) {
 		DEBUG_TRACE("<== Return w/o change due to gvlan not enabled\n");
