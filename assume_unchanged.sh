@@ -104,3 +104,25 @@ git update-index --assume-unchanged rtl819x/users/goahead-2.1.1/.kernel_config
 git update-index --assume-unchanged rtl819x/users/goahead-2.1.1/LINUX/cvcfg-8m
 git update-index --assume-unchanged rtl819x/users/iptables-1.4.4/config.log
 
+
+git update-index --assume-unchanged rtl819x/boards/rtl8198/image/fw.bin
+git update-index --assume-unchanged rtl819x/boards/rtl8198/image/linux.bin
+git update-index --assume-unchanged rtl819x/boards/rtl8198/image/nfjrom
+git update-index --assume-unchanged rtl819x/boards/rtl8198/image/root.bin
+git update-index --assume-unchanged rtl819x/boards/rtl8198/image/root_nh.bin
+git update-index --assume-unchanged rtl819x/boards/rtl8198/image/vmlinux.elf
+git update-index --assume-unchanged rtl819x/boards/rtl8198/image/webpages-gw.bin
+git update-index --assume-unchanged rtl819x/boards/rtl8198/romfs/bin/busybox
+git update-index --assume-unchanged rtl819x/boards/rtl8198/romfs/etc/platform_version
+git update-index --assume-unchanged rtl819x/boards/rtl8198/romfs/etc/version
+git update-index --assume-unchanged rtl819x/boards/rtl8198/romfs/lib/libnetsnmpmibs.so.15.1.2
+git update-index --assume-unchanged rtl819x/boards/rtl8198/romfs/lib/libnvram.so.0.1
+git update-index --assume-unchanged rtl819x/boards/rtl8198/romfs/lib/libshared.so.0.1
+git update-index --assume-unchanged rtl819x/boards/rtl8198/romfs/usr/sbin/dropbear
+git update-index --assume-unchanged rtl819x/boards/rtl8198/romfs/usr/sbin/httpd
+git update-index --assume-unchanged rtl819x/boards/rtl8198/romfs/usr/sbin/master
+git update-index --assume-unchanged rtl819x/boards/rtl8198/romfs/usr/sbin/nvram
+git update-index --assume-unchanged rtl819x/boards/rtl8198/romfs/usr/sbin/vtysh
+git update-index --assume-unchanged rtl819x/boards/rtl8198/romfs/usr/share/vendor/vendor.conf
+git update-index --assume-unchanged rtl819x/boards/rtl8198/romfs/www.tar
+
