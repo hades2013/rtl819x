@@ -144,9 +144,9 @@ __DRAM_FWD static int oldStatus;
 static struct proc_dir_entry *res=NULL;
 static char passThru_flag[1];
 static int32 __init rtl8651_customPassthru_init(void);
-static int32 rtl8651_initStormCtrl(void);
-static inline int32 rtl_isPassthruFrame(uint8 *data);
+static inline int32 rtl_isPassthruFrame(uint8 *data);ddd
 #endif
+static int32 rtl8651_initStormCtrl(void);
 
 #if (defined(CONFIG_RTL_8198))
 static struct proc_dir_entry *phyTest_entry=NULL;
@@ -1776,7 +1776,7 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 #endif
 	unsigned int l4Protocol=0;
 	int ret=FAILED;
-#if defined (CONFIG_RTL_MLD_SNOOPING)
+#if defined(CONFIG_RTL_CUSTOM_PASSTHRU)
 	struct dev_priv *cp_this=info->priv;
 #endif
 	int vid=info->vid;
@@ -2543,8 +2543,11 @@ static inline void rtl_processRxFrame(rtl_nicRx_info *info)
 	len = info->len;
 	skb->len = 0;
 	skb_put(skb, len);
+    #if defined(CONFIG_RTL_CUSTOM_PASSTHRU)
 	skb->dev=info->isPdev ? _rtl86xx_dev.pdev : info->priv->dev;
-	//skb->dev=cp_this->dev;
+    #else
+	skb->dev=cp_this->dev;
+	#endif
 
 #if defined(CONFIG_NETFILTER_XT_MATCH_PHYPORT) || defined(CONFIG_RTL_FAST_FILTER) || defined(CONFIG_RTL_QOS_PATCH)
 	skb->srcPhyPort=(uint8)pid;
@@ -5967,6 +5970,8 @@ int  __init re865x_probe (void)
     	REG32(CPUICR) &= ~(TXCMD | RXCMD);
 	rxMbufRing=NULL;
 
+    memcpy((char*)(&(vlanconfig[0].mac)),(char*)&READ_MEM32((0xbd000000+CONFIG_CFG_EXT_START+36)),ETHER_ADDR_LEN);
+
 	/*Initial ASIC table*/
 #ifdef CONFIG_RTL8198_REVISION_B
  	if (REG32(BSP_REVR) >= BSP_RTL8198_REVISION_B)
@@ -6188,7 +6193,7 @@ int  __init re865x_probe (void)
 		}
         /*Add by Alan Lee, at 2015-4-11 , support write MAC license.*/  
         #ifdef CONFIG_MACAUTH        
-        memcpy((char*)(&(vlanconfig[i].mac)),(char*)&READ_MEM32((0xbd000000+CONFIG_CFG_EXT_START+36)),ETHER_ADDR_LEN);
+        //memcpy((char*)(&(vlanconfig[i].mac)),(char*)&READ_MEM32((0xbd000000+CONFIG_CFG_EXT_START+36)),ETHER_ADDR_LEN);
         #endif
         /*END*/
 		memcpy((char*)dev->dev_addr,(char*)(&(vlanconfig[i].mac)),ETHER_ADDR_LEN);      
@@ -8494,6 +8499,7 @@ static void __exit rtl8651_customPassthru_exit(void)
 		res = NULL;
 	}
 }
+#endif
 
 /* Modified by Einsn for expand ioctl apis 20130408 */
 #ifdef  RTL_EXT_IOCTL 
@@ -8576,7 +8582,6 @@ void __exit rtl8651_exitStormCtrl(void)
 }
 
 
-#endif
 
 #if defined(CONFIG_RTL_8198)
 static int32 proc_phyTest_read( char *page, char **start, off_t off, int count, int *eof, void *data )

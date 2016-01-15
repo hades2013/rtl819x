@@ -109,7 +109,9 @@ int32 rtl865x_lookup_FilterDatabaseEntry(uint16 fid, ether_addr_t * mac, rtl865x
 int32 rtl865x_LinkChange_Process(void);
 #endif
 
-#define CONFIG_RTL_CUSTOM_PASSTHRU
+//#define CONFIG_RTL_CUSTOM_PASSTHRU
+#undef CONFIG_RTL_CUSTOM_PASSTHRU
+
 //#define CONFIG_RTL_CUSTOM_PASSTHRU_PPPOE
 #ifdef CONFIG_RTL_CUSTOM_PASSTHRU
 #define PASSTHRU_VLAN_ID 100

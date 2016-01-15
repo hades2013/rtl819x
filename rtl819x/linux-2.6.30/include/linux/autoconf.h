@@ -198,4 +198,4 @@
 #define CONFIG_LOG_BUF_SHIFT 12
 #define CONFIG_CMDLINE "console=ttyS0,115200 root=/dev/mtdblock1"
 #define CONFIG_ARCH_POPULATES_NODE_MAP 1
-#undef  CONFIG_MACAUTH
+#define  CONFIG_MACAUTH 1
