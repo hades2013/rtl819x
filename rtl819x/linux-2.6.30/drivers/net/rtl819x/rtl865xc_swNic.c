@@ -556,6 +556,8 @@ int32 swNic_flushRxRingByPriority(int priority)
 #define	RTL_ETH_NIC_DROP_RX_PKT_RESTART		#error	"check here"
 #endif
 
+#define __SWNIC_DEBUG__ 0
+
 __MIPS16
 __IRAM_FWD
 int32 swNic_receive(rtl_nicRx_info *info, int retryCount)
@@ -609,8 +611,10 @@ get_next:
 #endif
 		info->pid=pPkthdr->ph_portlist;
 
-        //printk(" LRC123 %s(%d) rx: pid:%d, vid:%d\n", __FUNCTION__, __LINE__, info->pid, info->vid);
-
+        #if __SWNIC_DEBUG__ == 1
+        printk(" %s(%d) rx: phy:%d, vid:%d\n", __FUNCTION__, __LINE__, info->pid, info->vid);
+        #endif
+        
 		if (buf) 
 		{
 			info->input = pPkthdr->ph_mbuf->skb;
@@ -674,6 +678,9 @@ __IRAM_FWD  inline int32 _swNic_send(void *skb, void * output, uint32 len,rtl_ni
 {
 	struct rtl_pktHdr * pPkthdr;
 	int next_index, ret;
+    #if __SWNIC_DEBUG__ == 1
+    int i;
+    #endif
 
 	if ((currTxPkthdrDescIndex[nicTx->txIdx]+1)==txPkthdrRingCnt[nicTx->txIdx])
 		next_index = 0;
@@ -727,7 +734,8 @@ __IRAM_FWD  inline int32 _swNic_send(void *skb, void * output, uint32 len,rtl_ni
 	/* Give descriptor to switch core */
 	txPkthdrRing[nicTx->txIdx][ret] |= DESC_SWCORE_OWNED;
 
-#if 0
+#if __SWNIC_DEBUG__ == 1
+
 	//memDump((void*)output, 64, "TX");
 	printk("%s(%d) send: ", __FUNCTION__,__LINE__);
 
@@ -735,9 +743,9 @@ __IRAM_FWD  inline int32 _swNic_send(void *skb, void * output, uint32 len,rtl_ni
     {
         printk("%02x. ", ((unsigned char *)output)[i]);
     }   
-	printk("\n\n");
+	printk("\n");
 	//printk("index %d address 0x%p, 0x%x 0x%p.\n", ret, &txPkthdrRing[nicTx->txIdx][ret], (*(volatile uint32 *)&txPkthdrRing[nicTx->txIdx][ret]), pPkthdr);
-	printk("Flags 0x%x proto 0x%x portlist 0x%x vid %d vidtxpri %d extPort %d srcExtPort %d len %d.\n", 
+	printk("Flags 0x%x proto 0x%x portlist 0x%x vid %d vidtxpri %d extPort %d srcExtPort %d len %d.\n\n", 
 		pPkthdr->ph_flags, pPkthdr->ph_proto, pPkthdr->ph_portlist, pPkthdr->ph_vlanId, pPkthdr->ph_txPriority,
 		pPkthdr->ph_extPortList, pPkthdr->ph_srcExtPortNum, pPkthdr->ph_len);
 #endif

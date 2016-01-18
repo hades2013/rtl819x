@@ -341,7 +341,8 @@ typedef struct _rtl865x_AclRule_s
 #define RTL_WLAN_NAME "wlan"
 //flowing name in driver DO NOT duplicate
 #if defined(CONFIG_BRIDGE)
-#define RTL_DRV_LAN_NETIF_NAME "br0"
+//#define RTL_DRV_LAN_NETIF_NAME "br0"
+#define RTL_DRV_LAN_NETIF_NAME "eth0"
 #else
 #define RTL_DRV_LAN_NETIF_NAME "eth0"
 #endif
