@@ -6471,11 +6471,12 @@ int32 rtl8651_setAsicFlowControlRegister(uint32 port, uint32 enable)
 	}
 	/* phy id determination */
 	phyid = rtl8651AsicEthernetTable[port].phyId;
+    
 
 	/* Read */
 	rtl8651_getAsicEthernetPHYReg( phyid, 4, &statCtrlReg4 );
 
-	if ( enable && ( statCtrlReg4 & CAPABLE_PAUSE ) == 0 )
+    if ( enable && ( statCtrlReg4 & CAPABLE_PAUSE ) == 0 )
 	{
 		statCtrlReg4 |= CAPABLE_PAUSE;		
 	}
@@ -6486,6 +6487,8 @@ int32 rtl8651_setAsicFlowControlRegister(uint32 port, uint32 enable)
 	else
 		return SUCCESS;	/* The configuration does not change. Do nothing. */
 
+    printk(" flowctrl: phyid:%02d, CAPABLE_PAUSE=%d\n", phyid, ( statCtrlReg4 & CAPABLE_PAUSE ));
+    
 	rtl8651_setAsicEthernetPHYReg( phyid, 4, statCtrlReg4 );
 	
 	/* restart N-way. */

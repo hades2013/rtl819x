@@ -197,9 +197,9 @@ endif
 #--------------------------------------
 
 #ifeq ($(CONFIG_MACAUTH),y)
-ifdef CONFIG_MACAUTH
+#ifdef CONFIG_MACAUTH
 OBJFILES += $(OUTDIR)/cmd_manufacture_set.o
-endif
+#endif
 
 #--------------------------------------
 ifeq ($(CONFIG_DHCP_SERVER),y)
@@ -413,10 +413,10 @@ $(OUTDIR)/misc.o: ./io/misc.c
 	$(CC) -c $(CFLAGS) -o $(OUTDIR)/misc.o ./io/misc.c
 
 #ifeq ($(CONFIG_MACAUTH),y)
-ifdef CONFIG_MACAUTH
+#ifdef CONFIG_MACAUTH
 $(OUTDIR)/cmd_manufacture_set.o: ./init/cmd_manufacture_set.c
 	$(CC) -c $(CFLAGS) -o $(OUTDIR)/cmd_manufacture_set.o ./init/cmd_manufacture_set.c
-endif		
+#endif		
 	
 $(OUTDIR)/monitor.o: ./monitor/monitor.c
 	$(CC) -c $(CFLAGS) -o $(OUTDIR)/monitor.o ./monitor/monitor.c 

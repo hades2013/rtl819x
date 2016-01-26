@@ -193,10 +193,10 @@ extern struct arptable_t  arptable_tftp[3];
 extern int write_data(unsigned long dst, unsigned long length, unsigned char *target);
 extern int read_data (unsigned long src, unsigned long length, unsigned char *target);
 
-#ifdef CONFIG_MACAUTH 
+//#ifdef CONFIG_MACAUTH 
 extern int do_manufacture_set (int argc, char *argv[]);
 extern void wdt_enable();
-#endif
+//#endif
 /*Cyrus Tsai*/
 extern unsigned long file_length_to_server;
 extern unsigned long file_length_to_client;
@@ -321,9 +321,9 @@ COMMAND_TABLE	MainCmdTable[] =
     { "FL"    ,1, CmdFlashLoad          , "FL <src>:Read from flash"},
     { "FW"    ,2, CmdFlashWrite         , "FW <src><value>:Write to flash"},
 #endif
-#ifdef CONFIG_MACAUTH
+//#ifdef CONFIG_MACAUTH
     {"MFG" ,3, do_manufacture_set    , "MFG: set MAC"},
-#endif
+//#endif
 
 #endif 
 };
@@ -517,7 +517,7 @@ int check_cpu_speed(void)
 
 extern char** GetArgv(const char* string);
 
-#ifdef CONFIG_MACAUTH
+//#ifdef CONFIG_MACAUTH
 
 #define RTL_GPIO_MUX1 0xB8000044
 #define RTL_GPIO_MUX1_DATA  (3 << 13) | (3 << 16) // SET LED_P0 LED_P1 as GPIO  mode
@@ -566,7 +566,7 @@ void wdt_feed()
         WRITE_MEM32(WDTEN_PIN_DATABASE, (READ_MEM32(WDTEN_PIN_DATABASE) & (~(1 << WDTEN_PIN_NO)))); 
     } 
 }
-#endif
+//#endif
 void monitor(void)
 {
 	char		buffer[ MAX_MONITOR_BUFFER +1 ];

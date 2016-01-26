@@ -436,7 +436,7 @@ struct net_bridge_fdb_entry *__br_fdb_get(struct net_bridge *br,
 	hlist_for_each_entry_rcu(fdb, h, &br->hash[br_mac_hash(addr)], hlist) {
 		if (!compare_ether_addr(fdb->addr.addr, addr)) {
 			if (unlikely(has_expired(br, fdb))) {
-			#if defined(CONFIG_RTL_819X)
+			#if defined(CONFIG_RTL_819X) && defined(CONFIG_BRIDGE)
 				if (rtl___br_fdb_get_timeout_hooks(br, fdb, addr)==RTL_PS_HOOKS_BREAK) {
 					break;
 				}

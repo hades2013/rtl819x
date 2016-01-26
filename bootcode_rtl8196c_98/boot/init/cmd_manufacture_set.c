@@ -470,7 +470,11 @@ extern void wdt_enable();
 
 void macfinish_do(void)
 {
+    #ifdef CONFIG_MACAUTH
     if (macfinish == 0x7)
+    #else
+    //if (macfinish & (1<<MACFINISH_MAC))
+    #endif
     {
         wdt_enable();
     }
@@ -486,7 +490,7 @@ int do_manufacture_set (int argc, char *argv[])
 //#ifdef CONFIG_MACAUTH        
 //        (argc == 4) 
 //#else 
-        (argc == 3) 
+        (argc == 2) 
 //#endif 
         && (0 == strcmp("mac",argv[0])))
     {
