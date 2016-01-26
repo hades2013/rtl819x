@@ -4818,7 +4818,6 @@ static int rtl865x_do_ext_ioctl(struct ext_req *req)
     {
         case EXT_CMD_SET_PORT_FLOWCTRL:
             ret = rtl8651_setAsicFlowControlRegister(req->data.port_simple.pid, req->data.port_simple.value ? TRUE : FALSE);
-            printk(" flowctrl: phy %d value:%02x,ret=%d\n", req->data.port_simple.pid, req->data.port_simple.value,ret);
             if (ret == 0){
                 ret = rtl865xC_setAsicPortPauseFlowControl(
                     req->data.port_simple.pid,

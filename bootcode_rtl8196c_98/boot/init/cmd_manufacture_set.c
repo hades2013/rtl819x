@@ -471,9 +471,7 @@ extern void wdt_enable();
 void macfinish_do(void)
 {
     #ifdef CONFIG_MACAUTH
-    if (macfinish == 0x7)
-    #else
-    //if (macfinish & (1<<MACFINISH_MAC))
+    if (macfinish)
     #endif
     {
         wdt_enable();
@@ -486,12 +484,13 @@ int do_manufacture_set (int argc, char *argv[])
     char authcode[100] = {0};
     char  SerialNoGet[size_SerNum+1]={0};
    unsigned char tmp[26] = {0};
+   //printf("set:%d,%s,%s,%s\n",argc,argv[0],argv[1],argv[2]);
     if (
-//#ifdef CONFIG_MACAUTH        
-//        (argc == 4) 
-//#else 
+#ifdef CONFIG_MACAUTH        
+        (argc == 3) 
+#else 
         (argc == 2) 
-//#endif 
+#endif 
         && (0 == strcmp("mac",argv[0])))
     {
         if (0 == str_to_mac(mac,argv[1]))
@@ -508,7 +507,7 @@ int do_manufacture_set (int argc, char *argv[])
                // }         
                
                 if (!mac_auth(mac, argv[2])){
-                    printf("invalid Auth\n");
+                    printf("Error Auth\n");
                     return 0;
                 }
                 flashwrite(CONFIG_AUTHCODE,(unsigned long)authcode,size_SerNum);              
@@ -517,7 +516,7 @@ int do_manufacture_set (int argc, char *argv[])
                 flashwrite(CONFIG_ETHADDR,(unsigned long)mac,size_MacId); 
 
                 macfinish |= (1<<MACFINISH_MAC);                
-                printf("OK\n");
+             //   printf("OK\n");
              //   macfinish_do();
             }
             else
@@ -538,7 +537,7 @@ int do_manufacture_set (int argc, char *argv[])
         flashwrite(CONFIG_SN,(unsigned long)argv[1],len > size_SerNum ? size_SerNum : len);     
         macfinish |= (1<<MACFINISH_SN);
        // macfinish_do();
-        printf("OK\n");
+       // printf("OK\n");
     }
       else if ((argc == 2) && (0 == strcmp("hver", argv[0])))
     {
@@ -547,7 +546,7 @@ int do_manufacture_set (int argc, char *argv[])
         len > CONFIG_HAEDVERSION_LEN ? CONFIG_HAEDVERSION_LEN : len); 
       macfinish |= (1<<MACFINISH_HVER);
      // macfinish_do();
-        printf("OK\n");
+     //   printf("OK\n");
       //flashread((unsigned long)tmp,CONFIG_HAEDVERSION,strlen(argv[1]));
       //tmp[7] = 0;
       //printf("hver:%s\n",tmp);
@@ -557,9 +556,10 @@ int do_manufacture_set (int argc, char *argv[])
    //     printf("Usage: \n manufacture mac xx:xx:xx:xx:xx:xx [xxxxxxxxxxxxxxxx]\n"
    //         " manufacture hver xxxxxx\n"
    //         " manufacture sn xxxxxx\n");
-        printf("err cmd\n");
+        printf("EEE\n");
         return 0; 
     }
+    printf("\n");
     macfinish_do();
 
 	return 1;
