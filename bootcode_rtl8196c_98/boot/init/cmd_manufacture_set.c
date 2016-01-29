@@ -471,7 +471,7 @@ extern void wdt_enable();
 void macfinish_do(void)
 {
     #ifdef CONFIG_MACAUTH
-    if (macfinish)
+    if (macfinish == ((1<<MACFINISH_MAC) | (1<<MACFINISH_SN) | (1<<MACFINISH_HVER)))
     #endif
     {
         wdt_enable();
