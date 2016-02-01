@@ -83,7 +83,7 @@ void console_init(void)
   		
   	REG32( UART_FCR)=0xc7000000;		//FIFO Ccontrol Register
   	REG32( UART_IER)=0x00000000;
-  	dl = (200000000 /16)/38400-1;
+  	dl = (200000000 /16)/115200-1;
   	*(volatile unsigned long *)(0xa1000000) = dl ; 
   	dll = dl & 0xff;
   	dlm = dl / 0x100;
