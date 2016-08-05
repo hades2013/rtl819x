@@ -104,6 +104,8 @@
 #include <net/rtl/rtk_stp.h>
 #endif
 
+#include "RTL8370_RTL8367_API/gpio_8198.h"
+
 #if defined (CONFIG_RTL_IGMP_SNOOPING)
 #include <net/rtl/rtl865x_igmpsnooping.h>
 #include <linux/if_ether.h>
@@ -769,7 +771,7 @@ device mapping mainten
 struct rtl865x_vlanConfig * rtl_get_vlanconfig_by_netif_name(const char *name)
 {
 	int i;
-    printk(" rtl_get_vlanconfig_by_netif_name ...\n");
+    //printk(" LRC123 rtl_get_vlanconfig_by_netif_name ...\n");
 	for(i= 0; vlanconfig[i].vid != 0;i++)         
 	{
 		if(memcmp(vlanconfig[i].ifname,name,strlen(name)) == 0)
@@ -4953,6 +4955,23 @@ static int rtl865x_do_ext_ioctl(struct ext_req *req)
         case EXT_CMD_GET_MGMT_VLAN:
             ret = rtl_getExtMgmtVlan(&req->data.mgmt_vlan);
             break; 
+        case EXT_CMT_INIT_GPIO:
+            ret = _rtl865x_initGpioPin(
+                req->data.gpio_ctl.gpioid, 
+                GPIO_PERI_GPIO, 
+                req->data.gpio_ctl.data ? GPIO_DIR_OUT : GPIO_DIR_IN, 
+                GPIO_INT_DISABLE);
+            break;
+        case EXT_CMT_SET_GPIO:
+            ret = _rtl865x_setGpioDataBit(
+                req->data.gpio_ctl.gpioid, 
+                req->data.gpio_ctl.data);
+            break;
+        case EXT_CMT_GET_GPIO:
+            ret = _rtl865x_getGpioDataBit(
+                req->data.gpio_ctl.gpioid, 
+                &req->data.gpio_ctl.data);
+            break;
 #endif 
 /* End */            
         case  EXT_CMD_SET_PVID: 
@@ -5026,7 +5045,7 @@ static int rtl865x_do_ext_ioctl(struct ext_req *req)
                 if (req->data.port_storm.unicast){
                     value |= UNICAST_STORM_CONTROL;
                 } 
-                printk("port storm: port:%d, rate:%d, b:%d m:%d, u:%d\n",req->data.port_storm.pid, req->data.port_storm.rate, req->data.port_storm.broadcast, req->data.port_storm.multicast, req->data.port_storm.unicast);                 
+                printk(" port storm: port:%d, rate:%d, b:%d m:%d, u:%d\n",req->data.port_storm.pid, req->data.port_storm.rate, req->data.port_storm.broadcast, req->data.port_storm.multicast, req->data.port_storm.unicast);                 
                 ret = rtl8651_setAsicPortStorm(req->data.port_storm.pid, req->data.port_storm.rate, value);
             }
 
@@ -6889,6 +6908,7 @@ int32 rtl865x_config(struct rtl865x_vlanConfig vlanconfig[])
 		netif.enableRoute=1;
 		#endif
 		retval = rtl865x_addNetif(&netif);
+        rtlglue_printf("netif.is_slave=%d\n", netif.is_slave);
 
 		if(netif.is_slave == 1)
 #if defined(CONFIG_RTL_PUBLIC_SSID)

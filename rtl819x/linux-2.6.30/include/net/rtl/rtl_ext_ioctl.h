@@ -212,6 +212,9 @@ typedef enum{
   EXT_CMD_GET_CABLE_MASK,
   EXT_CMD_SET_MGMT_VLAN,
   EXT_CMD_GET_MGMT_VLAN,
+  EXT_CMT_INIT_GPIO,
+  EXT_CMT_SET_GPIO,
+  EXT_CMT_GET_GPIO,
 #endif
 /* End */
 
@@ -235,6 +238,7 @@ struct ext_req{
         cmd_phy_reg_t phy_reg;
         cmd_vlan_t vlan;
         eoc_mgmt_vlan_t mgmt_vlan;
+        gpio_ctrl_t gpio_ctl;
     }data;
 };
 

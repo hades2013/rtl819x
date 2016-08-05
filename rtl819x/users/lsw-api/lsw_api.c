@@ -754,6 +754,56 @@ int rtl8198_get_mgmt_vlan(uint32_t *vlan_mode, uint32_t *mgmt_vlan, uint32_t *mg
     return (ret == 0) ? req.ret : ret;   
 }
 
+/* Gpio ctrl */
+int rtl8198_set_gpio(uint32_t port, uint32_t pin, uint32_t data)
+{
+    int ret;
+    struct ext_req req;
+    memset(&req, 0, sizeof(req));
+    req.cmd = EXT_CMT_SET_GPIO;
+    req.data.gpio_ctl.gpioid = GPIO_ID(port, pin);
+    req.data.gpio_ctl.data = data;
+
+    ret = rtl8198_ext_ioctl(local_ifname, &req);    
+    DBG_ASSERT((!ret && !req.ret), "ret: %d, req.ret:%d", ret, req.ret);   
+
+    return (ret == 0) ? req.ret : ret;   
+}
+
+int rtl8198_init_gpio(uint32_t port, uint32_t pin, uint32_t direction)
+{
+    /* direction = 1 output , 0 input */
+    int ret;
+    struct ext_req req;
+    memset(&req, 0, sizeof(req));
+    req.cmd = EXT_CMT_INIT_GPIO;
+    req.data.gpio_ctl.gpioid = GPIO_ID(port, pin);
+    req.data.gpio_ctl.data = direction;
+    
+    ret = rtl8198_ext_ioctl(local_ifname, &req);    
+    DBG_ASSERT((!ret && !req.ret), "ret: %d, req.ret:%d", ret, req.ret);   
+
+    return (ret == 0) ? req.ret : ret;   
+}
+
+int rtl8198_get_gpio(uint32_t port, uint32_t pin, uint32_t *data)
+{
+    int ret;
+    struct ext_req req;
+    memset(&req, 0, sizeof(req));
+    req.cmd = EXT_CMT_GET_GPIO;
+    req.data.gpio_ctl.gpioid = GPIO_ID(port, pin);
+
+    ret = rtl8198_ext_ioctl(local_ifname, &req);  
+    DBG_ASSERT((!ret && !req.ret), "ret: %d, req.ret:%d", ret, req.ret);  
+
+    if (!ret && !req.ret){
+        if (data) *data = req.data.gpio_ctl.data;
+    }
+    
+    return (ret == 0) ? req.ret : ret;   
+}
+
 
 
 

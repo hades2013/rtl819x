@@ -542,7 +542,7 @@ int do_manufacture_set (int argc, char *argv[])
       else if ((argc == 2) && (0 == strcmp("hver", argv[0])))
     {
         len = strlen(argv[1]);
-      flashwrite(CONFIG_HAEDVERSION,(unsigned long)argv[1], 
+        flashwrite(CONFIG_HAEDVERSION,(unsigned long)argv[1], 
         len > CONFIG_HAEDVERSION_LEN ? CONFIG_HAEDVERSION_LEN : len); 
       macfinish |= (1<<MACFINISH_HVER);
      // macfinish_do();

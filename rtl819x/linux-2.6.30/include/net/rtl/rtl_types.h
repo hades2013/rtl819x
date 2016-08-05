@@ -608,6 +608,11 @@ typedef struct {
     uint32 port_mask;
 }eoc_mgmt_vlan_t;
 
+typedef struct {
+    uint32 gpioid;
+    uint32 data; // 1-output, 0-input
+}gpio_ctrl_t;
+
 #endif 
 /* End */
 

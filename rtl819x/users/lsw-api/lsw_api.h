@@ -163,5 +163,13 @@ int rtl8198_set_cable_mask(uint32_t cable_mask);
 int rtl8198_get_cable_mask(uint32_t *cable_mask);
 int rtl8198_set_mgmt_vlan(uint32_t vlan_mode, uint32_t mgmt_vlan, uint32_t mgmt_pri, uint32_t mgmt_ports);
 int rtl8198_get_mgmt_vlan(uint32_t *vlan_mode, uint32_t *mgmt_vlan, uint32_t *mgmt_pri, uint32_t *mgmt_ports);
+int rtl8198_set_gpio(uint32_t port, uint32_t pin, uint32_t data);
+int rtl8198_get_gpio(uint32_t port, uint32_t pin, uint32_t *data);
+int rtl8198_init_gpio(uint32_t port, uint32_t pin, uint32_t direction);
+
+#ifndef GPIO_ID
+#define GPIO_ID(port,pin) ((uint32)port<<8|(uint32)pin)
+#endif
+
 
 #endif /* __LSW_API_H__ */
