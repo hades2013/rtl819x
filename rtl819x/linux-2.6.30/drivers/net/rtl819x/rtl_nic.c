@@ -1822,7 +1822,7 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 		if(rtk_vlan_support_enable)
 		{
 			/*let bridge handle it*/
-			return 0;
+			//return 0;
 		}
 		#endif
 		#if defined (CONFIG_RTL_HARDWARE_MULTICAST)
@@ -1940,7 +1940,7 @@ int  rtl_MulticastRxCheck(struct sk_buff *skb,rtl_nicRx_info *info)
 		if(rtk_vlan_support_enable)
 		{
 			/*let bridge handle it*/
-			return 0;
+			//return 0;
 		}
 		#endif
 
