@@ -5045,7 +5045,7 @@ static int rtl865x_do_ext_ioctl(struct ext_req *req)
                 if (req->data.port_storm.unicast){
                     value |= UNICAST_STORM_CONTROL;
                 } 
-                printk(" port storm: port:%d, rate:%d, b:%d m:%d, u:%d\n",req->data.port_storm.pid, req->data.port_storm.rate, req->data.port_storm.broadcast, req->data.port_storm.multicast, req->data.port_storm.unicast);                 
+                //printk(" port storm: port:%d, rate:%d, b:%d m:%d, u:%d\n",req->data.port_storm.pid, req->data.port_storm.rate, req->data.port_storm.broadcast, req->data.port_storm.multicast, req->data.port_storm.unicast);                 
                 ret = rtl8651_setAsicPortStorm(req->data.port_storm.pid, req->data.port_storm.rate, value);
             }
 
