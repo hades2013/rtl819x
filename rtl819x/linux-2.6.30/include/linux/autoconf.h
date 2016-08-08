@@ -1,7 +1,7 @@
 /*
  * Automatically generated C config: don't edit
  * Linux kernel version: 2.6.30.9
- * Mon Oct 19 20:30:28 2015
+ * Sat Aug  6 17:56:12 2016
  */
 #define AUTOCONF_INCLUDED
 #define CONFIG_SQUASHFS_LZMA 1
@@ -198,4 +198,4 @@
 #define CONFIG_LOG_BUF_SHIFT 12
 #define CONFIG_CMDLINE "console=ttyS0,115200 root=/dev/mtdblock1"
 #define CONFIG_ARCH_POPULATES_NODE_MAP 1
-#undef  CONFIG_MACAUTH
+#define  CONFIG_MACAUTH 1
